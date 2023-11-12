@@ -1,6 +1,9 @@
 package io.github.thelimepixel.bento.parsing
 
-data class RedNode(val parent: RedNode?, val green: GreenNode, val offset: Int) {
+data class RedNode internal constructor(val parent: RedNode?, val green: GreenNode, val offset: Int) {
+    val content: String
+        get() = green.content
+
     val type: SyntaxType
         get() = green.type
 
@@ -10,21 +13,45 @@ data class RedNode(val parent: RedNode?, val green: GreenNode, val offset: Int) 
     val childCount: Int
         get() = green.childCount
 
-    val range: IntRange
+    val span: IntRange
         get() = offset..(offset + length)
 
-    private fun wrap(child: GreenChild): RedNode =
-        RedNode(this, child.node, offset + child.offset)
+    val ref: ASTRef
+        get() = ASTRef(span, type)
 
-    fun child(index: Int) = wrap(green.child(index))
+    fun firstChild(type: SyntaxType): RedNode =
+        green.firstChild(type).wrap()
 
-    fun childOrNull(index: Int) = green.childOrNull(index)?.let { wrap(it) }
+    fun firstChild(set: SyntaxSet): RedNode =
+        green.firstChild(set).wrap()
 
-    fun childIterator(): Iterator<RedNode> = object : Iterator<RedNode> {
-            val backing = green.childIterator()
+    fun lastChild(type: SyntaxType): RedNode =
+        green.lastChild(type).wrap()
 
-            override fun hasNext(): Boolean = backing.hasNext()
+    fun lastChild(set: SyntaxSet): RedNode =
+        green.lastChild(set).wrap()
 
-            override fun next(): RedNode = wrap(backing.next())
-        }
+    private fun GreenChild.wrap(): RedNode =
+        RedNode(this@RedNode, this.node, offset + this.offset)
+
+    fun child(index: Int) = green.child(index).wrap()
+
+    fun childOrNull(index: Int) = green.childOrNull(index)?.wrap()
+
+    private class ChildIterator(
+        private val red: RedNode,
+        private val backing: Iterator<GreenChild>
+    ) :
+        Iterator<RedNode> {
+        override fun hasNext(): Boolean = backing.hasNext()
+
+        override fun next(): RedNode = with(red) { backing.next().wrap() }
+    }
+
+    fun childIterator(): Iterator<RedNode> = ChildIterator(this, green.childIterator())
+    fun childSequence(): Sequence<RedNode> = childIterator().asSequence()
+    fun revChildIterator(): Iterator<RedNode> = ChildIterator(this, green.revChildIterator())
+    fun revChildSequence(): Sequence<RedNode> = revChildIterator().asSequence()
 }
+
+fun GreenNode.toRedRoot() = RedNode(null, this, 0)

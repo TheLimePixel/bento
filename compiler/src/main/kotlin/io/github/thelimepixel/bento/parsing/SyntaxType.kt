@@ -1,7 +1,10 @@
 package io.github.thelimepixel.bento.parsing
 
-enum class SyntaxType(val dynamic: Boolean = false, val ignore: Boolean = false, val eof: Boolean = false) {
-    EOF(eof = true),
+enum class SyntaxType(
+    val dynamic: Boolean = false,
+    val ignore: Boolean = false,
+) {
+    EOF,
 
     Unknown(dynamic = true),
 
@@ -21,11 +24,12 @@ enum class SyntaxType(val dynamic: Boolean = false, val ignore: Boolean = false,
     FunKeyword,
 
     ParamList,
+    ArgList,
 
     ScopeExpr,
     CallExpr,
 
-    FunctionDeclaration,
+    FunDef,
 
     File
 }

@@ -19,7 +19,7 @@ class BentoParsing {
         pushWrapped(ST.Unknown)
     }
 
-    private fun P.handleFunction() = node(ST.FunctionDeclaration) {
+    private fun P.handleFunction() = node(ST.FunDef) {
         push()  // fun keyword
         expectIdentifier()
         expectParamList()
@@ -70,8 +70,10 @@ class BentoParsing {
     }
 
     private fun P.handleCall() = nestLast(ST.CallExpr) {
-        push()  // (
-        handleArgList()
+        node(ST.ArgList) {
+            push()  // (
+            handleArgList()
+        }
     }
 
     private fun P.handleParenListEnd(): Boolean {
