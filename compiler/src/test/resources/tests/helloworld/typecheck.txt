@@ -1,0 +1,21 @@
+{
+  Node {
+    name: main
+  }: ScopeExpr {
+    ref: ScopeExpr@22..54
+    type: Unit
+    statements: [
+      CallExpr {
+        ref: CallExpr@12..36
+        type: Unit
+        fn: println
+        args: [
+          StringExpr {
+            ref: StringLiteral@2..17
+            context: "Hello, World!"
+          }
+        ]
+      }
+    ]
+  }
+}

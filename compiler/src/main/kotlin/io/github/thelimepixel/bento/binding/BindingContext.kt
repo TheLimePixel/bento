@@ -4,11 +4,14 @@ interface BindingContext {
     fun refFor(name: String): FunctionRef?
 }
 
-class ChildContext(private val parent: BindingContext, private val map: Map<String, FunctionRef>) : BindingContext {
+class ChildBindingContext(
+    private val parent: BindingContext,
+    private val map: Map<String, FunctionRef>
+) : BindingContext {
     override fun refFor(name: String): FunctionRef? = map[name] ?: parent.refFor(name)
 }
 
-object TopLevelContext : BindingContext {
+class TopLevelBindingContext : BindingContext {
     override fun refFor(name: String): FunctionRef? = when (name) {
         "println" -> FunctionRef.Special.println
         else -> null

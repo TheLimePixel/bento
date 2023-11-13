@@ -6,7 +6,7 @@ import io.github.thelimepixel.bento.parsing.SyntaxType
 sealed interface FunctionRef {
     val name: String
     data class Node(override val name: String, val node: GreenNode) : FunctionRef {
-        override fun toString(): String = "Node($name)"
+        override fun toString(): String = "Node(name=$name)"
     }
 
     enum class Special : FunctionRef {

@@ -6,18 +6,18 @@ private typealias BC = BindingContext
 private typealias ST = SyntaxType
 
 class BentoBinding {
-    fun bind(fileItems: List<FunctionRef.Node>): Map<FunctionRef.Node, HirNode> {
+    fun bind(fileItems: List<FunctionRef.Node>, parentContext: BindingContext): Map<FunctionRef.Node, HIR.FunctionDef> {
         val map = fileItems.associateBy { it.name }
-        val context = ChildContext(TopLevelContext, map)
+        val context = ChildBindingContext(parentContext, map)
         return fileItems.associateWith { context.bindFunction(it.node.toRedRoot()) }
     }
 
-    private fun BC.bindFunction(node: RedNode): FunctionDef {
+    private fun BC.bindFunction(node: RedNode): HIR.FunctionDef {
         val scopeNode = node.firstChild(ST.ScopeExpr)
-        return FunctionDef(node.ref, bindScope(scopeNode))
+        return HIR.FunctionDef(node.ref, bindScope(scopeNode))
     }
 
-    private fun BC.bindCall(node: RedNode): CallExpr {
+    private fun BC.bindCall(node: RedNode): HIR.CallExpr {
         val on = node.firstChild(BaseSets.expressions)
         val args = node
             .lastChild(ST.ArgList)
@@ -26,27 +26,27 @@ class BentoBinding {
             .map { bindExpr(it) }
             .toList()
 
-        return CallExpr(node.ref, bindExpr(on), args)
+        return HIR.CallExpr(node.ref, bindExpr(on), args)
     }
 
-    private fun BC.bindExpr(node: RedNode): Expr = when (node.type) {
-        ST.StringLiteral -> StringExpr(node.ref)
+    private fun BC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
+        ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
 
         ST.Identifier -> refFor(node.content)
-            ?.let { IdentExpr(node.ref, it) }
-            ?: ErrorExpr(node.ref, ErrorExpr.Type.InvalidIdentifier)
+            ?.let { HIR.IdentExpr(node.ref, it) }
+            ?: HIR.ErrorExpr(node.ref, HIR.ErrorExpr.Type.InvalidIdentifier)
 
         ST.CallExpr -> bindCall(node)
-        else -> ErrorExpr(node.ref, ErrorExpr.Type.Unknown)
+        else -> HIR.ErrorExpr(node.ref, HIR.ErrorExpr.Type.Unknown)
     }
 
-    private fun BC.bindScope(node: RedNode): ScopeExpr {
+    private fun BC.bindScope(node: RedNode): HIR.ScopeExpr {
         val statements = node
             .childSequence()
             .filter { it.type in BaseSets.expressions }
             .map { bindExpr(it) }
             .toList()
 
-        return ScopeExpr(node.ref, statements)
+        return HIR.ScopeExpr(node.ref, statements)
     }
 }
