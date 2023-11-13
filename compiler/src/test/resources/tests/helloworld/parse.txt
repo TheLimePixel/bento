@@ -1,0 +1,22 @@
+File
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─StringLiteral("Hello, World!")
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+└─EOF

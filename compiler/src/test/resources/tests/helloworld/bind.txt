@@ -1,0 +1,35 @@
+FunctionDef {
+  ref: ASTRef {
+    span: 0..43
+    type: FunDef
+  }
+  scope: ScopeExpr {
+    ref: ASTRef {
+      span: 22..54
+      type: ScopeExpr
+    }
+    statements: [
+      CallExpr {
+        ref: ASTRef {
+          span: 12..36
+          type: CallExpr
+        }
+        on: IdentExpr {
+          ref: ASTRef {
+            span: 0..7
+            type: Identifier
+          }
+          binding: println
+        }
+        args: [
+          StringExpr {
+            ref: ASTRef {
+              span: 2..17
+              type: StringLiteral
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
