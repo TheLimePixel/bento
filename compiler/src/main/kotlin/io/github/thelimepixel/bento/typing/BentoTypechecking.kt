@@ -14,11 +14,11 @@ class BentoTypechecking {
         }.at(hir.ref)
 
         is HIR.IdentExpr -> THIR.ErrorType.InvalidIdentifierUse.at(hir.ref)
-        is HIR.ScopeExpr -> type(hir, context)
+        is HIR.ScopeExpr -> typeScope(hir, context)
         is HIR.StringExpr -> THIR.StringExpr(hir.ref, hir.content)
     }
 
-    fun typeScope(hir: HIR.ScopeExpr, content: TypingContext): THIR.ScopeExpr {
+    private fun typeScope(hir: HIR.ScopeExpr, content: TypingContext): THIR.ScopeExpr {
         val statements = hir.statements.map { typeExpr(it, content) }
         val type = if (statements.isEmpty()) BentoType.Unit else statements.last().type
         return THIR.ScopeExpr(hir.ref, type, statements)
@@ -32,7 +32,7 @@ class BentoTypechecking {
         if (signature.paramTypes.size != args.size)
             return THIR.ErrorType.InvalidArgumentCount.at(hir.ref)
 
-        if (args.map { it.type } != signature.paramTypes)
+        if (args.zip(signature.paramTypes).any { (arg, param) -> arg.type != param && arg.type != BentoType.Never })
             return THIR.ErrorType.InvalidArgumentTypes.at(hir.ref)
 
         return THIR.CallExpr(hir.ref, signature.returnType, on.binding, args)

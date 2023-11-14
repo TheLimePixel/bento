@@ -26,15 +26,18 @@ sealed interface THIR {
         val errType: ErrorType,
     ) : Expr {
         override val type: BentoType
-            get() = BentoType.Nothing
+            get() = BentoType.Never
     }
 
     data class StringExpr(
         override val ref: ASTRef,
-        val context: String,
+        val content: String,
     ) : Expr {
         override val type: BentoType
             get() = BentoType.String
+
+        val rawContext: String
+            get() = content.substring(1..<content.lastIndex)
     }
 
     enum class ErrorType {
