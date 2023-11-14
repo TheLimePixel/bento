@@ -16,7 +16,7 @@ class BentoParsing {
     }
 
     private fun P.handleError() {
-        pushWrapped(ST.Unknown)
+        pushWrapped(ST.Error)
     }
 
     private fun P.handleFunction() = node(ST.FunDef) {

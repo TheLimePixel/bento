@@ -31,6 +31,10 @@ class Parser internal constructor(private val lexer: Lexer, baseType: SyntaxType
     var seenNewline = false
         private set
 
+    init {
+        collectIgnorables()
+    }
+
     val current: SyntaxType get() = lexer.current.type
 
     private fun collectIgnorables() {

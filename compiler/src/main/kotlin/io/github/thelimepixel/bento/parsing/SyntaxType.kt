@@ -3,13 +3,18 @@ package io.github.thelimepixel.bento.parsing
 enum class SyntaxType(
     val dynamic: Boolean = false,
     val ignore: Boolean = false,
+    val error: Boolean = true,
 ) {
     EOF,
 
-    Unknown(dynamic = true),
+    Unknown(dynamic = true, error = true),
+    UnclosedComment(dynamic = true, error = true),
+    UnclosedString(dynamic = true, error = true),
 
     Whitespace(dynamic = true, ignore = true),
     Newline(ignore = true),
+    LineComment(dynamic = true, ignore = true),
+    MultiLineComment(dynamic = true, ignore = true),
 
     LParen,
     RParen,
@@ -31,16 +36,25 @@ enum class SyntaxType(
 
     FunDef,
 
-    File
+    File,
+
+    Error(error = true)
 }
 
+fun SyntaxType.edge(string: String) =
+    GreenEdge(this, string)
+
+fun SyntaxType.edge(code: String, start: Int, exclusiveEnd: Int) =
+    GreenEdge(this, code.substring(start, exclusiveEnd))
+
 object BaseEdges {
-    val eof = GreenEdge(SyntaxType.EOF, "")
-    val nl = GreenEdge(SyntaxType.Newline, "\n")
-    val lParen = GreenEdge(SyntaxType.LParen, "(")
-    val rParen = GreenEdge(SyntaxType.RParen, ")")
-    val lBrace = GreenEdge(SyntaxType.LBrace, "{")
-    val rBrace = GreenEdge(SyntaxType.RBrace, "}")
-    val comma = GreenEdge(SyntaxType.Comma, ",")
-    val funKeyword = GreenEdge(SyntaxType.FunKeyword, "fun")
+    val eof = SyntaxType.EOF.edge("")
+    val nl = SyntaxType.Newline.edge( "\n")
+    val lParen = SyntaxType.LParen.edge( "(")
+    val rParen = SyntaxType.RParen.edge( ")")
+    val lBrace = SyntaxType.LBrace.edge( "{")
+    val rBrace = SyntaxType.RBrace.edge( "}")
+    val comma = SyntaxType.Comma.edge( ",")
+    val funKeyword = SyntaxType.FunKeyword.edge( "fun")
+    val loneSlash = SyntaxType.Unknown.edge( "/")
 }

@@ -1,35 +1,30 @@
 package io.github.thelimepixel.bento
 
 import io.github.thelimepixel.bento.binding.*
-import io.github.thelimepixel.bento.codegen.BentoCodegen
-import io.github.thelimepixel.bento.codegen.JVMBindingContext
-import io.github.thelimepixel.bento.codegen.JVMSignature
-import io.github.thelimepixel.bento.codegen.TopLevelJVMBindingContext
+import io.github.thelimepixel.bento.codegen.*
 import io.github.thelimepixel.bento.parsing.ASTFormatter
 import io.github.thelimepixel.bento.parsing.BentoParsing
+import io.github.thelimepixel.bento.parsing.GreenNode
 import io.github.thelimepixel.bento.typing.BentoTypechecking
 import io.github.thelimepixel.bento.typing.TopLevelTypingContext
 import io.github.thelimepixel.bento.typing.TypingContext
+import io.github.thelimepixel.bento.utils.Formatter
 import io.github.thelimepixel.bento.utils.ObjectFormatter
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.util.Textifier
 import org.objectweb.asm.util.TraceClassVisitor
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.lang.invoke.MethodHandle
 import kotlin.test.assertEquals
 
-class CodeTest {
-    private val nodeFormatter = ASTFormatter()
+class SourceTests {
+    private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
-    private val objFormatter = ObjectFormatter()
+    private val objFormatter: Formatter<Any> = ObjectFormatter()
     private val bindingContext: BindingContext = TopLevelBindingContext()
     private val typing = BentoTypechecking()
     private val typingContext: TypingContext = TopLevelTypingContext()
@@ -37,11 +32,12 @@ class CodeTest {
         JVMSignature("io/github/thelimepixel/bento/RunFunctionsKt", "println", "(Ljava/lang/String;)V")
     )
     private val bentoCodegen = BentoCodegen()
+    private val bytecodeFormatter: Formatter<ByteArray> = BytecodeFormatter()
     private val classLoader = TestClassLoader(this::class.java.classLoader)
 
     @TestFactory
-    fun makeTest(): Iterator<DynamicTest> = iterator {
-        val resource = CodeTest::class.java.classLoader
+    fun generate(): Iterator<DynamicTest> = iterator {
+        val resource = SourceTests::class.java.classLoader
             .getResource("tests") ?: return@iterator
         File(resource.toURI()).listFiles()!!.forEach { handleTestDir(it) }
     }
@@ -99,12 +95,7 @@ class CodeTest {
         val thirMap = hirMap.mapValues { typing.type(it.value.scope, typingContext) }
         val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
 
-        val classReader = ClassReader(bytecode)
-        val stringWriter = StringWriter()
-        val traceClassVisitor = TraceClassVisitor(PrintWriter(stringWriter))
-        classReader.accept(traceClassVisitor, ClassReader.SKIP_DEBUG + ClassReader.SKIP_FRAMES)
-
-        return stringWriter.toString()
+        return bytecodeFormatter.format(bytecode)
     }
 
     private fun output(code: String, module: String): String {
@@ -116,6 +107,7 @@ class CodeTest {
         val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
         val clazz = classLoader.load(fileRef, bytecode)
         clazz.getDeclaredMethod("main").invoke(null)
+
         return printBuffer.toString().also { printBuffer.clear() }
     }
 }

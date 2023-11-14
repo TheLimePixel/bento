@@ -1,0 +1,31 @@
+File
+├─LineComment(// This is a comment)
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─Newline
+│   │   ├─Whitespace(        )
+│   │   ├─MultiLineComment(/*And this is a comment\n        /* in the middle of an expression*/\n        "Hello, Comments!" */)
+│   │   ├─Newline
+│   │   ├─Whitespace(        )
+│   │   ├─StringLiteral("Hello, Comments!")
+│   │   ├─Newline
+│   │   ├─Whitespace(    )
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+└─EOF

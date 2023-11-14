@@ -6,6 +6,9 @@ interaction as its own features, features may reference other features that they
 on, both in the description and examples, though that does not mean they cannot be implemented
 without them.
 
+As the compiler is currently WIP, this also serves as a sort of TODO list, where all unimplemented features are 
+marked as such. 
+
 ## Single-line Comments
 
 A single-line comment begins with two slashes and ends at a new-line character.
@@ -38,10 +41,14 @@ double quote. For example: `"This is a string"`.
 
 ## Character Literals
 
+TODO
+
 A value of type `Char` can be represented by putting any UTF-16 character aside for newline or
 `'` in between two single quotes. For example: `'a'`.
 
 ## Escaped Characters
+
+TODO
 
 Aside for raw characters, string and character literals may also contain escaped characters.
 These are sequences of characters which are used to represent a single character. These are the
@@ -61,6 +68,8 @@ supported escaped sequences:
 
 ## Raw String Literals
 
+TODO
+
 #### Requires
 
 - [Basic String Literals](features.md#basic-string-literals)
@@ -74,11 +83,15 @@ so the backslash needs to be followed by the same number of hashes. For example:
 
 ## Basic Integer Literals
 
+TODO
+
 Sequences of digits with optional underscores in between represent values of the integer types (`I8`, `I16`, `I32`,
 `I64`). If the type isn't specified, integer literals are by default of type `I32`. Only if the value is outside the range of `I32` is
 it an `I64` by default. Being outside the range of values of `I64` results in an error.
 
 ## Basic Floating-Point Literals
+
+TODO
 
 #### Requires
 - [Basic Integer Literals](features.md#basic-integer-literals)
@@ -88,12 +101,16 @@ specified, all floating-point literals are of type `F64`.
 
 ## Numeric Literal Type Suffices
 
+TODO
+
 #### Requires
 - [Basic Integer Literals](features.md#basic-integer-literals)
 
 Integers and string literals can have the type of the value appended in order to specify it.
 
 ## Integer Literals in Different Number Systems
+
+TODO
 
 ## Requires
 - [Basic Integer Literals](features.md#basic-integer-literals)
@@ -104,6 +121,8 @@ Integer literals have prefixes added to change the number system being used. Nam
 - `0x` for hexadecimal
 
 ## Scientific Notation For Floating-Point Literals
+
+TODO
 
 #### Requires
 - [Basic Floating-Point Literals](features.md#basic-floating-point-literals)
@@ -127,6 +146,8 @@ A scope is usually delimited by curly braces, with file-level scopes being excep
 
 ## Type Annotations
 
+TODO
+
 Bento is a statically-typed programming language, meaning that every expression and symbol which gets bound or 
 returns a value is assigned a type at compile-time. As such, many declarations require
 or allow one to specify the type of value that is being dealt with. That is usually done by
@@ -139,6 +160,8 @@ alphanumeric characters, underscores and primes (apostrophes/single quotes). Ide
 references to items and values, which can be used for accessing or calling said items and values.
 
 ## Backticked Identifiers
+
+TODO
 
 #### Requires
 
@@ -175,6 +198,8 @@ b: I32)` in scope, you can simply call it with arguments a: 0 and b: 0 by doing 
 
 ## Basic Patterns
 
+TODO
+
 #### Requires
 
 - [Identifiers](features.md#identifiers)
@@ -186,6 +211,8 @@ be bound. There are two basic declaration patterns:
 - wildcards (represented by a sequence of underscores), where the value is simply discarded
 
 ## Function Parameters
+
+TODO
 
 #### Requires
 
@@ -206,6 +233,8 @@ fun process(a: I32, b: I32, c: I32) {
 
 ## Function Return Values
 
+TODO
+
 #### Requires
 
 - [Basic Functions](features.md#basic-functions)
@@ -224,7 +253,100 @@ fun five(): I32 {
 }
 ```
 
+## Passing Arguments By Name
+
+TODO
+
+#### Requires
+
+- [Basic Function Calls](features.md#basic-function-calls)
+
+When calling a function you may pass the arguments out of order by specifying the name of the
+parameter before every value. You can start a call without the argument names, but once you
+start passing them out of order, you must stick to passing them by name.
+
+For example:
+
+```kotlin
+fun foo(a: I32, b: I32, c: I32) {
+    ...
+}
+
+// in a scope
+foo(1, 2, 3)
+foo(1, b: 2, 3)
+// foo(1, c: 3, 2)  - error: c is passed out of order, so the third argument must be named
+foo(c: 3, a: 1, b: 2)
+// foo(1, 2, a: 3)  - error: two values passed in for a
+```
+
+## Postfix Scope Passing
+
+TODO
+
+#### Requires
+
+- [Basic Function Calls](features.md#basic-function-calls)
+
+When the last argument of a function is a scope expression, the scope may be taken out of the
+argument list. In the case that the scope is the only argument, the regular argument list may be
+left out. This not only works for just scopes by themselves, but also for anonymous functions and partial
+application of scopes. Note that the scope must still be on the same line as the function call.
+
+For example:
+
+```kotlin
+fun foo(a: I32, b: I32) {
+    ...
+}
+
+fun bar(s: String) {
+    ...
+}
+
+// in a scope
+foo(0) {
+    let ten = 10
+    ten * ten
+}
+
+bar {
+    let a = 10
+    let b = 20
+    a * b / 2
+}
+```
+
+## Default Arguments
+
+TODO
+
+#### Requires
+
+- [Basic Functions](features.md#basic-functions)
+
+When defining a function, some parameters can be given default values, allowing them to be left
+out in calls. The default values are expressions which are evaluated every time these arguments
+are left out.
+
+For example:
+
+```kotlin
+fun foo(a: I32 = 0, b: I32 = 1, c: I32 = 2) {
+    ...
+}
+
+// in a scope
+foo()               // all default values
+foo(1)              // b and c get default values
+foo(1, 2)           // c gets the default values
+foo(1, 2, 3)        // all arguments are given
+foo(b: 10)          // a and c get defalut values
+```
+
 ## Let Statement
+
+TODO
 
 #### Requires
 
@@ -245,6 +367,8 @@ let squared: I32 = a * a
 
 ## Top Level Let
 
+TODO
+
 #### Requires
 
 - [Let Statement](features.md#let-statement)
@@ -253,6 +377,8 @@ Just as in the local scope, `let` can be used in the global scope to make global
 bindings to values which are only created once; when the file is being initialized.
 
 ## Properties
+
+TODO
 
 #### Requires
 - [Top Level Let](features.md#let-statement)
@@ -264,6 +390,8 @@ equals sign and a value. Top-level `let` statements essentially store a value in
 used to access it.
 
 ## Getters
+
+TODO
 
 #### Requires
 
@@ -286,6 +414,8 @@ ten + ten           // this prints "Called ten" twice
 
 ## Setters
 
+TODO
+
 #### Requires
 
 - [Properties](features.md#properties)
@@ -304,6 +434,8 @@ set foo(s: String) {
 
 ## Packages
 
+TODO
+
 The units of Bento code which are built are called modules. Each module then consists of multiple
 packages, which contain items (functions, properties, types, imports). Every Bento file
 represents its own package. If there is a directory which has the same name as said file, then
@@ -311,6 +443,8 @@ all the packages within it are its subpackages. It should be noted that there is
 relationship between packages and subpackages, they are merely a means to organizing code.
 
 ## Visibility Modifiers
+
+TODO
 
 #### Requires
 
@@ -356,6 +490,8 @@ pack fun bar(foo: Foo) {// package-private function
 
 ## Scope Operator
 
+TODO
+
 #### Requires
 
 - [Scopes](features.md#scopes)
@@ -365,6 +501,8 @@ package or a type. For example, if there is a property called `bar` within the `
 we can access it using `foo::bar`.
 
 ## Basic Imports
+
+TODO
 
 ##### Requires
 
@@ -379,6 +517,8 @@ themselves.
 
 ## Custom Types
 
+TODO
+
 #### Requires
 - [Identifiers](features.md#identifiers)
 
@@ -389,6 +529,8 @@ type is bound to. Then, depending on what follows the identifier, there are 3 fo
 - Sum Types
 
 ## Product Types
+
+TODO
 
 #### Requires
 
@@ -420,6 +562,8 @@ let testUser = User("John Doe", 0, 100)
 
 ## Singleton Types
 
+TODO
+
 #### Requires
 - [Custom Types](features.md#custom-types)
 
@@ -427,6 +571,8 @@ Singleton types are types with a single global instance. They are created by sim
 anything after the type's name. An example of such a type is the `Unit` type.
 
 ## Sum Types
+
+TODO
 
 #### Requires
 - [Custom Types](features.md#custom-types)
@@ -466,6 +612,8 @@ fun redComponent(color: Colour): U8 {
 
 ## Type Mutability
 
+TODO
+
 #### Requires
 - [Product Types](features.md#product-types)
 
@@ -484,6 +632,8 @@ of values, regardless of how many of them are mutable, if one is immutable then 
 to be immutable.
 
 ## Impl Blocks
+
+TODO
 
 #### Requires
 
@@ -516,6 +666,8 @@ impl User {
 
 ## This Parameters
 
+TODO
+
 #### Requires
 
 - [Impl Blocks](features.md#impl-blocks)
@@ -526,6 +678,8 @@ before this (so, it is `mut this`).
 
 ## This Type
 
+TODO
+
 #### Requires
 
 - [Impl Blocks](features.md#impl-blocks)
@@ -535,6 +689,8 @@ Within an `impl` block, the type that it corresponds to can be referenced by jus
 
 ## Member Access
 
+TODO
+
 #### Requires
 
 - [This Parameters](features.md#this-parameters)
@@ -543,6 +699,8 @@ Type members which have a `this` parameter can be called directly on a value usi
 operator, such that the value that it is being called on is passed as the `this` argument.
 
 ## Basic Type Parameters
+
+TODO
 
 Most item types (everything but let statements) can take type parameters, allowing the same item
 to be used for many different types of values. In all items types these type parameters are defined
@@ -572,6 +730,8 @@ impl<T> Stack<T> {
 ```
 
 ## Traits
+
+TODO
 
 #### Requires
 
@@ -618,6 +778,8 @@ impl Foo<String> for I32 {
 
 ## Associated Type Parameters
 
+TODO
+
 #### Requires
 
 - [Traits](features.md#traits)
@@ -639,6 +801,8 @@ fun sumZeroes(list: List<I32>): I32 {
 ```
 
 ## Infix Functions
+
+TODO
 
 #### Requires
 
@@ -684,6 +848,8 @@ impl Rectange {
 
 ## Operators
 
+TODO
+
 #### Requires
 
 - [Backticked Identifiers](features.md#backticked-identifiers)
@@ -697,6 +863,8 @@ while some default operators can be shadowed, the special operators `$`, `=`, `&
 `||` and `:` cannot be used.
 
 ## If Expressions
+
+TODO
 
 #### Requires
 - [Sum Types](features.md#sum-types)
@@ -727,92 +895,9 @@ fun foo(a: I32) {
 }
 ```
 
-## Passing Arguments By Name
-
-#### Requires
-
-- [Basic Function Calls](features.md#basic-function-calls)
-
-When calling a function you may pass the arguments out of order by specifying the name of the
-parameter before every value. You can start a call without the argument names, but once you
-start passing them out of order, you must stick to passing them by name.  
-
-For example:
-
-```kotlin
-fun foo(a: I32, b: I32, c: I32) {
-    ...
-}
-
-// in a scope
-foo(1, 2, 3)
-foo(1, b: 2, 3)
-// foo(1, c: 3, 2)  - error: c is passed out of order, so the third argument must be named
-foo(c: 3, a: 1, b: 2)
-// foo(1, 2, a: 3)  - error: two values passed in for a
-```
-
-## Postfix Scope Passing
-
-#### Requires
-
-- [Basic Function Calls](features.md#basic-function-calls)
-
-When the last argument of a function is a scope expression, the scope may be taken out of the
-argument list. In the case that the scope is the only argument, the regular argument list may be
-left out. This not only works for just scopes by themselves, but also for anonymous functions and partial 
-application of scopes. Note that the scope must still be on the same line as the function call. 
-
-For example:
-
-```kotlin
-fun foo(a: I32, b: I32) {
-    ...
-}
-
-fun bar(s: String) {
-    ...
-}
-
-// in a scope
-foo(0) {
-    let ten = 10
-    ten * ten
-}
-
-bar {
-    let a = 10
-    let b = 20
-    a * b / 2
-}
-```
-
-## Default Arguments
-
-#### Requires
-
-- [Basic Functions](features.md#basic-functions)
-
-When defining a function, some parameters can be given default values, allowing them to be left
-out in calls. The default values are expressions which are evaluated every time these arguments
-are left out.
-
-For example:
-
-```kotlin
-fun foo(a: I32 = 0, b: I32 = 1, c: I32 = 2) {
-    ...
-}
-
-// in a scope
-foo()               // all default values
-foo(1)              // b and c get default values
-foo(1, 2)           // c gets the default values
-foo(1, 2, 3)        // all arguments are given
-foo(b: 10)          // a and c get defalut values
-```
-
 ## Escaped Expressions
+
+TODO
 
 #### Requires
 - [Basic String Literals](features.md#basic-string-literals)
@@ -831,6 +916,8 @@ fun printSum(a: I32, b: I32) {
 ```
 
 ## Destructuring Pattern
+
+TODO
 
 #### Requires
 - [Basic Patterns](features.md#basic-patterns)
@@ -853,6 +940,8 @@ fun printFirst(((x, _), _): Bar) {
 ```
 
 ## Functions As Values
+
+TODO
 
 #### Requires
 - [Basic Functions](features.md#basic-functions)
@@ -883,6 +972,8 @@ fun main() {
 
 ## Anonymous Functions
 
+TODO
+
 #### Requires
 
 - [Functions As Values](features.md#functions-as-values)
@@ -900,6 +991,8 @@ list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr 
 
 ## As Operator
 
+TODO
+
 The `as` operator can be used for specifying the type of an expression. It can be used for as a binary operator 
 between an expression and type, as well as as a postfix operator as `.as<Type>`. 
 
@@ -911,6 +1004,8 @@ let b = a + default().as<I64>
 ```
 
 ## Type Aliases
+
+TODO
 
 #### Requires
 
@@ -927,6 +1022,8 @@ type Tensor4D<T> = List<List<List<List<T>>>>
 ```
 
 ## Specifying Type Arguments
+
+TODO
 
 #### Requires
 
@@ -948,6 +1045,8 @@ foo::<I32>(default(), default())
 
 ## Default Trait Member Implementations
 
+TODO
+
 #### Requires
 
 - [Traits](features.md#traits)
@@ -967,6 +1066,8 @@ impl Foo for I32 {}
 ```
 
 ## Trait Inheritance
+
+TODO
 
 #### Requires
 
@@ -1001,6 +1102,8 @@ impl Bar for I32 { }
 
 ## Implementation Disambiguation
 
+TODO
+
 #### Requires
 - [Traits](features.md#traits)
 - [As Operator](features.md#as-operator)
@@ -1032,6 +1135,8 @@ fun doPrinting() {
 
 ## Partial Application
 
+TODO
+
 #### Requires
 
 - [Functions As Values](features.md#functions-as-values)
@@ -1052,6 +1157,8 @@ fun toFunction(list: List<I32>): (I32) -> List<I32> {
 
 ## Partial Types
 
+TODO
+
 #### Requires
 
 - [Basic Type Parameters](features.md#basic-type-parameters)
@@ -1064,6 +1171,8 @@ fun foo(range: Range<I32>) {
 ```
 
 ## Generalized Sum Types
+
+TODO
 
 #### Requires
 
@@ -1086,6 +1195,8 @@ data Expr<T> {
 ```
 
 ## Sealed Traits
+
+TODO
 
 #### Requires
 - [Traits](features.md#traits)

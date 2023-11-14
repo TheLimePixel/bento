@@ -1,13 +1,20 @@
 package io.github.thelimepixel.bento.parsing
 
+import io.github.thelimepixel.bento.utils.Formatter
+
 class ASTFormatter(
     private val ongoingPrefix: String = "│ ",
     private val branchPrefix: String = "├─",
     private val endPrefix: String = "└─"
-) {
+) : Formatter<GreenNode> {
     private fun format(node: GreenNode, builder: StringBuilder, prefix: StringBuilder) {
         builder.append(node.type)
-        if (node.type.dynamic) builder.append('(').append(node.content).append(')')
+
+        if (node.type.dynamic) builder
+            .append('(')
+            .append(node.content.replace("\n", "\\n"))
+            .append(')')
+
         builder.append('\n')
 
         val iter = node.childIterator()
@@ -30,8 +37,8 @@ class ASTFormatter(
         prefix.setLength(prefix.length - 2)
     }
 
-    fun format(node: GreenNode): String = StringBuilder().also {
-        format(node, it, StringBuilder())
+    override fun format(value: GreenNode): String = StringBuilder().also {
+        format(value, it, StringBuilder())
         it.setLength(it.length - 1)
     }.toString()
 }

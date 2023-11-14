@@ -1,6 +1,10 @@
 package io.github.thelimepixel.bento.utils
 
-class ObjectFormatter {
+class ObjectFormatter : Formatter<Any> {
+    override fun format(value: Any): String = StringBuilder(" ")
+        .also { format(value.toString().iterator(), it, StringBuilder()) }
+        .toString().trimIndent()
+
     private fun format(iterator: CharIterator, builder: StringBuilder, prefix: StringBuilder) {
         var inString = false
         while (iterator.hasNext()) {
@@ -39,8 +43,4 @@ class ObjectFormatter {
             }
         }
     }
-
-    fun format(obj: Any): String = StringBuilder(" ")
-        .also { format(obj.toString().iterator(), it, StringBuilder()) }
-        .toString().trimIndent()
 }
