@@ -29,17 +29,17 @@ data class RedNode internal constructor(
     override val error: ParseError?
         get() = green.error
 
-    fun firstChild(type: SyntaxType): RedNode =
-        green.firstChild(type).wrap()
+    fun firstChild(type: SyntaxType): RedNode? =
+        green.firstChild(type)?.wrap()
 
-    fun firstChild(set: SyntaxSet): RedNode =
-        green.firstChild(set).wrap()
+    fun firstChild(set: SyntaxSet): RedNode? =
+        green.firstChild(set)?.wrap()
 
-    fun lastChild(type: SyntaxType): RedNode =
-        green.lastChild(type).wrap()
+    fun lastChild(type: SyntaxType): RedNode? =
+        green.lastChild(type)?.wrap()
 
-    fun lastChild(set: SyntaxSet): RedNode =
-        green.lastChild(set).wrap()
+    fun lastChild(set: SyntaxSet): RedNode? =
+        green.lastChild(set)?.wrap()
 
     private fun GreenChild.wrap(): RedNode =
         RedNode(this@RedNode, this.node, offset + this.offset)

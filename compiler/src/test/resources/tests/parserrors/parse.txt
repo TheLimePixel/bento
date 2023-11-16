@@ -1,3 +1,27 @@
+File
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─Error
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─StringLiteral("Ooops!")
+│   │   └─RParen
+│   └─Error
+├─Newline
+├─Newline
+├─UnclosedComment(/* My bad, I forgot the)
+└─EOF
 CodeError(type=ExpectedCommaOrClosedParen, span=2..2)
 CodeError(type=ExpectedClosedBrace, span=46..46)
 CodeError(type=UnclosedComment, span=70..93)

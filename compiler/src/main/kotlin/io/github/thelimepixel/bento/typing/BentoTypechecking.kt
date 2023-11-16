@@ -6,7 +6,7 @@ class BentoTypechecking {
     fun type(hir: HIR.ScopeExpr, content: TypingContext): THIR.ScopeExpr =
         THIR.ScopeExpr(hir.ref, BentoType.Unit, hir.statements.map { typeExpr(it, content) })
 
-    private fun typeExpr(hir: HIR.Expr, context: TypingContext): THIR.Expr = when (hir) {
+    private fun typeExpr(hir: HIR, context: TypingContext): THIR = when (hir) {
         is HIR.CallExpr -> typeCall(hir, context)
         is HIR.ErrorExpr -> THIRError.Propagation.at(hir.ref)
         is HIR.IdentExpr -> THIRError.InvalidIdentifierUse.at(hir.ref)
@@ -20,7 +20,7 @@ class BentoTypechecking {
         return THIR.ScopeExpr(hir.ref, type, statements)
     }
 
-    private fun typeCall(hir: HIR.CallExpr, content: TypingContext): THIR.Expr {
+    private fun typeCall(hir: HIR.CallExpr, content: TypingContext): THIR {
         val on = hir.on as? HIR.IdentExpr ?: return THIRError.CallOnNonFunction.at(hir.ref)
         val signature = content.signatureOf(on.binding)
         val args = hir.args.map { typeExpr(it, content) }

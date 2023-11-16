@@ -18,17 +18,17 @@ sealed interface GreenNode : CodeTree<GreenChild, ParseError> {
         if (index in 0..<childCount) child(index)
         else null
 
-    fun firstChild(type: SyntaxType): GreenChild =
-        childSequence().first { it.type == type }
+    fun firstChild(type: SyntaxType): GreenChild? =
+        childSequence().firstOrNull { it.type == type }
 
-    fun firstChild(set: SyntaxSet): GreenChild =
-        childSequence().first { it.type in set }
+    fun firstChild(set: SyntaxSet): GreenChild? =
+        childSequence().firstOrNull { it.type in set }
 
-    fun lastChild(type: SyntaxType): GreenChild =
-        revChildSequence().first { it.type == type }
+    fun lastChild(type: SyntaxType): GreenChild? =
+        revChildSequence().firstOrNull { it.type == type }
 
-    fun lastChild(set: SyntaxSet): GreenChild =
-        revChildSequence().first { it.type in set }
+    fun lastChild(set: SyntaxSet): GreenChild? =
+        revChildSequence().firstOrNull { it.type in set }
 }
 
 data class GreenEdge(override val type: SyntaxType, override val content: String) : GreenNode {

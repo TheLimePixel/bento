@@ -5,8 +5,10 @@ import io.github.thelimepixel.bento.parsing.SyntaxType
 
 sealed interface FunctionRef {
     val name: String
-    data class Node(val module: PackageRef, override val name: String, val node: GreenNode) : FunctionRef {
-        override fun toString(): String = "Node(name=$module::$name)"
+    data class Node(val path: ItemPath, val node: GreenNode) : FunctionRef {
+        override val name: String
+            get() = path.name
+        override fun toString(): String = "Node(path=$path)"
     }
 
     enum class Special : FunctionRef {
@@ -14,12 +16,12 @@ sealed interface FunctionRef {
     }
 }
 
-fun GreenNode.collectFunctions(packRef: PackageRef): List<FunctionRef.Node> = childSequence()
+fun GreenNode.collectFunctions(packRef: ItemPath): List<FunctionRef.Node> = childSequence()
     .map { it.node }
     .filter { it.type == SyntaxType.FunDef }
     .map {
-        val name = it.firstChild(SyntaxType.Identifier).content
-        FunctionRef.Node(packRef, name, it)
+        val name = it.firstChild(SyntaxType.Identifier)?.content ?: ""
+        FunctionRef.Node(packRef.subPath(name), it)
     }
     .toList()
 

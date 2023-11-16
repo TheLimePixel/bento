@@ -15,11 +15,7 @@ import io.github.thelimepixel.bento.utils.ObjectFormatter
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.util.TraceClassVisitor
 import java.io.File
-import java.io.PrintWriter
-import java.io.StringWriter
 import kotlin.test.assertEquals
 
 class SourceTests {
@@ -47,17 +43,35 @@ class SourceTests {
     private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File) =
         withContentOf(dir, "src/main.bt") { code ->
             val node = parsing.parseFIle(code)
-            val parseErrors = collectErrors(node.toRedRoot())
-            if (parseErrors.isEmpty()) test(dir, code, "Parse") { nodeFormatter.format(node) }
-            else return test(dir, code, "Parse") { parseErrors.joinToString("\n") }
+            test(dir, code, "Parse") {
+                val ast = nodeFormatter.format(node)
+                val errors = collectErrors(node.toRedRoot())
+                ast + errors.joinToString("\n", "\n")
+            }
 
-            val fileRef = packageRefTo(dir.name, "main")
+            val fileRef = pathOf(dir.name, "main")
             val items = node.collectFunctions(fileRef)
             val hirMap = binding.bind(items, bindingContext)
-            test(dir, code, "Bind") { objFormatter.format(hirMap) }
+            test(dir, code, "Bind") {
+                hirMap.asSequence().joinToString { (key, value) ->
+                    "${key.path}:\n${
+                        value?.let { scope ->
+                            val errors = collectErrors(scope)
+                            objFormatter.format(scope) + errors.joinToString("\n", "\n")
+                        }
+                    }"
+                }
+            }
 
-            val thirMap = hirMap.mapValues { typing.type(it.value.scope, typingContext) }
-            test(dir, code, "Typecheck") { objFormatter.format(thirMap) }
+            val thirMap = hirMap.asSequence().mapNotNull { (key, value) ->
+                value?.let { scope -> key to typing.type(scope, typingContext) }
+            }.toMap()
+            test(dir, code, "Typecheck") {
+                thirMap.asSequence().joinToString { (key, value) ->
+                    val errors = collectErrors(value)
+                    "${key.path}:\n${objFormatter.format(value)}${errors.joinToString("\n", "\n")}"
+                }
+            }
 
             val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
             test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }

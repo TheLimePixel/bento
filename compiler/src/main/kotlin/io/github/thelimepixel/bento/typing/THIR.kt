@@ -15,12 +15,11 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     override val error: THIRError?
         get() = null
 
-    sealed interface Expr : THIR
     data class ScopeExpr(
         override val ref: ASTRef,
         override val type: BentoType,
-        val statements: List<Expr>,
-    ) : Expr {
+        val statements: List<THIR>,
+    ) : THIR {
         override fun childSequence(): Sequence<THIR> = statements.asSequence()
     }
 
@@ -28,15 +27,15 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val ref: ASTRef,
         override val type: BentoType,
         val fn: FunctionRef,
-        val args: List<Expr>,
-    ) : Expr {
+        val args: List<THIR>,
+    ) : THIR {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
     }
 
     data class ErrorExpr(
         override val ref: ASTRef,
         override val error: THIRError,
-    ) : Expr {
+    ) : THIR {
         override val type: BentoType
             get() = BentoType.Never
 
@@ -46,7 +45,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class StringExpr(
         override val ref: ASTRef,
         val content: String,
-    ) : Expr {
+    ) : THIR {
         override val type: BentoType
             get() = BentoType.String
 

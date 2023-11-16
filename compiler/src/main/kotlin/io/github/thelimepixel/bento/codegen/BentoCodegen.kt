@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.codegen
 
 import io.github.thelimepixel.bento.binding.FunctionRef
-import io.github.thelimepixel.bento.binding.PackageRef
+import io.github.thelimepixel.bento.binding.ItemPath
 import io.github.thelimepixel.bento.typing.BentoType
 import io.github.thelimepixel.bento.typing.THIR
 import org.objectweb.asm.ClassWriter
@@ -10,7 +10,7 @@ import org.objectweb.asm.Opcodes
 
 class BentoCodegen {
     fun generate(
-        file: PackageRef,
+        file: ItemPath,
         items: List<FunctionRef.Node>,
         context: JVMBindingContext,
         thirMap: Map<FunctionRef.Node, THIR.ScopeExpr>
@@ -83,7 +83,7 @@ class BentoCodegen {
     }
 
     private fun genExpr(
-        node: THIR.Expr,
+        node: THIR,
         methodWriter: MethodVisitor,
         context: JVMBindingContext,
         ignoreOutput: Boolean

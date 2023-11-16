@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.utils
 
-class ObjectFormatter : Formatter<Any> {
-    override fun format(value: Any): String = StringBuilder(" ")
+class ObjectFormatter : Formatter<Any?> {
+    override fun format(value: Any?): String = StringBuilder(" ")
         .also { format(value.toString().iterator(), it, StringBuilder()) }
         .toString().trimIndent()
 
