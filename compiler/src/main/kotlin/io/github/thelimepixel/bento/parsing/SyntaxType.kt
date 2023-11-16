@@ -3,13 +3,13 @@ package io.github.thelimepixel.bento.parsing
 enum class SyntaxType(
     val dynamic: Boolean = false,
     val ignore: Boolean = false,
-    val error: Boolean = true,
+    val error: ParseError? = null,
 ) {
     EOF,
 
-    Unknown(dynamic = true, error = true),
-    UnclosedComment(dynamic = true, error = true),
-    UnclosedString(dynamic = true, error = true),
+    Unknown(dynamic = true, error = ParseError.UnknownSymbol),
+    UnclosedComment(dynamic = true, error = ParseError.UnclosedComment, ignore = true),
+    UnclosedString(dynamic = true, error = ParseError.UnclosedString),
 
     Whitespace(dynamic = true, ignore = true),
     Newline(ignore = true),
@@ -38,7 +38,7 @@ enum class SyntaxType(
 
     File,
 
-    Error(error = true)
+    Error,
 }
 
 fun SyntaxType.edge(string: String) =

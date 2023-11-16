@@ -8,12 +8,8 @@ class BentoTypechecking {
 
     private fun typeExpr(hir: HIR.Expr, context: TypingContext): THIR.Expr = when (hir) {
         is HIR.CallExpr -> typeCall(hir, context)
-        is HIR.ErrorExpr -> when (hir.type) {
-            HIR.ErrorExpr.Type.Unknown -> THIR.ErrorType.Unknown
-            HIR.ErrorExpr.Type.InvalidIdentifier -> THIR.ErrorType.InvalidIdentifierUse
-        }.at(hir.ref)
-
-        is HIR.IdentExpr -> THIR.ErrorType.InvalidIdentifierUse.at(hir.ref)
+        is HIR.ErrorExpr -> THIRError.Propagation.at(hir.ref)
+        is HIR.IdentExpr -> THIRError.InvalidIdentifierUse.at(hir.ref)
         is HIR.ScopeExpr -> typeScope(hir, context)
         is HIR.StringExpr -> THIR.StringExpr(hir.ref, hir.content)
     }
@@ -25,15 +21,15 @@ class BentoTypechecking {
     }
 
     private fun typeCall(hir: HIR.CallExpr, content: TypingContext): THIR.Expr {
-        val on = hir.on as? HIR.IdentExpr ?: return THIR.ErrorType.CallOnNonFunction.at(hir.ref)
+        val on = hir.on as? HIR.IdentExpr ?: return THIRError.CallOnNonFunction.at(hir.ref)
         val signature = content.signatureOf(on.binding)
         val args = hir.args.map { typeExpr(it, content) }
 
         if (signature.paramTypes.size != args.size)
-            return THIR.ErrorType.InvalidArgumentCount.at(hir.ref)
+            return THIRError.InvalidArgumentCount.at(hir.ref)
 
         if (args.zip(signature.paramTypes).any { (arg, param) -> arg.type != param && arg.type != BentoType.Never })
-            return THIR.ErrorType.InvalidArgumentTypes.at(hir.ref)
+            return THIRError.InvalidArgumentTypes.at(hir.ref)
 
         return THIR.CallExpr(hir.ref, signature.returnType, on.binding, args)
     }

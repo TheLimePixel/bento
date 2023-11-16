@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.9.0"
 }
 
-group = "io.github.thelimepixel"
+group = "io.github.thelimepixel.bento"
 
 allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")

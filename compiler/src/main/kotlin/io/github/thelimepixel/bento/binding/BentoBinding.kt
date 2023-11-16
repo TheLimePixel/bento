@@ -34,10 +34,11 @@ class BentoBinding {
 
         ST.Identifier -> refFor(node.content)
             ?.let { HIR.IdentExpr(node.ref, it) }
-            ?: HIR.ErrorExpr(node.ref, HIR.ErrorExpr.Type.InvalidIdentifier)
+            ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
         ST.CallExpr -> bindCall(node)
-        else -> HIR.ErrorExpr(node.ref, HIR.ErrorExpr.Type.Unknown)
+
+        else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
     }
 
     private fun BC.bindScope(node: RedNode): HIR.ScopeExpr {
