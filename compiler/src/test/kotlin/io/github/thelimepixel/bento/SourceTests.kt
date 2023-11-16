@@ -2,9 +2,11 @@ package io.github.thelimepixel.bento
 
 import io.github.thelimepixel.bento.binding.*
 import io.github.thelimepixel.bento.codegen.*
+import io.github.thelimepixel.bento.errors.collectErrors
 import io.github.thelimepixel.bento.parsing.ASTFormatter
 import io.github.thelimepixel.bento.parsing.BentoParsing
 import io.github.thelimepixel.bento.parsing.GreenNode
+import io.github.thelimepixel.bento.parsing.toRedRoot
 import io.github.thelimepixel.bento.typing.BentoTypechecking
 import io.github.thelimepixel.bento.typing.TopLevelTypingContext
 import io.github.thelimepixel.bento.typing.TypingContext
@@ -44,11 +46,27 @@ class SourceTests {
 
     private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File) =
         withContentOf(dir, "src/main.bt") { code ->
-            test(dir, code, "Parse", ::parse)
-            test(dir, code, "Bind", ::bind)
-            test(dir, code, "Typecheck", ::typeCheck)
-            test(dir, code, "Codegen", ::codeGen)
-            test(dir, code, "Output", ::output)
+            val node = parsing.parseFIle(code)
+            val parseErrors = collectErrors(node.toRedRoot())
+            if (parseErrors.isEmpty()) test(dir, code, "Parse") { nodeFormatter.format(node) }
+            else return test(dir, code, "Parse") { parseErrors.joinToString("\n") }
+
+            val fileRef = packageRefTo(dir.name, "main")
+            val items = node.collectFunctions(fileRef)
+            val hirMap = binding.bind(items, bindingContext)
+            test(dir, code, "Bind") { objFormatter.format(hirMap) }
+
+            val thirMap = hirMap.mapValues { typing.type(it.value.scope, typingContext) }
+            test(dir, code, "Typecheck") { objFormatter.format(thirMap) }
+
+            val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
+            test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }
+
+            test(dir, code, "Output") {
+                val clazz = classLoader.load(fileRef, bytecode)
+                clazz.getDeclaredMethod("main").invoke(null)
+                printBuffer.toString().also { printBuffer.clear() }
+            }
         }
 
     private inline fun withContentOf(dir: File, name: String, fn: (content: String) -> Unit) {
@@ -60,54 +78,8 @@ class SourceTests {
         dir: File,
         code: String,
         type: String,
-        function: (code: String, groupName: String) -> String
+        function: (code: String) -> String
     ) = withContentOf(dir, type.lowercase() + ".txt") { expected ->
-        yield(dynamicTest("${dir.name}: $type") { assertEquals(function(code, dir.name).trim(), expected) })
-    }
-
-    private fun parse(code: String, module: String): String {
-        val node = parsing.parseFIle(code)
-        return nodeFormatter.format(node)
-    }
-
-    private fun bind(code: String, module: String): String {
-        val node = parsing.parseFIle(code)
-        val items = node.collectFunctions(packageRefTo(module, "main"))
-        val hirMap = binding.bind(items, bindingContext)
-
-        return objFormatter.format(hirMap)
-    }
-
-    private fun typeCheck(code: String, module: String): String {
-        val node = parsing.parseFIle(code)
-        val items = node.collectFunctions(packageRefTo(module, "main"))
-        val hirMap = binding.bind(items, bindingContext)
-        val thirMap = hirMap.mapValues { typing.type(it.value.scope, typingContext) }
-
-        return objFormatter.format(thirMap)
-    }
-
-    private fun codeGen(code: String, module: String): String {
-        val node = parsing.parseFIle(code)
-        val fileRef = packageRefTo(module, "main")
-        val items = node.collectFunctions(fileRef)
-        val hirMap = binding.bind(items, bindingContext)
-        val thirMap = hirMap.mapValues { typing.type(it.value.scope, typingContext) }
-        val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
-
-        return bytecodeFormatter.format(bytecode)
-    }
-
-    private fun output(code: String, module: String): String {
-        val node = parsing.parseFIle(code)
-        val fileRef = packageRefTo(module, "main")
-        val items = node.collectFunctions(fileRef)
-        val hirMap = binding.bind(items, bindingContext)
-        val thirMap = hirMap.mapValues { typing.type(it.value.scope, typingContext) }
-        val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
-        val clazz = classLoader.load(fileRef, bytecode)
-        clazz.getDeclaredMethod("main").invoke(null)
-
-        return printBuffer.toString().also { printBuffer.clear() }
+        yield(dynamicTest("${dir.name}: $type") { assertEquals(function(code).trim(), expected) })
     }
 }

@@ -10,14 +10,19 @@ class BentoParsing {
         when (current) {
             ST.EOF -> return
             ST.FunKeyword -> handleFunction()
-            else -> handleError()
+            else -> handleError(ParseError.ExpectedDeclaration)
         }
         handleFile()
     }
 
-    private fun P.handleError() {
-        pushWrapped(ST.Error)
+    private fun P.canRecover() = when (current) {
+        ST.FunKeyword, ST.EOF, ST.RBrace, ST.LBrace -> true
+        else -> false
     }
+
+    private fun P.handleError(type: ParseError) =
+        if (canRecover()) pushError(type)
+        else errorNode(type) { push() }
 
     private fun P.handleFunction() = node(ST.FunDef) {
         push()  // fun keyword
@@ -27,24 +32,25 @@ class BentoParsing {
     }
 
     private fun P.expectIdentifier() {
-        if (!consume(ST.Identifier)) handleError()
+        if (!consume(ST.Identifier))
+            handleError(ParseError.ExpectedIdentifier)
     }
 
     private fun P.expectParamList() {
         if (!at(ST.LParen)) {
-            handleError()
+            handleError(ParseError.ExpectedParameterList)
             return
         }
 
         node(ST.ParamList) {
             push()  // (
-            if (!consume(ST.RParen)) handleError()
+            if (!consume(ST.RParen)) handleError(ParseError.ExpectedCommaOrClosedParen)
         }
     }
 
     private fun P.expectScopeExpr() {
         if (!at(ST.LBrace)) {
-            handleError()
+            handleError(ParseError.ExpectedScope)
             return
         }
 
@@ -55,7 +61,7 @@ class BentoParsing {
     }
 
     private tailrec fun P.handleExpressionScope(): Unit = when (current) {
-        ST.EOF -> handleError()
+        ST.EOF -> handleError(ParseError.ExpectedClosedBrace)
         ST.RBrace -> push()
         else -> {
             expectTerm()
@@ -66,7 +72,8 @@ class BentoParsing {
     private fun P.expectBaseTerm() = when (current) {
         ST.StringLiteral -> push()
         ST.Identifier -> push()
-        else -> handleError()
+        ST.EOF -> {}
+        else -> handleError(ParseError.ExpectedExpression)
     }
 
     private fun P.handleCall() = nestLast(ST.CallExpr) {
@@ -78,23 +85,22 @@ class BentoParsing {
 
     private fun P.handleParenListEnd(): Boolean {
         when (current) {
-            ST.EOF -> handleError()
-            ST.RBrace -> handleError()
+            ST.EOF, ST.RBrace -> pushError(ParseError.ExpectedCommaOrClosedParen)
             ST.RParen -> push()
             else -> return false
         }
         return true
     }
 
-    private fun P.expectConsume(type: SyntaxType) {
-        if (!consume(type)) handleError()
+    private fun P.expectConsume(type: SyntaxType, error: ParseError) {
+        if (!consume(type)) handleError(error)
     }
 
     private tailrec fun P.handleArgList() {
         if (handleParenListEnd()) return
         expectTerm()
         if (handleParenListEnd()) return
-        expectConsume(ST.Comma)
+        expectConsume(ST.Comma, ParseError.ExpectedCommaOrClosedParen)
         handleArgList()
     }
 
