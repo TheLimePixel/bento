@@ -19,7 +19,7 @@ class BentoCodegen {
         writer.visit(
             52,
             Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
-            file.toJVMPath() + "Bt",
+            file.toJVMPath(),
             null,
             "java/lang/Object",
             null
@@ -95,7 +95,7 @@ class BentoCodegen {
             }
 
             is THIR.CallExpr -> genCallExpr(node, methodWriter, context, ignoreOutput)
-            is THIR.ErrorExpr -> error("We should not have gotten this far, something must have gone terribly wrong")
+            is THIR.ErrorExpr -> { }
             is THIR.ScopeExpr -> genScopeExpr(node, methodWriter, context, ignoreOutput)
         }
     }

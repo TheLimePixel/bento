@@ -2,13 +2,14 @@ package io.github.thelimepixel.bento.utils
 
 class ObjectFormatter : Formatter<Any?> {
     override fun format(value: Any?): String = StringBuilder(" ")
-        .also { format(value.toString().iterator(), it, StringBuilder()) }
+        .also { format(value.toString(), it, StringBuilder()) }
         .toString().trimIndent()
 
-    private fun format(iterator: CharIterator, builder: StringBuilder, prefix: StringBuilder) {
+    private fun format(str: String, builder: StringBuilder, prefix: StringBuilder) {
         var inString = false
-        while (iterator.hasNext()) {
-            val curr = iterator.next()
+        var index = 0
+        while (index != str.length) {
+            val curr = str[index]
 
             if (inString) {
                 if (curr == '"') inString = false
@@ -22,7 +23,17 @@ class ObjectFormatter : Formatter<Any?> {
                     builder.append(prefix)
                 }
 
-                '[', '{' -> {
+                '[' -> if (str[index + 1] == ']') {
+                    builder.append("[]")
+                    index += 2
+                    continue
+                } else {
+                    builder.append("$curr\n ")
+                    prefix.append("  ")
+                    builder.append(prefix)
+                }
+
+                '{' -> {
                     builder.append("$curr\n ")
                     prefix.append("  ")
                     builder.append(prefix)
@@ -41,6 +52,7 @@ class ObjectFormatter : Formatter<Any?> {
 
                 else -> builder.append(curr)
             }
+            index += 1
         }
     }
 }

@@ -18,6 +18,7 @@ object BaseSets {
         SyntaxType.StringLiteral,
         SyntaxType.Identifier,
         SyntaxType.ScopeExpr,
-        SyntaxType.CallExpr
+        SyntaxType.CallExpr,
+        SyntaxType.ScopeExpr,
     )
 }

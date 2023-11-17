@@ -12,4 +12,4 @@ private fun refToJVMPath(ref: ItemPath?, builder: StringBuilder) {
 fun ItemPath.toJVMPath(): String = StringBuilder()
     .also { refToJVMPath(this.parent, it) }
     .append(this.name)
-    .toString()
+    .toString() + "Bt"

@@ -1,0 +1,87 @@
+File
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier(bar)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─StringLiteral("Hello from Bar!")
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier(foo)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─ScopeExpr
+│   │   │ ├─LBrace
+│   │   │ ├─Newline
+│   │   │ ├─Whitespace(        )
+│   │   │ ├─CallExpr
+│   │   │ │ ├─Identifier(bar)
+│   │   │ │ └─ArgList
+│   │   │ │   ├─LParen
+│   │   │ │   └─RParen
+│   │   │ ├─Newline
+│   │   │ ├─Whitespace(        )
+│   │   │ ├─StringLiteral("Hello from Foo!")
+│   │   │ ├─Newline
+│   │   │ ├─Whitespace(    )
+│   │   │ └─RBrace
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(foo)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   └─RParen
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─StringLiteral("Hello from Main!")
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+└─EOF

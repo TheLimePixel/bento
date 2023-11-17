@@ -48,16 +48,18 @@ class BentoParsing {
         }
     }
 
+    private fun P.parseScopeExpr() = node(ST.ScopeExpr) {
+        push()  // {
+        handleExpressionScope()
+    }
+
     private fun P.expectScopeExpr() {
         if (!at(ST.LBrace)) {
             handleError(ParseError.ExpectedScope)
             return
         }
 
-        node(ST.ScopeExpr) {
-            push()  // {
-            handleExpressionScope()
-        }
+        parseScopeExpr()
     }
 
     private tailrec fun P.handleExpressionScope(): Unit = when (current) {
@@ -72,6 +74,7 @@ class BentoParsing {
     private fun P.expectBaseTerm() = when (current) {
         ST.StringLiteral -> push()
         ST.Identifier -> push()
+        ST.LBrace -> parseScopeExpr()
         ST.EOF -> {}
         else -> handleError(ParseError.ExpectedExpression)
     }

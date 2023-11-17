@@ -1,0 +1,31 @@
+// class version 52.0 (52)
+// access flags 0x31
+public final class nesting/mainBt {
+
+
+  // access flags 0x9
+  public static bar()V
+    LDC "Hello from Bar!"
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+
+  // access flags 0x9
+  public static foo()V
+    INVOKESTATIC nesting/mainBt.bar ()V
+    LDC "Hello from Foo!"
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+
+  // access flags 0x9
+  public static main()V
+    INVOKESTATIC nesting/mainBt.foo ()V
+    LDC "Hello from Main!"
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+}

@@ -1,0 +1,78 @@
+nesting::main::bar:
+ScopeExpr {
+  ref: ScopeExpr@20..54
+  type: Unit
+  statements: [
+    CallExpr {
+      ref: CallExpr@12..38
+      type: Unit
+      fn: println
+      args: [
+        StringExpr {
+          ref: StringLiteral@2..19
+          content: "Hello from Bar!"
+        }
+      ]
+    }
+  ]
+}
+
+nesting::main::foo:
+ScopeExpr {
+  ref: ScopeExpr@20..84
+  type: Unit
+  statements: [
+    CallExpr {
+      ref: CallExpr@12..68
+      type: Unit
+      fn: println
+      args: [
+        ScopeExpr {
+          ref: ScopeExpr@2..49
+          type: String
+          statements: [
+            CallExpr {
+              ref: CallExpr@20..25
+              type: Unit
+              fn: Node {
+                path: nesting::main::bar
+              }
+              args: []
+            }
+            StringExpr {
+              ref: StringLiteral@48..65
+              content: "Hello from Foo!"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+nesting::main::main:
+ScopeExpr {
+  ref: ScopeExpr@22..67
+  type: Unit
+  statements: [
+    CallExpr {
+      ref: CallExpr@12..17
+      type: Unit
+      fn: Node {
+        path: nesting::main::foo
+      }
+      args: []
+    }
+    CallExpr {
+      ref: CallExpr@32..59
+      type: Unit
+      fn: println
+      args: [
+        StringExpr {
+          ref: StringLiteral@2..20
+          content: "Hello from Main!"
+        }
+      ]
+    }
+  ]
+}

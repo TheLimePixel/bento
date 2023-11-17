@@ -1,0 +1,15 @@
+fun bar() {
+    println("Hello from Bar!")
+}
+
+fun foo() {
+    println({
+        bar()
+        "Hello from Foo!"
+    })
+}
+
+fun main() {
+    foo()
+    println("Hello from Main!")
+}

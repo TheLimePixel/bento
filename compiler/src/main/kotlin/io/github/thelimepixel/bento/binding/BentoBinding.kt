@@ -38,6 +38,8 @@ class BentoBinding {
 
         ST.CallExpr -> bindCall(node)
 
+        ST.ScopeExpr -> bindScope(node)
+
         else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
     }
 

@@ -53,7 +53,7 @@ class SourceTests {
             val items = node.collectFunctions(fileRef)
             val hirMap = binding.bind(items, bindingContext)
             test(dir, code, "Bind") {
-                hirMap.asSequence().joinToString { (key, value) ->
+                hirMap.asSequence().joinToString("\n") { (key, value) ->
                     "${key.path}:\n${
                         value?.let { scope ->
                             val errors = collectErrors(scope)
@@ -67,7 +67,7 @@ class SourceTests {
                 value?.let { scope -> key to typing.type(scope, typingContext) }
             }.toMap()
             test(dir, code, "Typecheck") {
-                thirMap.asSequence().joinToString { (key, value) ->
+                thirMap.asSequence().joinToString("\n") { (key, value) ->
                     val errors = collectErrors(value)
                     "${key.path}:\n${objFormatter.format(value)}${errors.joinToString("\n", "\n")}"
                 }
@@ -94,6 +94,6 @@ class SourceTests {
         type: String,
         function: (code: String) -> String
     ) = withContentOf(dir, type.lowercase() + ".txt") { expected ->
-        yield(dynamicTest("${dir.name}: $type") { assertEquals(function(code).trim(), expected) })
+        yield(dynamicTest("${dir.name}: $type") { assertEquals(expected, function(code).trimIndent().trim()) })
     }
 }

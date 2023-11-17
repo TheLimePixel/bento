@@ -8,6 +8,9 @@ sealed interface FunctionRef {
     data class Node(val path: ItemPath, val node: GreenNode) : FunctionRef {
         override val name: String
             get() = path.name
+
+        val parent: ItemPath
+            get() = path.parent!!
         override fun toString(): String = "Node(path=$path)"
     }
 
