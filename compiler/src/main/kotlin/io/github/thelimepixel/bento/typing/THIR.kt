@@ -1,6 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.FunctionRef
+import io.github.thelimepixel.bento.binding.BuiltinRefs
+import io.github.thelimepixel.bento.binding.ItemRef
 import io.github.thelimepixel.bento.parsing.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
@@ -8,7 +9,7 @@ import io.github.thelimepixel.bento.utils.Spanned
 
 sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     val ref: ASTRef
-    val type: BentoType
+    val type: ItemRef
     override val span: IntRange
         get() = ref.span
 
@@ -17,7 +18,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class ScopeExpr(
         override val ref: ASTRef,
-        override val type: BentoType,
+        override val type: ItemRef,
         val statements: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = statements.asSequence()
@@ -25,8 +26,8 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class CallExpr(
         override val ref: ASTRef,
-        override val type: BentoType,
-        val fn: FunctionRef,
+        override val type: ItemRef,
+        val fn: ItemRef,
         val args: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
@@ -36,8 +37,8 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val ref: ASTRef,
         override val error: THIRError,
     ) : THIR {
-        override val type: BentoType
-            get() = BentoType.Never
+        override val type: ItemRef
+            get() = BuiltinRefs.nothing
 
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
@@ -46,8 +47,8 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val ref: ASTRef,
         val content: String,
     ) : THIR {
-        override val type: BentoType
-            get() = BentoType.String
+        override val type: ItemRef
+            get() = BuiltinRefs.string
 
         val rawContext: String
             get() = content.substring(1..<content.lastIndex)

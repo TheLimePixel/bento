@@ -1,3 +1,5 @@
 package io.github.thelimepixel.bento.typing
 
-data class FunctionSignature(val paramTypes: List<BentoType>, val returnType: BentoType)
+import io.github.thelimepixel.bento.binding.ItemRef
+
+data class FunctionSignature(val paramTypes: List<ItemRef>, val returnType: ItemRef)

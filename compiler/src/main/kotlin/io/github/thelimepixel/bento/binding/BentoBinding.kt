@@ -6,15 +6,12 @@ private typealias BC = BindingContext
 private typealias ST = SyntaxType
 
 class BentoBinding {
-    fun bind(fileItems: List<FunctionRef.Node>, parentContext: BindingContext): Map<FunctionRef.Node, HIR.ScopeExpr?> {
-        val map = fileItems.associateBy { it.name }
-        val context = ChildBindingContext(parentContext, map)
-        return fileItems.associateWith { context.bindFunction(it.node.toRedRoot()) }
+    fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR> {
+        val context = ChildBindingContext(parentContext, items.associateBy { it.name })
+        return items.associateWith { context.bind(nodes[it.name]!!.first().node.toRedRoot()) }
     }
-
-    private fun BC.bindFunction(node: RedNode): HIR.ScopeExpr? =
-        node.firstChild(ST.ScopeExpr)?.let { bindScope(it) }
-
+    private fun BC.bind(node: RedNode): HIR =
+        node.firstChild(ST.ScopeExpr)?.let { bindScope(it) } ?: HIRError.Propagation.at(node.ref)
 
     private fun BC.bindCall(node: RedNode): HIR.CallExpr {
         val on = node.firstChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)

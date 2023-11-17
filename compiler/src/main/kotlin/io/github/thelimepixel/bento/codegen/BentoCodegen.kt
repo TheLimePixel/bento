@@ -1,8 +1,8 @@
 package io.github.thelimepixel.bento.codegen
 
-import io.github.thelimepixel.bento.binding.FunctionRef
+import io.github.thelimepixel.bento.binding.BuiltinRefs
+import io.github.thelimepixel.bento.binding.ItemRef
 import io.github.thelimepixel.bento.binding.ItemPath
-import io.github.thelimepixel.bento.typing.BentoType
 import io.github.thelimepixel.bento.typing.THIR
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
@@ -11,9 +11,9 @@ import org.objectweb.asm.Opcodes
 class BentoCodegen {
     fun generate(
         file: ItemPath,
-        items: List<FunctionRef.Node>,
+        items: List<ItemRef>,
         context: JVMBindingContext,
-        thirMap: Map<FunctionRef.Node, THIR.ScopeExpr>
+        thirMap: Map<ItemRef, THIR>
     ): ByteArray {
         val writer = ClassWriter(1)
         writer.visit(
@@ -36,22 +36,14 @@ class BentoCodegen {
                 null,
                 null
             )
-            generateScope(thirMap[ref]!!, methodVisitor, context)
+            genExpr(thirMap[ref]!!, methodVisitor, context, true)
+            methodVisitor.visitInsn(Opcodes.RETURN)
             methodVisitor.visitMaxs(0, 0)
             methodVisitor.visitEnd()
         }
 
         writer.visitEnd()
         return writer.toByteArray()
-    }
-
-    private fun generateScope(
-        node: THIR.ScopeExpr,
-        methodWriter: MethodVisitor,
-        context: JVMBindingContext,
-    ) {
-        genScopeExpr(node, methodWriter, context, true)
-        methodWriter.visitInsn(Opcodes.RETURN)
     }
 
     private fun genScopeExpr(
@@ -79,7 +71,7 @@ class BentoCodegen {
     ) {
         node.args.forEach { genExpr(it, methodWriter, context, false) }
         methodWriter.visitMethodInsn(Opcodes.INVOKESTATIC, context.signatureFor(node.fn))
-        if (ignoreOutput && node.type != BentoType.Unit) methodWriter.visitInsn(Opcodes.POP)
+        if (ignoreOutput && node.type != BuiltinRefs.unit) methodWriter.visitInsn(Opcodes.POP)
     }
 
     private fun genExpr(
@@ -95,7 +87,7 @@ class BentoCodegen {
             }
 
             is THIR.CallExpr -> genCallExpr(node, methodWriter, context, ignoreOutput)
-            is THIR.ErrorExpr -> { }
+            is THIR.ErrorExpr -> {}
             is THIR.ScopeExpr -> genScopeExpr(node, methodWriter, context, ignoreOutput)
         }
     }

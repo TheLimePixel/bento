@@ -1,4 +1,4 @@
-nesting::main::bar:
+======= nesting::main::bar =======
 ScopeExpr {
   ref: ScopeExpr@20..54
   statements: [
@@ -6,7 +6,11 @@ ScopeExpr {
       ref: CallExpr@12..38
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: println
+        binding: ItemRef {
+          pack: bento::io
+          name: println
+          type: Function
+        }
       }
       args: [
         StringExpr {
@@ -18,7 +22,7 @@ ScopeExpr {
   ]
 }
 
-nesting::main::foo:
+======= nesting::main::foo =======
 ScopeExpr {
   ref: ScopeExpr@20..84
   statements: [
@@ -26,7 +30,11 @@ ScopeExpr {
       ref: CallExpr@12..68
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: println
+        binding: ItemRef {
+          pack: bento::io
+          name: println
+          type: Function
+        }
       }
       args: [
         ScopeExpr {
@@ -36,8 +44,10 @@ ScopeExpr {
               ref: CallExpr@20..25
               on: IdentExpr {
                 ref: Identifier@0..3
-                binding: Node {
-                  path: nesting::main::bar
+                binding: ItemRef {
+                  pack: nesting::main
+                  name: bar
+                  type: Function
                 }
               }
               args: []
@@ -53,7 +63,7 @@ ScopeExpr {
   ]
 }
 
-nesting::main::main:
+======= nesting::main::main =======
 ScopeExpr {
   ref: ScopeExpr@22..67
   statements: [
@@ -61,8 +71,10 @@ ScopeExpr {
       ref: CallExpr@12..17
       on: IdentExpr {
         ref: Identifier@0..3
-        binding: Node {
-          path: nesting::main::foo
+        binding: ItemRef {
+          pack: nesting::main
+          name: foo
+          type: Function
         }
       }
       args: []
@@ -71,7 +83,11 @@ ScopeExpr {
       ref: CallExpr@32..59
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: println
+        binding: ItemRef {
+          pack: bento::io
+          name: println
+          type: Function
+        }
       }
       args: [
         StringExpr {

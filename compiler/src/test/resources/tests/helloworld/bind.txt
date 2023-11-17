@@ -1,4 +1,4 @@
-helloworld::main::main:
+======= helloworld::main::main =======
 ScopeExpr {
   ref: ScopeExpr@22..54
   statements: [
@@ -6,7 +6,11 @@ ScopeExpr {
       ref: CallExpr@12..36
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: println
+        binding: ItemRef {
+          pack: bento::io
+          name: println
+          type: Function
+        }
       }
       args: [
         StringExpr {

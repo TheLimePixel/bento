@@ -1,12 +1,24 @@
-helloworld::main::main:
+======= helloworld::main::main =======
 ScopeExpr {
   ref: ScopeExpr@22..54
-  type: Unit
+  type: ItemRef {
+    pack: bento
+    name: Unit
+    type: Type
+  }
   statements: [
     CallExpr {
       ref: CallExpr@12..36
-      type: Unit
-      fn: println
+      type: ItemRef {
+        pack: bento
+        name: Unit
+        type: Type
+      }
+      fn: ItemRef {
+        pack: bento::io
+        name: println
+        type: Function
+      }
       args: [
         StringExpr {
           ref: StringLiteral@2..17

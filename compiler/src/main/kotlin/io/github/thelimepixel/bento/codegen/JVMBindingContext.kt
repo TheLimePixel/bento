@@ -1,15 +1,16 @@
 package io.github.thelimepixel.bento.codegen
 
-import io.github.thelimepixel.bento.binding.FunctionRef
+import io.github.thelimepixel.bento.binding.BuiltinRefs
+import io.github.thelimepixel.bento.binding.ItemRef
 
 interface JVMBindingContext {
-    fun signatureFor(ref: FunctionRef): JVMSignature
+    fun signatureFor(ref: ItemRef): JVMSignature
 }
 
-class TopLevelJVMBindingContext(private val printlnSignature: JVMSignature): JVMBindingContext {
+class TopLevelJVMBindingContext(private val printlnSignature: JVMSignature) : JVMBindingContext {
 
-    override fun signatureFor(ref: FunctionRef): JVMSignature = when (ref) {
-        FunctionRef.Special.println -> printlnSignature
-        is FunctionRef.Node -> JVMSignature(ref.parent.toJVMPath(), ref.name, "()V")
+    override fun signatureFor(ref: ItemRef): JVMSignature = when (ref) {
+        BuiltinRefs.println -> printlnSignature
+        else -> JVMSignature(ref.pack.toJVMPath(), ref.name, "()V")
     }
 }

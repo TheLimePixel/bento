@@ -23,7 +23,7 @@ class SourceTests {
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
     private val objFormatter: Formatter<Any> = ObjectFormatter()
-    private val bindingContext: BindingContext = TopLevelBindingContext()
+    private val bindingContext: BindingContext = ChildBindingContext(null, BuiltinRefs.map)
     private val typing = BentoTypechecking()
     private val typingContext: TypingContext = TopLevelTypingContext()
     private val jvmBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
@@ -49,31 +49,28 @@ class SourceTests {
                 ast + errors.joinToString("\n", "\n")
             }
 
+            val padding = "======="
+
             val fileRef = pathOf(dir.name, "main")
-            val items = node.collectFunctions(fileRef)
-            val hirMap = binding.bind(items, bindingContext)
+            val itemMap = node.collectItems()
+            val itemRefs = collectRefs(fileRef, itemMap)
+            val hirMap = binding.bind(itemRefs, itemMap, bindingContext)
             test(dir, code, "Bind") {
                 hirMap.asSequence().joinToString("\n") { (key, value) ->
-                    "${key.path}:\n${
-                        value?.let { scope ->
-                            val errors = collectErrors(scope)
-                            objFormatter.format(scope) + errors.joinToString("\n", "\n")
-                        }
-                    }"
+                    val errors = collectErrors(value)
+                    "$padding ${key.path} $padding\n${objFormatter.format(value) + errors.joinToString("\n", "\n")}"
                 }
             }
 
-            val thirMap = hirMap.asSequence().mapNotNull { (key, value) ->
-                value?.let { scope -> key to typing.type(scope, typingContext) }
-            }.toMap()
+            val thirMap = hirMap.mapValues { (_, node) -> typing.type(node, typingContext) }
             test(dir, code, "Typecheck") {
                 thirMap.asSequence().joinToString("\n") { (key, value) ->
                     val errors = collectErrors(value)
-                    "${key.path}:\n${objFormatter.format(value)}${errors.joinToString("\n", "\n")}"
+                    "$padding ${key.path} $padding\n${objFormatter.format(value)}${errors.joinToString("\n", "\n")}"
                 }
             }
 
-            val bytecode = bentoCodegen.generate(fileRef, items, jvmBindingContext, thirMap)
+            val bytecode = bentoCodegen.generate(fileRef, itemRefs, jvmBindingContext, thirMap)
             test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }
 
             test(dir, code, "Output") {

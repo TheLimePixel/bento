@@ -1,17 +1,18 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.FunctionRef
+import io.github.thelimepixel.bento.binding.BuiltinRefs
+import io.github.thelimepixel.bento.binding.ItemRef
 
 interface TypingContext {
-    fun signatureOf(ref: FunctionRef): FunctionSignature
+    fun signatureOf(ref: ItemRef): FunctionSignature
 }
 
 class TopLevelTypingContext : TypingContext {
-    private val printlnSig = FunctionSignature(listOf(BentoType.String), BentoType.Unit)
-    private val emptySignature = FunctionSignature(emptyList(), BentoType.Unit)
+    private val printlnSig = FunctionSignature(listOf(BuiltinRefs.string), BuiltinRefs.unit)
+    private val emptySignature = FunctionSignature(emptyList(), BuiltinRefs.unit)
 
-    override fun signatureOf(ref: FunctionRef): FunctionSignature = when (ref) {
-        FunctionRef.Special.println -> printlnSig
+    override fun signatureOf(ref: ItemRef): FunctionSignature = when (ref) {
+        BuiltinRefs.println -> printlnSig
         else -> emptySignature
     }
 }

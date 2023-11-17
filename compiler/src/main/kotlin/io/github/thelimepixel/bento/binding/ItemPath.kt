@@ -8,7 +8,7 @@ data class ItemPath(val parent: ItemPath?, val name: String) {
         return builder.toString()
     }
 
-    fun subPath(name: String) = ItemPath(this, name)
+    fun subpath(name: String) = ItemPath(this, name)
 }
 
 private tailrec fun pathOf(parent: ItemPath, path: Array<out String>, index: Int): ItemPath =

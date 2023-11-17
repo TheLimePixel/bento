@@ -1,19 +1,12 @@
 package io.github.thelimepixel.bento.binding
 
 interface BindingContext {
-    fun refFor(name: String): FunctionRef?
+    fun refFor(name: String): ItemRef?
 }
 
 class ChildBindingContext(
-    private val parent: BindingContext,
-    private val map: Map<String, FunctionRef>
+    private val parent: BindingContext?,
+    private val map: Map<String, ItemRef>
 ) : BindingContext {
-    override fun refFor(name: String): FunctionRef? = map[name] ?: parent.refFor(name)
-}
-
-class TopLevelBindingContext : BindingContext {
-    override fun refFor(name: String): FunctionRef? = when (name) {
-        "println" -> FunctionRef.Special.println
-        else -> null
-    }
+    override fun refFor(name: String): ItemRef? = map[name] ?: parent?.refFor(name)
 }
