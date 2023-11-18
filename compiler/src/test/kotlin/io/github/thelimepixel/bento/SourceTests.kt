@@ -27,7 +27,11 @@ class SourceTests {
     private val typing = BentoTypechecking()
     private val typingContext: TypingContext = TopLevelTypingContext()
     private val jvmBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
-        JVMSignature("io/github/thelimepixel/bento/RunFunctionsKt", "println", "(Ljava/lang/String;)V")
+        pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
+        "Ljava/lang/String;",
+        "V",
+        "V",
+        typingContext
     )
     private val bentoCodegen = BentoCodegen()
     private val bytecodeFormatter: Formatter<ByteArray> = BytecodeFormatter()

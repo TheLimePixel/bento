@@ -1,6 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.BuiltinRefs
+import io.github.thelimepixel.bento.binding.ItemPath
 import io.github.thelimepixel.bento.binding.ItemRef
 import io.github.thelimepixel.bento.parsing.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
@@ -9,7 +10,7 @@ import io.github.thelimepixel.bento.utils.Spanned
 
 sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     val ref: ASTRef
-    val type: ItemRef
+    val type: ItemPath
     override val span: IntRange
         get() = ref.span
 
@@ -18,7 +19,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class ScopeExpr(
         override val ref: ASTRef,
-        override val type: ItemRef,
+        override val type: ItemPath,
         val statements: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = statements.asSequence()
@@ -26,8 +27,8 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class CallExpr(
         override val ref: ASTRef,
-        override val type: ItemRef,
-        val fn: ItemRef,
+        override val type: ItemPath,
+        val fn: ItemPath,
         val args: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
@@ -37,7 +38,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val ref: ASTRef,
         override val error: THIRError,
     ) : THIR {
-        override val type: ItemRef
+        override val type: ItemPath
             get() = BuiltinRefs.nothing
 
         override fun childSequence(): Sequence<THIR> = EmptySequence
@@ -47,7 +48,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val ref: ASTRef,
         val content: String,
     ) : THIR {
-        override val type: ItemRef
+        override val type: ItemPath
             get() = BuiltinRefs.string
 
         val rawContext: String

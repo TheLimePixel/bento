@@ -19,7 +19,7 @@ class BentoCodegen {
         writer.visit(
             52,
             Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
-            file.toJVMPath(),
+            file.toJVMPath() + "Bt",
             null,
             "java/lang/Object",
             null
@@ -28,7 +28,7 @@ class BentoCodegen {
         writer.visitSource(file.name + ".bt", null)
 
         items.forEach { ref ->
-            val sig = context.signatureFor(ref)
+            val sig = context.signatureFor(ref.path)
             val methodVisitor = writer.visitMethod(
                 Opcodes.ACC_STATIC + Opcodes.ACC_PUBLIC,
                 sig.name,

@@ -30,7 +30,7 @@ class BentoBinding {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
 
         ST.Identifier -> refFor(node.content)
-            ?.let { HIR.IdentExpr(node.ref, it) }
+            ?.let { HIR.IdentExpr(node.ref, it.path) }
             ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
         ST.CallExpr -> bindCall(node)

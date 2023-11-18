@@ -3,9 +3,14 @@ package io.github.thelimepixel.bento.binding
 object BuiltinRefs {
     val bento = ItemPath(null, "bento")
     val io = bento.subpath("io")
-    val println = ItemRef(io, "println", ItemType.Function)
-    val string = ItemRef(bento, "String", ItemType.Type)
-    val unit = ItemRef(bento, "Unit", ItemType.Type)
-    val nothing = ItemRef(bento, "Nothing", ItemType.Type)
-    val map: Map<String, ItemRef> = listOf(println, string, unit, nothing).associateBy { it.name }
+    val println = io.subpath("println")
+    val string = bento.subpath("String")
+    val unit = bento.subpath("Unit")
+    val nothing = bento.subpath("Nothing")
+    val map: Map<String, ItemRef> = listOf(
+        ItemRef(println, ItemType.Function),
+        ItemRef(string, ItemType.Type),
+        ItemRef(unit, ItemType.Type),
+        ItemRef(nothing, ItemType.Type)
+    ).associateBy { it.name }
 }

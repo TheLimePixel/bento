@@ -32,7 +32,7 @@ sealed interface HIR : CodeTree<HIR,  HIRError>, Spanned {
 
     data class IdentExpr(
         override val ref: ASTRef,
-        val binding: ItemRef,
+        val binding: ItemPath,
     ) : HIR {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }

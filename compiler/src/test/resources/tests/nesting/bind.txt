@@ -6,11 +6,7 @@ ScopeExpr {
       ref: CallExpr@12..38
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: ItemRef {
-          pack: bento::io
-          name: println
-          type: Function
-        }
+        binding: bento::io::println
       }
       args: [
         StringExpr {
@@ -30,11 +26,7 @@ ScopeExpr {
       ref: CallExpr@12..68
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: ItemRef {
-          pack: bento::io
-          name: println
-          type: Function
-        }
+        binding: bento::io::println
       }
       args: [
         ScopeExpr {
@@ -44,11 +36,7 @@ ScopeExpr {
               ref: CallExpr@20..25
               on: IdentExpr {
                 ref: Identifier@0..3
-                binding: ItemRef {
-                  pack: nesting::main
-                  name: bar
-                  type: Function
-                }
+                binding: nesting::main::bar
               }
               args: []
             }
@@ -71,11 +59,7 @@ ScopeExpr {
       ref: CallExpr@12..17
       on: IdentExpr {
         ref: Identifier@0..3
-        binding: ItemRef {
-          pack: nesting::main
-          name: foo
-          type: Function
-        }
+        binding: nesting::main::foo
       }
       args: []
     }
@@ -83,11 +67,7 @@ ScopeExpr {
       ref: CallExpr@32..59
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: ItemRef {
-          pack: bento::io
-          name: println
-          type: Function
-        }
+        binding: bento::io::println
       }
       args: [
         StringExpr {

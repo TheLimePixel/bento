@@ -1,24 +1,12 @@
 ======= nesting::main::bar =======
 ScopeExpr {
   ref: ScopeExpr@20..54
-  type: ItemRef {
-    pack: bento
-    name: Unit
-    type: Type
-  }
+  type: bento::Unit
   statements: [
     CallExpr {
       ref: CallExpr@12..38
-      type: ItemRef {
-        pack: bento
-        name: Unit
-        type: Type
-      }
-      fn: ItemRef {
-        pack: bento::io
-        name: println
-        type: Function
-      }
+      type: bento::Unit
+      fn: bento::io::println
       args: [
         StringExpr {
           ref: StringLiteral@2..19
@@ -32,45 +20,21 @@ ScopeExpr {
 ======= nesting::main::foo =======
 ScopeExpr {
   ref: ScopeExpr@20..84
-  type: ItemRef {
-    pack: bento
-    name: Unit
-    type: Type
-  }
+  type: bento::Unit
   statements: [
     CallExpr {
       ref: CallExpr@12..68
-      type: ItemRef {
-        pack: bento
-        name: Unit
-        type: Type
-      }
-      fn: ItemRef {
-        pack: bento::io
-        name: println
-        type: Function
-      }
+      type: bento::Unit
+      fn: bento::io::println
       args: [
         ScopeExpr {
           ref: ScopeExpr@2..49
-          type: ItemRef {
-            pack: bento
-            name: String
-            type: Type
-          }
+          type: bento::String
           statements: [
             CallExpr {
               ref: CallExpr@20..25
-              type: ItemRef {
-                pack: bento
-                name: Unit
-                type: Type
-              }
-              fn: ItemRef {
-                pack: nesting::main
-                name: bar
-                type: Function
-              }
+              type: bento::Unit
+              fn: nesting::main::bar
               args: []
             }
             StringExpr {
@@ -87,38 +51,18 @@ ScopeExpr {
 ======= nesting::main::main =======
 ScopeExpr {
   ref: ScopeExpr@22..67
-  type: ItemRef {
-    pack: bento
-    name: Unit
-    type: Type
-  }
+  type: bento::Unit
   statements: [
     CallExpr {
       ref: CallExpr@12..17
-      type: ItemRef {
-        pack: bento
-        name: Unit
-        type: Type
-      }
-      fn: ItemRef {
-        pack: nesting::main
-        name: foo
-        type: Function
-      }
+      type: bento::Unit
+      fn: nesting::main::foo
       args: []
     }
     CallExpr {
       ref: CallExpr@32..59
-      type: ItemRef {
-        pack: bento
-        name: Unit
-        type: Type
-      }
-      fn: ItemRef {
-        pack: bento::io
-        name: println
-        type: Function
-      }
+      type: bento::Unit
+      fn: bento::io::println
       args: [
         StringExpr {
           ref: StringLiteral@2..20

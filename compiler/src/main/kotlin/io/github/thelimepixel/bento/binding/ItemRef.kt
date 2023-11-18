@@ -8,9 +8,12 @@ enum class ItemType {
     Type
 }
 
-data class ItemRef(val pack: ItemPath, val name: String, val type: ItemType) {
-    val path: ItemPath
-        get() = pack.subpath(name)
+data class ItemRef(val path: ItemPath, val type: ItemType) {
+    val name: String
+        get() = path.name
+
+    val parent: ItemPath
+        get() = path.parent!!
 }
 
 data class ItemData(val type: ItemType, val node: GreenNode)
@@ -26,5 +29,5 @@ fun GreenNode.collectItems(): ItemMap = childSequence()
     )
 
 fun collectRefs(itemPath: ItemPath, itemMap: ItemMap): List<ItemRef> = itemMap.mapNotNull { (key, value) ->
-    if (value.size != 1) null else ItemRef(itemPath, key, value.first().type)
+    if (value.size != 1) null else ItemRef(itemPath.subpath(key), value.first().type)
 }

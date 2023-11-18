@@ -6,11 +6,7 @@ ScopeExpr {
       ref: CallExpr@12..36
       on: IdentExpr {
         ref: Identifier@0..7
-        binding: ItemRef {
-          pack: bento::io
-          name: println
-          type: Function
-        }
+        binding: bento::io::println
       }
       args: [
         StringExpr {
