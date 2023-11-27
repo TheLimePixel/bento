@@ -12,18 +12,20 @@ sealed interface HIR : CodeTree<HIR,  HIRError>, Spanned {
     override val error: HIRError?
         get() = null
 
+    sealed interface Expr : HIR
+
     data class ScopeExpr(
         override val ref: ASTRef,
-        val statements: List<HIR>,
-    ) : HIR {
+        val statements: List<Expr>,
+    ) : Expr {
         override fun childSequence(): Sequence<HIR> = statements.asSequence()
     }
 
     data class CallExpr(
         override val ref: ASTRef,
-        val on: HIR,
-        val args: List<HIR>,
-    ) : HIR {
+        val on: Expr,
+        val args: List<Expr>,
+    ) : Expr {
         override fun childSequence(): Sequence<HIR> = sequence {
             yield(on)
             yieldAll(args)
@@ -32,22 +34,33 @@ sealed interface HIR : CodeTree<HIR,  HIRError>, Spanned {
 
     data class IdentExpr(
         override val ref: ASTRef,
-        val binding: ItemPath,
-    ) : HIR {
+        val binding: ItemRef,
+    ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
     data class ErrorExpr(
         override val ref: ASTRef,
         override val error: HIRError,
-    ) : HIR {
+    ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
     data class StringExpr(
         override val ref: ASTRef,
         val content: String,
-    ) : HIR {
+    ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    data class TypeRef(override val ref: ASTRef, val type: ItemPath?) : HIR {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    data class Function(override val ref: ASTRef, val returnType: TypeRef?, val body: ScopeExpr?) : HIR {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            returnType?.let { yield(it) }
+            body?.let { yield(it) }
+        }
     }
 }

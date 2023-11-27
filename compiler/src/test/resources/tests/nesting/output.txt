@@ -1,3 +1,4 @@
+Hello from Baz!
 Hello from Bar!
 Hello from Foo!
 Hello from Main!

@@ -1,80 +1,148 @@
-======= nesting::main::bar =======
-ScopeExpr {
-  ref: ScopeExpr@20..54
-  statements: [
-    CallExpr {
-      ref: CallExpr@12..38
-      on: IdentExpr {
-        ref: Identifier@0..7
-        binding: bento::io::println
+======= nesting::main::baz =======
+Function {
+  ref: FunDef@0..43
+  returnType: TypeRef {
+    ref: Identifier@4..10
+    type: bento::String
+  }
+  body: ScopeExpr {
+    ref: ScopeExpr@36..61
+    statements: [
+      StringExpr {
+        ref: StringLiteral@12..29
+        content: "Hello from Baz!"
       }
-      args: [
-        StringExpr {
-          ref: StringLiteral@2..19
-          content: "Hello from Bar!"
+    ]
+  }
+}
+
+======= nesting::main::bar =======
+Function {
+  ref: FunDef@0..63
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@20..73
+    statements: [
+      CallExpr {
+        ref: CallExpr@12..26
+        on: IdentExpr {
+          ref: Identifier@0..7
+          binding: ItemRef {
+            path: bento::io::println
+            type: Function
+          }
         }
-      ]
-    }
-  ]
+        args: [
+          CallExpr {
+            ref: CallExpr@2..7
+            on: IdentExpr {
+              ref: Identifier@0..3
+              binding: ItemRef {
+                path: nesting::main::baz
+                type: Function
+              }
+            }
+            args: []
+          }
+        ]
+      }
+      CallExpr {
+        ref: CallExpr@50..76
+        on: IdentExpr {
+          ref: Identifier@0..7
+          binding: ItemRef {
+            path: bento::io::println
+            type: Function
+          }
+        }
+        args: [
+          StringExpr {
+            ref: StringLiteral@2..19
+            content: "Hello from Bar!"
+          }
+        ]
+      }
+    ]
+  }
 }
 
 ======= nesting::main::foo =======
-ScopeExpr {
-  ref: ScopeExpr@20..84
-  statements: [
-    CallExpr {
-      ref: CallExpr@12..68
-      on: IdentExpr {
-        ref: Identifier@0..7
-        binding: bento::io::println
-      }
-      args: [
-        ScopeExpr {
-          ref: ScopeExpr@2..49
-          statements: [
-            CallExpr {
-              ref: CallExpr@20..25
-              on: IdentExpr {
-                ref: Identifier@0..3
-                binding: nesting::main::bar
-              }
-              args: []
-            }
-            StringExpr {
-              ref: StringLiteral@48..65
-              content: "Hello from Foo!"
-            }
-          ]
+Function {
+  ref: FunDef@0..74
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@20..84
+    statements: [
+      CallExpr {
+        ref: CallExpr@12..68
+        on: IdentExpr {
+          ref: Identifier@0..7
+          binding: ItemRef {
+            path: bento::io::println
+            type: Function
+          }
         }
-      ]
-    }
-  ]
+        args: [
+          ScopeExpr {
+            ref: ScopeExpr@2..49
+            statements: [
+              CallExpr {
+                ref: CallExpr@20..25
+                on: IdentExpr {
+                  ref: Identifier@0..3
+                  binding: ItemRef {
+                    path: nesting::main::bar
+                    type: Function
+                  }
+                }
+                args: []
+              }
+              StringExpr {
+                ref: StringLiteral@48..65
+                content: "Hello from Foo!"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
 
 ======= nesting::main::main =======
-ScopeExpr {
-  ref: ScopeExpr@22..67
-  statements: [
-    CallExpr {
-      ref: CallExpr@12..17
-      on: IdentExpr {
-        ref: Identifier@0..3
-        binding: nesting::main::foo
-      }
-      args: []
-    }
-    CallExpr {
-      ref: CallExpr@32..59
-      on: IdentExpr {
-        ref: Identifier@0..7
-        binding: bento::io::println
-      }
-      args: [
-        StringExpr {
-          ref: StringLiteral@2..20
-          content: "Hello from Main!"
+Function {
+  ref: FunDef@0..56
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@22..67
+    statements: [
+      CallExpr {
+        ref: CallExpr@12..17
+        on: IdentExpr {
+          ref: Identifier@0..3
+          binding: ItemRef {
+            path: nesting::main::foo
+            type: Function
+          }
         }
-      ]
-    }
-  ]
+        args: []
+      }
+      CallExpr {
+        ref: CallExpr@32..59
+        on: IdentExpr {
+          ref: Identifier@0..7
+          binding: ItemRef {
+            path: bento::io::println
+            type: Function
+          }
+        }
+        args: [
+          StringExpr {
+            ref: StringLiteral@2..20
+            content: "Hello from Main!"
+          }
+        ]
+      }
+    ]
+  }
 }

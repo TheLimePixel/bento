@@ -28,7 +28,7 @@ class BentoCodegen {
         writer.visitSource(file.name + ".bt", null)
 
         items.forEach { ref ->
-            val sig = context.signatureFor(ref.path)
+            val sig = context.signatureFor(ref)
             val methodVisitor = writer.visitMethod(
                 Opcodes.ACC_STATIC + Opcodes.ACC_PUBLIC,
                 sig.name,
@@ -36,8 +36,9 @@ class BentoCodegen {
                 null,
                 null
             )
-            genExpr(thirMap[ref]!!, methodVisitor, context, true)
-            methodVisitor.visitInsn(Opcodes.RETURN)
+            val isVoid = sig.descriptor.endsWith("V")
+            genExpr(thirMap[ref]!!, methodVisitor, context, isVoid)
+            methodVisitor.visitInsn(if (isVoid)  Opcodes.RETURN else Opcodes.ARETURN)
             methodVisitor.visitMaxs(0, 0)
             methodVisitor.visitEnd()
         }

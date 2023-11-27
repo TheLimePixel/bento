@@ -2,11 +2,12 @@ package io.github.thelimepixel.bento.codegen
 
 import io.github.thelimepixel.bento.binding.BuiltinRefs
 import io.github.thelimepixel.bento.binding.ItemPath
+import io.github.thelimepixel.bento.binding.ItemRef
 import io.github.thelimepixel.bento.typing.FunctionSignature
 import io.github.thelimepixel.bento.typing.TypingContext
 
 interface JVMBindingContext {
-    fun signatureFor(ref: ItemPath): JVMSignature
+    fun signatureFor(ref: ItemRef): JVMSignature
 
     fun jvmTypeOf(ref: ItemPath): String
 }
@@ -18,10 +19,10 @@ class TopLevelJVMBindingContext(
     private val nothingJVMType: String,
     private val typingContext: TypingContext,
 ) : JVMBindingContext {
-    override fun signatureFor(ref: ItemPath): JVMSignature {
+    override fun signatureFor(ref: ItemRef): JVMSignature {
         val path = when (ref) {
             BuiltinRefs.println -> printlnFilePath
-            else -> ref.parent!!.let { it.copy(name = it.name + "Bt") }
+            else -> ref.parent.let { it.copy(name = it.name + "Bt") }
         }
 
         return JVMSignature(path.toJVMPath(), ref.name, mapSignature(typingContext.signatureOf(ref)))

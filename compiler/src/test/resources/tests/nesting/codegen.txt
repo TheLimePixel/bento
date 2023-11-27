@@ -4,7 +4,16 @@ public final class nesting/mainBt {
 
 
   // access flags 0x9
+  public static baz()Ljava/lang/String;
+    LDC "Hello from Baz!"
+    ARETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+
+  // access flags 0x9
   public static bar()V
+    INVOKESTATIC nesting/mainBt.baz ()Ljava/lang/String;
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
     LDC "Hello from Bar!"
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
     RETURN

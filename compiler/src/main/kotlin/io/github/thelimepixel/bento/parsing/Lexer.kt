@@ -19,6 +19,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         '{' -> BaseEdges.lBrace
         '}' -> BaseEdges.rBrace
         ',' -> BaseEdges.comma
+        ':' -> BaseEdges.colon
         '\n' -> BaseEdges.nl
         '/' -> getSlash(index + 1)
         ' ', '\t', '\r', '\u000C', '\u2B7F' -> getWhitespace(index + 1)

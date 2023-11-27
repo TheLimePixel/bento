@@ -3,13 +3,8 @@ package io.github.thelimepixel.bento
 import io.github.thelimepixel.bento.binding.*
 import io.github.thelimepixel.bento.codegen.*
 import io.github.thelimepixel.bento.errors.collectErrors
-import io.github.thelimepixel.bento.parsing.ASTFormatter
-import io.github.thelimepixel.bento.parsing.BentoParsing
-import io.github.thelimepixel.bento.parsing.GreenNode
-import io.github.thelimepixel.bento.parsing.toRedRoot
-import io.github.thelimepixel.bento.typing.BentoTypechecking
-import io.github.thelimepixel.bento.typing.TopLevelTypingContext
-import io.github.thelimepixel.bento.typing.TypingContext
+import io.github.thelimepixel.bento.parsing.*
+import io.github.thelimepixel.bento.typing.*
 import io.github.thelimepixel.bento.utils.Formatter
 import io.github.thelimepixel.bento.utils.ObjectFormatter
 import org.junit.jupiter.api.DynamicTest
@@ -22,17 +17,9 @@ class SourceTests {
     private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
-    private val objFormatter: Formatter<Any> = ObjectFormatter()
+    private val objFormatter: Formatter<Any?> = ObjectFormatter()
     private val bindingContext: BindingContext = ChildBindingContext(null, BuiltinRefs.map)
     private val typing = BentoTypechecking()
-    private val typingContext: TypingContext = TopLevelTypingContext()
-    private val jvmBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
-        pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
-        "Ljava/lang/String;",
-        "V",
-        "V",
-        typingContext
-    )
     private val bentoCodegen = BentoCodegen()
     private val bytecodeFormatter: Formatter<ByteArray> = BytecodeFormatter()
     private val classLoader = TestClassLoader(this::class.java.classLoader)
@@ -66,13 +53,29 @@ class SourceTests {
                 }
             }
 
-            val thirMap = hirMap.mapValues { (_, node) -> typing.type(node, typingContext) }
+            val typingContext = ChildTypingContext(
+                TopLevelTypingContext(),
+                hirMap.mapValues { (_, value) -> value.signature() }
+            )
+
+            val thirMap = hirMap.mapValues { (ref, node) ->
+                node.body?.let { body -> typing.type(body, typingContext, typingContext.signatureOf(ref).returnType) }
+                    ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
+            }
             test(dir, code, "Typecheck") {
                 thirMap.asSequence().joinToString("\n") { (key, value) ->
                     val errors = collectErrors(value)
                     "$padding ${key.path} $padding\n${objFormatter.format(value)}${errors.joinToString("\n", "\n")}"
                 }
             }
+
+            val jvmBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
+                pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
+                "Ljava/lang/String;",
+                "V",
+                "V",
+                typingContext
+            )
 
             val bytecode = bentoCodegen.generate(fileRef, itemRefs, jvmBindingContext, thirMap)
             test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }

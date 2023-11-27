@@ -28,7 +28,15 @@ class BentoParsing {
         push()  // fun keyword
         expectIdentifier()
         expectParamList()
+        parseTypeAnnotation()
         expectScopeExpr()
+    }
+
+    private fun P.parseTypeAnnotation() {
+        if (at(SyntaxType.Colon)) node(SyntaxType.TypeAnnotation) {
+            push()  // colon
+            expectIdentifier()
+        }
     }
 
     private fun P.expectIdentifier() {

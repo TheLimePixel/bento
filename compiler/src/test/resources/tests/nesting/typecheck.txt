@@ -1,12 +1,46 @@
+======= nesting::main::baz =======
+ScopeExpr {
+  ref: ScopeExpr@36..61
+  type: bento::String
+  statements: [
+    StringExpr {
+      ref: StringLiteral@12..29
+      content: "Hello from Baz!"
+    }
+  ]
+}
+
 ======= nesting::main::bar =======
 ScopeExpr {
-  ref: ScopeExpr@20..54
+  ref: ScopeExpr@20..73
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..38
+      ref: CallExpr@12..26
       type: bento::Unit
-      fn: bento::io::println
+      fn: ItemRef {
+        path: bento::io::println
+        type: Function
+      }
+      args: [
+        CallExpr {
+          ref: CallExpr@2..7
+          type: bento::String
+          fn: ItemRef {
+            path: nesting::main::baz
+            type: Function
+          }
+          args: []
+        }
+      ]
+    }
+    CallExpr {
+      ref: CallExpr@50..76
+      type: bento::Unit
+      fn: ItemRef {
+        path: bento::io::println
+        type: Function
+      }
       args: [
         StringExpr {
           ref: StringLiteral@2..19
@@ -25,7 +59,10 @@ ScopeExpr {
     CallExpr {
       ref: CallExpr@12..68
       type: bento::Unit
-      fn: bento::io::println
+      fn: ItemRef {
+        path: bento::io::println
+        type: Function
+      }
       args: [
         ScopeExpr {
           ref: ScopeExpr@2..49
@@ -34,7 +71,10 @@ ScopeExpr {
             CallExpr {
               ref: CallExpr@20..25
               type: bento::Unit
-              fn: nesting::main::bar
+              fn: ItemRef {
+                path: nesting::main::bar
+                type: Function
+              }
               args: []
             }
             StringExpr {
@@ -56,13 +96,19 @@ ScopeExpr {
     CallExpr {
       ref: CallExpr@12..17
       type: bento::Unit
-      fn: nesting::main::foo
+      fn: ItemRef {
+        path: nesting::main::foo
+        type: Function
+      }
       args: []
     }
     CallExpr {
       ref: CallExpr@32..59
       type: bento::Unit
-      fn: bento::io::println
+      fn: ItemRef {
+        path: bento::io::println
+        type: Function
+      }
       args: [
         StringExpr {
           ref: StringLiteral@2..20

@@ -6,12 +6,25 @@ private typealias BC = BindingContext
 private typealias ST = SyntaxType
 
 class BentoBinding {
-    fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR> {
+    fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR.Function> {
         val context = ChildBindingContext(parentContext, items.associateBy { it.name })
-        return items.associateWith { context.bind(nodes[it.name]!!.first().node.toRedRoot()) }
+        return items.associateWith {
+            context.bindFunction(nodes[it.name]!!.first().node.toRedRoot())
+        }
     }
-    private fun BC.bind(node: RedNode): HIR =
-        node.firstChild(ST.ScopeExpr)?.let { bindScope(it) } ?: HIRError.Propagation.at(node.ref)
+
+    private fun BC.bindFunction(node: RedNode): HIR.Function {
+        val returnType = node.firstChild(SyntaxType.TypeAnnotation)
+            ?.firstChild(SyntaxType.Identifier)
+            ?.let {
+                val itemRef = refFor(it.content)
+                if (itemRef?.type == ItemType.Type) HIR.TypeRef(it.ref, itemRef.path)
+                else null
+            }
+        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { bindScope(it) }
+
+        return HIR.Function(node.ref, returnType, body)
+    }
 
     private fun BC.bindCall(node: RedNode): HIR.CallExpr {
         val on = node.firstChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)
@@ -26,11 +39,11 @@ class BentoBinding {
         return HIR.CallExpr(node.ref, on, args)
     }
 
-    private fun BC.bindExpr(node: RedNode): HIR = when (node.type) {
+    private fun BC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
 
         ST.Identifier -> refFor(node.content)
-            ?.let { HIR.IdentExpr(node.ref, it.path) }
+            ?.let { HIR.IdentExpr(node.ref, it) }
             ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
         ST.CallExpr -> bindCall(node)

@@ -2,6 +2,27 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
+│ ├─Identifier(baz)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─TypeAnnotation
+│ │ ├─Colon
+│ │ ├─Whitespace( )
+│ │ └─Identifier(String)
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─StringLiteral("Hello from Baz!")
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
 │ ├─Identifier(bar)
 │ ├─ParamList
 │ │ ├─LParen
@@ -9,6 +30,18 @@ File
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Identifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─CallExpr
+│   │   │ ├─Identifier(baz)
+│   │   │ └─ArgList
+│   │   │   ├─LParen
+│   │   │   └─RParen
+│   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr

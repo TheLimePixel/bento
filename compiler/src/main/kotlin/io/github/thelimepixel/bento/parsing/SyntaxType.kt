@@ -21,6 +21,7 @@ enum class SyntaxType(
     LBrace,
     RBrace,
     Comma,
+    Colon,
 
     Identifier(dynamic = true),
 
@@ -33,6 +34,8 @@ enum class SyntaxType(
 
     ScopeExpr,
     CallExpr,
+
+    TypeAnnotation,
 
     FunDef,
 
@@ -55,6 +58,7 @@ object BaseEdges {
     val lBrace = SyntaxType.LBrace.edge( "{")
     val rBrace = SyntaxType.RBrace.edge( "}")
     val comma = SyntaxType.Comma.edge( ",")
+    val colon = SyntaxType.Colon.edge(":")
     val funKeyword = SyntaxType.FunKeyword.edge( "fun")
     val loneSlash = SyntaxType.Unknown.edge( "/")
 }

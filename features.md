@@ -233,8 +233,6 @@ fun process(a: I32, b: I32, c: I32) {
 
 ## Function Return Values
 
-TODO
-
 #### Requires
 
 - [Basic Functions](features.md#basic-functions)

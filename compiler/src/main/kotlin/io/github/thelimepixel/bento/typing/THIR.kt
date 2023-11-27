@@ -28,7 +28,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class CallExpr(
         override val ref: ASTRef,
         override val type: ItemPath,
-        val fn: ItemPath,
+        val fn: ItemRef,
         val args: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
@@ -37,11 +37,10 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class ErrorExpr(
         override val ref: ASTRef,
         override val error: THIRError,
+        override val type: ItemPath,
+        val children: List<THIR>,
     ) : THIR {
-        override val type: ItemPath
-            get() = BuiltinRefs.nothing
-
-        override fun childSequence(): Sequence<THIR> = EmptySequence
+        override fun childSequence(): Sequence<THIR> = children.asSequence()
     }
 
     data class StringExpr(
