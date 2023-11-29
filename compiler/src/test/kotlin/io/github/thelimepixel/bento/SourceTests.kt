@@ -18,7 +18,7 @@ class SourceTests {
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
     private val objFormatter: Formatter<Any?> = ObjectFormatter()
-    private val bindingContext: BindingContext = ChildBindingContext(null, BuiltinRefs.map)
+    private val bindingContext: BindingContext = FileBindingContext(null, BuiltinRefs.map)
     private val typing = BentoTypechecking()
     private val bentoCodegen = BentoCodegen()
     private val bytecodeFormatter: Formatter<ByteArray> = BytecodeFormatter()
@@ -55,13 +55,13 @@ class SourceTests {
 
             val typingContext = ChildTypingContext(
                 TopLevelTypingContext(),
-                hirMap.mapValues { (_, value) -> value.signature() }
+                hirMap.mapValues { (_, value) -> value.type() }
             )
 
-            val thirMap = hirMap.mapValues { (ref, node) ->
-                node.body?.let { body -> typing.type(body, typingContext, typingContext.signatureOf(ref).returnType) }
-                    ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
+            val thirMap = hirMap.mapValues { (_, node) ->
+                typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
             }
+
             test(dir, code, "Typecheck") {
                 thirMap.asSequence().joinToString("\n") { (key, value) ->
                     val errors = collectErrors(value)
@@ -77,7 +77,7 @@ class SourceTests {
                 typingContext
             )
 
-            val bytecode = bentoCodegen.generate(fileRef, itemRefs, jvmBindingContext, thirMap)
+            val bytecode = bentoCodegen.generate(fileRef, itemRefs, jvmBindingContext, hirMap, thirMap)
             test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }
 
             test(dir, code, "Output") {

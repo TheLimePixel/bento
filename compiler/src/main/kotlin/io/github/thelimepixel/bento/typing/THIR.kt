@@ -1,8 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.BuiltinRefs
-import io.github.thelimepixel.bento.binding.ItemPath
 import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.Ref
 import io.github.thelimepixel.bento.parsing.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
@@ -10,7 +9,7 @@ import io.github.thelimepixel.bento.utils.Spanned
 
 sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     val ref: ASTRef
-    val type: ItemPath
+    val type: Type
     override val span: IntRange
         get() = ref.span
 
@@ -19,7 +18,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class ScopeExpr(
         override val ref: ASTRef,
-        override val type: ItemPath,
+        override val type: Type,
         val statements: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = statements.asSequence()
@@ -27,7 +26,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class CallExpr(
         override val ref: ASTRef,
-        override val type: ItemPath,
+        override val type: Type,
         val fn: ItemRef,
         val args: List<THIR>,
     ) : THIR {
@@ -37,7 +36,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class ErrorExpr(
         override val ref: ASTRef,
         override val error: THIRError,
-        override val type: ItemPath,
+        override val type: Type,
         val children: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = children.asSequence()
@@ -47,12 +46,20 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val ref: ASTRef,
         val content: String,
     ) : THIR {
-        override val type: ItemPath
-            get() = BuiltinRefs.string
+        override val type: Type
+            get() = BuiltinTypes.string
 
         val rawContext: String
             get() = content.substring(1..<content.lastIndex)
 
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+    }
+
+    data class AccessExpr(
+        override val ref: ASTRef,
+        override val type: Type,
+        val binding: Ref,
+    ) : THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 }

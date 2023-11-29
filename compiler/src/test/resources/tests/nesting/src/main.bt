@@ -7,14 +7,14 @@ fun bar() {
     println("Hello from Bar!")
 }
 
-fun foo() {
+fun foo(text: String) {
     println({
         bar()
-        "Hello from Foo!"
+        text
     })
 }
 
 fun main() {
-    foo()
+    foo("Hello from Foo!")
     println("Hello from Main!")
 }

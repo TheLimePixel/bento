@@ -5,7 +5,7 @@ import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
 import io.github.thelimepixel.bento.utils.Spanned
 
-sealed interface HIR : CodeTree<HIR,  HIRError>, Spanned {
+sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
     val ref: ASTRef
     override val span: IntRange
         get() = ref.span
@@ -34,7 +34,7 @@ sealed interface HIR : CodeTree<HIR,  HIRError>, Spanned {
 
     data class IdentExpr(
         override val ref: ASTRef,
-        val binding: ItemRef,
+        val binding: Ref,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
@@ -57,7 +57,16 @@ sealed interface HIR : CodeTree<HIR,  HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    data class Function(override val ref: ASTRef, val returnType: TypeRef?, val body: ScopeExpr?) : HIR {
+    data class Param(override val ref: ASTRef, val name: String, val type: TypeRef?) : HIR {
+        override fun childSequence(): Sequence<HIR> = type?.let { sequenceOf(it) } ?: EmptySequence
+    }
+
+    data class Function(
+        override val ref: ASTRef,
+        val params: List<Param>,
+        val returnType: TypeRef?,
+        val body: ScopeExpr?
+    ) : HIR {
         override fun childSequence(): Sequence<HIR> = sequence {
             returnType?.let { yield(it) }
             body?.let { yield(it) }

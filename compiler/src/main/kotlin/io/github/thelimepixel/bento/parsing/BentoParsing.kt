@@ -32,11 +32,17 @@ class BentoParsing {
         expectScopeExpr()
     }
 
-    private fun P.parseTypeAnnotation() {
-        if (at(SyntaxType.Colon)) node(SyntaxType.TypeAnnotation) {
+    private fun P.parseTypeAnnotation(): Boolean {
+        val canParse = at(SyntaxType.Colon)
+        if (canParse) node(SyntaxType.TypeAnnotation) {
             push()  // colon
             expectIdentifier()
         }
+        return canParse
+    }
+
+    private fun P.expectTypeAnnotation() {
+        if (!parseTypeAnnotation()) pushError(ParseError.ExpectedTypeAnnotation)
     }
 
     private fun P.expectIdentifier() {
@@ -45,15 +51,31 @@ class BentoParsing {
     }
 
     private fun P.expectParamList() {
-        if (!at(ST.LParen)) {
-            handleError(ParseError.ExpectedParameterList)
-            return
-        }
+        if (!at(ST.LParen))
+            return handleError(ParseError.ExpectedParameterList)
 
         node(ST.ParamList) {
             push()  // (
-            if (!consume(ST.RParen)) handleError(ParseError.ExpectedCommaOrClosedParen)
+            handleParamList()
         }
+    }
+
+    private fun P.expectParam() {
+        if (!at(SyntaxType.Identifier))
+            return handleError(ParseError.ExpectedFunctionParameter)
+
+        node(SyntaxType.Param) {
+            push()  // identifier
+            expectTypeAnnotation()
+        }
+    }
+
+    private tailrec fun P.handleParamList() {
+        if (handleParamListEnd()) return
+        expectParam()
+        if (handleParamListEnd()) return
+        expectConsume(ST.Comma, ParseError.ExpectedCommaOrClosedParen)
+        handleParamList()
     }
 
     private fun P.parseScopeExpr() = node(ST.ScopeExpr) {
@@ -62,10 +84,8 @@ class BentoParsing {
     }
 
     private fun P.expectScopeExpr() {
-        if (!at(ST.LBrace)) {
-            handleError(ParseError.ExpectedScope)
-            return
-        }
+        if (!at(ST.LBrace))
+            return handleError(ParseError.ExpectedScope)
 
         parseScopeExpr()
     }
@@ -94,7 +114,16 @@ class BentoParsing {
         }
     }
 
-    private fun P.handleParenListEnd(): Boolean {
+    private fun P.handleParamListEnd(): Boolean {
+        when (current) {
+            ST.EOF, ST.RBrace, ST.LBrace -> pushError(ParseError.ExpectedCommaOrClosedParen)
+            ST.RParen -> push()
+            else -> return false
+        }
+        return true
+    }
+
+    private fun P.handleArgListEnd(): Boolean {
         when (current) {
             ST.EOF, ST.RBrace -> pushError(ParseError.ExpectedCommaOrClosedParen)
             ST.RParen -> push()
@@ -108,9 +137,9 @@ class BentoParsing {
     }
 
     private tailrec fun P.handleArgList() {
-        if (handleParenListEnd()) return
+        if (handleArgListEnd()) return
         expectTerm()
-        if (handleParenListEnd()) return
+        if (handleArgListEnd()) return
         expectConsume(ST.Comma, ParseError.ExpectedCommaOrClosedParen)
         handleArgList()
     }

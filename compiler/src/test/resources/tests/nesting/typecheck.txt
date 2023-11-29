@@ -18,17 +18,15 @@ ScopeExpr {
     CallExpr {
       ref: CallExpr@12..26
       type: bento::Unit
-      fn: ItemRef {
-        path: bento::io::println
-        type: Function
+      fn: Function {
+        bento::io::println
       }
       args: [
         CallExpr {
           ref: CallExpr@2..7
           type: bento::String
-          fn: ItemRef {
-            path: nesting::main::baz
-            type: Function
+          fn: Function {
+            nesting::main::baz
           }
           args: []
         }
@@ -37,9 +35,8 @@ ScopeExpr {
     CallExpr {
       ref: CallExpr@50..76
       type: bento::Unit
-      fn: ItemRef {
-        path: bento::io::println
-        type: Function
+      fn: Function {
+        bento::io::println
       }
       args: [
         StringExpr {
@@ -53,33 +50,32 @@ ScopeExpr {
 
 ======= nesting::main::foo =======
 ScopeExpr {
-  ref: ScopeExpr@20..84
+  ref: ScopeExpr@44..95
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..68
+      ref: CallExpr@12..55
       type: bento::Unit
-      fn: ItemRef {
-        path: bento::io::println
-        type: Function
+      fn: Function {
+        bento::io::println
       }
       args: [
         ScopeExpr {
-          ref: ScopeExpr@2..49
+          ref: ScopeExpr@2..36
           type: bento::String
           statements: [
             CallExpr {
               ref: CallExpr@20..25
               type: bento::Unit
-              fn: ItemRef {
-                path: nesting::main::bar
-                type: Function
+              fn: Function {
+                nesting::main::bar
               }
               args: []
             }
-            StringExpr {
-              ref: StringLiteral@48..65
-              content: "Hello from Foo!"
+            AccessExpr {
+              ref: Identifier@48..52
+              type: bento::String
+              binding: LocalRef
             }
           ]
         }
@@ -90,24 +86,27 @@ ScopeExpr {
 
 ======= nesting::main::main =======
 ScopeExpr {
-  ref: ScopeExpr@22..67
+  ref: ScopeExpr@22..84
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..17
+      ref: CallExpr@12..34
       type: bento::Unit
-      fn: ItemRef {
-        path: nesting::main::foo
-        type: Function
+      fn: Function {
+        nesting::main::foo
       }
-      args: []
+      args: [
+        StringExpr {
+          ref: StringLiteral@2..19
+          content: "Hello from Foo!"
+        }
+      ]
     }
     CallExpr {
-      ref: CallExpr@32..59
+      ref: CallExpr@66..93
       type: bento::Unit
-      fn: ItemRef {
-        path: bento::io::println
-        type: Function
+      fn: Function {
+        bento::io::println
       }
       args: [
         StringExpr {

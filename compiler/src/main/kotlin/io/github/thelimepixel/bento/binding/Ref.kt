@@ -3,17 +3,25 @@ package io.github.thelimepixel.bento.binding
 import io.github.thelimepixel.bento.parsing.GreenNode
 import io.github.thelimepixel.bento.parsing.SyntaxType
 
+sealed interface Ref
+
+data class LocalRef(val node: HIR): Ref {
+    override fun toString(): String = "LocalRef"
+}
+
 enum class ItemType {
     Function,
     Type
 }
 
-data class ItemRef(val path: ItemPath, val type: ItemType) {
+data class ItemRef(val path: ItemPath, val type: ItemType) : Ref {
     val name: String
         get() = path.name
 
     val parent: ItemPath
         get() = path.parent!!
+
+    override fun toString(): String = "$type($path)"
 }
 
 data class ItemData(val type: ItemType, val node: GreenNode)

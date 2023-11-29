@@ -21,17 +21,18 @@ public final class nesting/mainBt {
     MAXLOCALS = 0
 
   // access flags 0x9
-  public static foo()V
+  public static foo(Ljava/lang/String;)V
     INVOKESTATIC nesting/mainBt.bar ()V
-    LDC "Hello from Foo!"
+    ALOAD 0
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
     RETURN
     MAXSTACK = 1
-    MAXLOCALS = 0
+    MAXLOCALS = 1
 
   // access flags 0x9
   public static main()V
-    INVOKESTATIC nesting/mainBt.foo ()V
+    LDC "Hello from Foo!"
+    INVOKESTATIC nesting/mainBt.foo (Ljava/lang/String;)V
     LDC "Hello from Main!"
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
     RETURN

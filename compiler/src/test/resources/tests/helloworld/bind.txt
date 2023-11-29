@@ -1,6 +1,7 @@
 ======= helloworld::main::main =======
 Function {
   ref: FunDef@0..43
+  params: []
   returnType: null
   body: ScopeExpr {
     ref: ScopeExpr@22..54
@@ -9,9 +10,8 @@ Function {
         ref: CallExpr@12..36
         on: IdentExpr {
           ref: Identifier@0..7
-          binding: ItemRef {
-            path: bento::io::println
-            type: Function
+          binding: Function {
+            bento::io::println
           }
         }
         args: [

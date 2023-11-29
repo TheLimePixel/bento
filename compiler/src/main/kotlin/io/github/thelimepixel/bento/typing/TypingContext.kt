@@ -1,18 +1,18 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.BuiltinRefs
-import io.github.thelimepixel.bento.binding.ItemPath
 import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.Ref
 
 interface TypingContext {
-    fun signatureOf(ref: ItemRef): FunctionSignature
+    fun typeOf(ref: Ref): Type
 }
 
 class TopLevelTypingContext : TypingContext {
-    private val printlnSig = FunctionSignature(listOf(BuiltinRefs.string), BuiltinRefs.unit)
-    private val errorSignature = FunctionSignature(listOf(BuiltinRefs.nothing), BuiltinRefs.nothing)
+    private val printlnSig = FunctionType(listOf(BuiltinTypes.string), BuiltinTypes.unit)
+    private val errorSignature = FunctionType(listOf(BuiltinTypes.nothing), BuiltinTypes.nothing)
 
-    override fun signatureOf(ref: ItemRef): FunctionSignature = when (ref) {
+    override fun typeOf(ref: Ref): Type = when (ref) {
         BuiltinRefs.println -> printlnSig
         else -> errorSignature
     }
@@ -20,8 +20,8 @@ class TopLevelTypingContext : TypingContext {
 
 class ChildTypingContext(
     private val parent: TypingContext,
-    private val map: Map<ItemRef, FunctionSignature>
+    private val map: Map<Ref, Type>
 ) : TypingContext {
-    override fun signatureOf(ref: ItemRef): FunctionSignature =
-        map[ref] ?: parent.signatureOf(ref)
+    override fun typeOf(ref: Ref): Type =
+        map[ref] ?: parent.typeOf(ref)
 }

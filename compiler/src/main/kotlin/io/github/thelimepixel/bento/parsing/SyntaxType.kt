@@ -29,7 +29,9 @@ enum class SyntaxType(
 
     FunKeyword,
 
+    Param,
     ParamList,
+
     ArgList,
 
     ScopeExpr,

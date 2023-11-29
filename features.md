@@ -146,8 +146,6 @@ A scope is usually delimited by curly braces, with file-level scopes being excep
 
 ## Type Annotations
 
-TODO
-
 Bento is a statically-typed programming language, meaning that every expression and symbol which gets bound or 
 returns a value is assigned a type at compile-time. As such, many declarations require
 or allow one to specify the type of value that is being dealt with. That is usually done by
@@ -211,8 +209,6 @@ be bound. There are two basic declaration patterns:
 - wildcards (represented by a sequence of underscores), where the value is simply discarded
 
 ## Function Parameters
-
-TODO
 
 #### Requires
 

@@ -1,6 +1,7 @@
 ======= nesting::main::baz =======
 Function {
   ref: FunDef@0..43
+  params: []
   returnType: TypeRef {
     ref: Identifier@4..10
     type: bento::String
@@ -19,6 +20,7 @@ Function {
 ======= nesting::main::bar =======
 Function {
   ref: FunDef@0..63
+  params: []
   returnType: null
   body: ScopeExpr {
     ref: ScopeExpr@20..73
@@ -27,9 +29,8 @@ Function {
         ref: CallExpr@12..26
         on: IdentExpr {
           ref: Identifier@0..7
-          binding: ItemRef {
-            path: bento::io::println
-            type: Function
+          binding: Function {
+            bento::io::println
           }
         }
         args: [
@@ -37,9 +38,8 @@ Function {
             ref: CallExpr@2..7
             on: IdentExpr {
               ref: Identifier@0..3
-              binding: ItemRef {
-                path: nesting::main::baz
-                type: Function
+              binding: Function {
+                nesting::main::baz
               }
             }
             args: []
@@ -50,9 +50,8 @@ Function {
         ref: CallExpr@50..76
         on: IdentExpr {
           ref: Identifier@0..7
-          binding: ItemRef {
-            path: bento::io::println
-            type: Function
+          binding: Function {
+            bento::io::println
           }
         }
         args: [
@@ -68,38 +67,46 @@ Function {
 
 ======= nesting::main::foo =======
 Function {
-  ref: FunDef@0..74
+  ref: FunDef@0..73
+  params: [
+    Param {
+      ref: Param@2..14
+      name: text
+      type: TypeRef {
+        ref: Identifier@4..10
+        type: bento::String
+      }
+    }
+  ]
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@20..84
+    ref: ScopeExpr@44..95
     statements: [
       CallExpr {
-        ref: CallExpr@12..68
+        ref: CallExpr@12..55
         on: IdentExpr {
           ref: Identifier@0..7
-          binding: ItemRef {
-            path: bento::io::println
-            type: Function
+          binding: Function {
+            bento::io::println
           }
         }
         args: [
           ScopeExpr {
-            ref: ScopeExpr@2..49
+            ref: ScopeExpr@2..36
             statements: [
               CallExpr {
                 ref: CallExpr@20..25
                 on: IdentExpr {
                   ref: Identifier@0..3
-                  binding: ItemRef {
-                    path: nesting::main::bar
-                    type: Function
+                  binding: Function {
+                    nesting::main::bar
                   }
                 }
                 args: []
               }
-              StringExpr {
-                ref: StringLiteral@48..65
-                content: "Hello from Foo!"
+              IdentExpr {
+                ref: Identifier@48..52
+                binding: LocalRef
               }
             ]
           }
@@ -111,29 +118,33 @@ Function {
 
 ======= nesting::main::main =======
 Function {
-  ref: FunDef@0..56
+  ref: FunDef@0..73
+  params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..67
+    ref: ScopeExpr@22..84
     statements: [
       CallExpr {
-        ref: CallExpr@12..17
+        ref: CallExpr@12..34
         on: IdentExpr {
           ref: Identifier@0..3
-          binding: ItemRef {
-            path: nesting::main::foo
-            type: Function
+          binding: Function {
+            nesting::main::foo
           }
         }
-        args: []
+        args: [
+          StringExpr {
+            ref: StringLiteral@2..19
+            content: "Hello from Foo!"
+          }
+        ]
       }
       CallExpr {
-        ref: CallExpr@32..59
+        ref: CallExpr@66..93
         on: IdentExpr {
           ref: Identifier@0..7
-          binding: ItemRef {
-            path: bento::io::println
-            type: Function
+          binding: Function {
+            bento::io::println
           }
         }
         args: [

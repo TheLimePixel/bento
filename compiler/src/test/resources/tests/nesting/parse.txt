@@ -60,6 +60,12 @@ File
 │ ├─Identifier(foo)
 │ ├─ParamList
 │ │ ├─LParen
+│ │ ├─Param
+│ │ │ ├─Identifier(text)
+│ │ │ └─TypeAnnotation
+│ │ │   ├─Colon
+│ │ │   ├─Whitespace( )
+│ │ │   └─Identifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ └─ScopeExpr
@@ -81,7 +87,7 @@ File
 │   │   │ │   └─RParen
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(        )
-│   │   │ ├─StringLiteral("Hello from Foo!")
+│   │   │ ├─Identifier(text)
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(    )
 │   │   │ └─RBrace
@@ -106,6 +112,7 @@ File
 │   │ ├─Identifier(foo)
 │   │ └─ArgList
 │   │   ├─LParen
+│   │   ├─StringLiteral("Hello from Foo!")
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )

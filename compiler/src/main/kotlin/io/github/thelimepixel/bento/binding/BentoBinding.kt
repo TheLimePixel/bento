@@ -7,23 +7,38 @@ private typealias ST = SyntaxType
 
 class BentoBinding {
     fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR.Function> {
-        val context = ChildBindingContext(parentContext, items.associateBy { it.name })
+        val context = FileBindingContext(parentContext, items.associateBy { it.name })
         return items.associateWith {
             context.bindFunction(nodes[it.name]!!.first().node.toRedRoot())
         }
     }
 
-    private fun BC.bindFunction(node: RedNode): HIR.Function {
-        val returnType = node.firstChild(SyntaxType.TypeAnnotation)
-            ?.firstChild(SyntaxType.Identifier)
-            ?.let {
-                val itemRef = refFor(it.content)
-                if (itemRef?.type == ItemType.Type) HIR.TypeRef(it.ref, itemRef.path)
-                else null
-            }
-        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { bindScope(it) }
+    private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
+        .firstChild(SyntaxType.TypeAnnotation)
+        ?.firstChild(SyntaxType.Identifier)
+        ?.let {
+            val itemRef = refFor(it.content)
+            if (itemRef is ItemRef && itemRef.type == ItemType.Type) HIR.TypeRef(it.ref, itemRef.path)
+            else null
+        }
 
-        return HIR.Function(node.ref, returnType, body)
+    private fun BC.bindFunction(node: RedNode): HIR.Function {
+        val params = node.firstChild(SyntaxType.ParamList)
+            ?.childSequence()
+            ?.filter { it.type == SyntaxType.Param }
+            ?.map {
+                val name = it.firstChild(SyntaxType.Identifier)?.content ?: ""
+                val type = findAndBindTypeAnnotation(it)
+                HIR.Param(it.ref, name, type)
+            }
+            ?.toList()
+            ?: emptyList()
+
+        val returnType = findAndBindTypeAnnotation(node)
+        val context = FunctionBindingContext(this, params.associateBy({ it.name }, { LocalRef(it) }))
+        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
+
+        return HIR.Function(node.ref, params, returnType, body)
     }
 
     private fun BC.bindCall(node: RedNode): HIR.CallExpr {
@@ -54,10 +69,11 @@ class BentoBinding {
     }
 
     private fun BC.bindScope(node: RedNode): HIR.ScopeExpr {
+        val context = LocalBindingContext(this)
         val statements = node
             .childSequence()
             .filter { it.type in BaseSets.expressions }
-            .map { bindExpr(it) }
+            .map { context.bindExpr(it) }
             .toList()
 
         return HIR.ScopeExpr(node.ref, statements)

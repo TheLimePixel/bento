@@ -12,5 +12,7 @@ enum class ParseError : ErrorType {
     ExpectedClosedBrace,
     ExpectedScope,
     ExpectedIdentifier,
-    ExpectedParameterList
+    ExpectedParameterList,
+    ExpectedTypeAnnotation,
+    ExpectedFunctionParameter
 }

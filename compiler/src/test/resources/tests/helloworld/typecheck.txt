@@ -6,9 +6,8 @@ ScopeExpr {
     CallExpr {
       ref: CallExpr@12..36
       type: bento::Unit
-      fn: ItemRef {
-        path: bento::io::println
-        type: Function
+      fn: Function {
+        bento::io::println
       }
       args: [
         StringExpr {
