@@ -6,7 +6,7 @@ public final class helloworld/mainBt {
   // access flags 0x9
   public static main()V
     LDC "Hello, World!"
-    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
     RETURN
     MAXSTACK = 1
     MAXLOCALS = 0

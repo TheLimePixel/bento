@@ -8,7 +8,7 @@ public final class comments/mainBt {
     LDC "Hello, Comments!"
     ASTORE 0
     ALOAD 0
-    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
     LDC "Haha"
     POP
     RETURN
