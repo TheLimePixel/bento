@@ -45,6 +45,10 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
+    data class WildcardPattern(override val ref: ASTRef) : Pattern {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
     data class LetExpr(
         override val ref: ASTRef,
         val pattern: Pattern?,

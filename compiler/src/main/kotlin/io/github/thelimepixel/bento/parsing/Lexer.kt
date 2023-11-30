@@ -21,13 +21,21 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         '\n' -> BaseEdges.nl
         '/' -> getSlash(index + 1)
         ' ', '\t', '\r', '\u000C', '\u2B7F' -> getWhitespace(index + 1)
-        '_', in 'a'..'z', in 'A'..'Z' -> getIdentifier(index + 1)
+        in 'a'..'z', in 'A'..'Z' -> getIdentifier(index + 1)
+        '_' -> getUnderscore(index + 1)
         '\"' -> getString(index + 1)
         else -> when {
             char.isLetter() -> getIdentifier(index + 1)
             char.isWhitespace() -> getWhitespace(index + 1)
             else -> SyntaxType.Unknown.edge(char.toString())
         }
+    }
+
+    private tailrec fun getUnderscore(curr: Int): GreenEdge = when (val char = at(curr)) {
+        '_' -> getUnderscore(curr + 1)
+        else ->
+            if (isIdentBody(char)) getIdentifier(curr + 1)
+            else SyntaxType.Wildcard.edge(code, pos, curr)
     }
 
     private fun getSlash(curr: Int): GreenEdge = when (at(curr)) {

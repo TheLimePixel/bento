@@ -1,6 +1,6 @@
 ======= nesting::main::baz =======
 ScopeExpr {
-  ref: ScopeExpr@36..61
+  ref: ScopeExpr@54..79
   type: bento::String
   statements: [
     StringExpr {
@@ -12,28 +12,33 @@ ScopeExpr {
 
 ======= nesting::main::bar =======
 ScopeExpr {
-  ref: ScopeExpr@20..73
+  ref: ScopeExpr@20..83
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..26
+      ref: CallExpr@12..36
       type: bento::Unit
       fn: Function {
         bento::io::println
       }
       args: [
         CallExpr {
-          ref: CallExpr@2..7
+          ref: CallExpr@2..17
           type: bento::String
           fn: Function {
             nesting::main::baz
           }
-          args: []
+          args: [
+            StringExpr {
+              ref: StringLiteral@2..12
+              content: "Hellope!"
+            }
+          ]
         }
       ]
     }
     CallExpr {
-      ref: CallExpr@50..76
+      ref: CallExpr@70..96
       type: bento::Unit
       fn: Function {
         bento::io::println

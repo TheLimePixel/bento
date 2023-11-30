@@ -24,8 +24,13 @@ class BentoBinding {
         }
 
     private fun findAndBindPattern(node: RedNode): HIR.Pattern =
-        node.firstChild(ST.IdentPattern)?.let { HIR.IdentPattern(it.ref, it.content) }
-            ?: HIRError.Propagation.at(node.ref)
+        node.firstChild(BaseSets.patterns)?.let {
+            when (it.type) {
+                ST.IdentPattern -> HIR.IdentPattern(it.ref, it.content)
+                ST.WildcardPattern -> HIR.WildcardPattern(it.ref)
+                else -> error("Unsupported pattern type: ${it.type}")
+            }
+        } ?: HIRError.Propagation.at(node.ref)
 
     private fun BC.bindFunction(node: RedNode): HIR.Function {
         val params = node.firstChild(SyntaxType.ParamList)
@@ -42,7 +47,8 @@ class BentoBinding {
         val returnType = findAndBindTypeAnnotation(node)
         val context = FunctionBindingContext(
             this,
-            params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }.associateBy({ it.name }, { LocalRef((it)) })
+            params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
+                .associateBy({ it.name }, { LocalRef((it)) })
         )
         val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
 

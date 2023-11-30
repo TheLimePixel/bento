@@ -62,7 +62,8 @@ class BentoParsing {
 
     private fun P.consumePattern(): Boolean {
         when (current) {
-            ST.Identifier -> node(ST.IdentPattern) { push() }
+            ST.Identifier -> pushWrapped(ST.IdentPattern)
+            ST.Wildcard -> pushWrapped(ST.WildcardPattern)
             else -> return false
         }
         return true

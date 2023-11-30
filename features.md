@@ -196,8 +196,6 @@ b: I32)` in scope, you can simply call it with arguments a: 0 and b: 0 by doing 
 
 ## Basic Patterns
 
-TODO
-
 #### Requires
 
 - [Identifiers](features.md#identifiers)

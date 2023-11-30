@@ -30,6 +30,7 @@ enum class SyntaxType(
 
     FunKeyword,
     LetKeyword,
+    Wildcard,
 
     Param,
     ParamList,
@@ -37,6 +38,7 @@ enum class SyntaxType(
     ArgList,
 
     IdentPattern,
+    WildcardPattern,
 
     LetExpr,
     ScopeExpr,

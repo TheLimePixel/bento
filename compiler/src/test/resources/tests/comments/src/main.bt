@@ -4,4 +4,5 @@ fun main() {
                /* in the middle of an expression*/
                "Hello, Comments!" */ "Hello, Comments!"
     println(text)
+    let _: String = "Haha"
 }

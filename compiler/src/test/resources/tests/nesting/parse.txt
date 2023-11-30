@@ -5,6 +5,13 @@ File
 │ ├─Identifier(baz)
 │ ├─ParamList
 │ │ ├─LParen
+│ │ ├─Param
+│ │ │ ├─WildcardPattern
+│ │ │ │ └─Wildcard
+│ │ │ └─TypeAnnotation
+│ │ │   ├─Colon
+│ │ │   ├─Whitespace( )
+│ │ │   └─Identifier(String)
 │ │ └─RParen
 │ ├─TypeAnnotation
 │ │ ├─Colon
@@ -40,6 +47,7 @@ File
 │   │   │ ├─Identifier(baz)
 │   │   │ └─ArgList
 │   │   │   ├─LParen
+│   │   │   ├─StringLiteral("Hellope!")
 │   │   │   └─RParen
 │   │   └─RParen
 │   ├─Newline

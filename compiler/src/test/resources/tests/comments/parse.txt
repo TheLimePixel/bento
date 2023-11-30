@@ -33,5 +33,20 @@ File
 │   │   ├─Identifier(text)
 │   │   └─RParen
 │   ├─Newline
+│   ├─Whitespace(    )
+│   ├─LetExpr
+│   │ ├─LetKeyword
+│   │ ├─Whitespace( )
+│   │ ├─WildcardPattern
+│   │ │ └─Wildcard
+│   │ ├─TypeAnnotation
+│   │ │ ├─Colon
+│   │ │ ├─Whitespace( )
+│   │ │ └─Identifier(String)
+│   │ ├─Whitespace( )
+│   │ ├─Equals
+│   │ ├─Whitespace( )
+│   │ └─StringLiteral("Haha")
+│   ├─Newline
 │   └─RBrace
 └─EOF

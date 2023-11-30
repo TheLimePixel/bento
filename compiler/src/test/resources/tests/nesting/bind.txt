@@ -1,13 +1,24 @@
 ======= nesting::main::baz =======
 Function {
-  ref: FunDef@0..43
-  params: []
+  ref: FunDef@0..52
+  params: [
+    Param {
+      ref: Param@2..11
+      pattern: WildcardPattern {
+        ref: WildcardPattern@0..1
+      }
+      type: TypeRef {
+        ref: Identifier@4..10
+        type: bento::String
+      }
+    }
+  ]
   returnType: TypeRef {
     ref: Identifier@4..10
     type: bento::String
   }
   body: ScopeExpr {
-    ref: ScopeExpr@36..61
+    ref: ScopeExpr@54..79
     statements: [
       StringExpr {
         ref: StringLiteral@12..29
@@ -19,14 +30,14 @@ Function {
 
 ======= nesting::main::bar =======
 Function {
-  ref: FunDef@0..63
+  ref: FunDef@0..73
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@20..73
+    ref: ScopeExpr@20..83
     statements: [
       CallExpr {
-        ref: CallExpr@12..26
+        ref: CallExpr@12..36
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {
@@ -35,19 +46,24 @@ Function {
         }
         args: [
           CallExpr {
-            ref: CallExpr@2..7
+            ref: CallExpr@2..17
             on: IdentExpr {
               ref: Identifier@0..3
               binding: Function {
                 nesting::main::baz
               }
             }
-            args: []
+            args: [
+              StringExpr {
+                ref: StringLiteral@2..12
+                content: "Hellope!"
+              }
+            ]
           }
         ]
       }
       CallExpr {
-        ref: CallExpr@50..76
+        ref: CallExpr@70..96
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {

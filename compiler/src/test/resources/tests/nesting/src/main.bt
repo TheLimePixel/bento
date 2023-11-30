@@ -1,9 +1,9 @@
-fun baz(): String {
+fun baz(_: String): String {
     "Hello from Baz!"
 }
 
 fun bar() {
-    println(baz())
+    println(baz("Hellope!"))
     println("Hello from Bar!")
 }
 
