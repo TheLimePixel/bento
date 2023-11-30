@@ -10,7 +10,7 @@ fun bar() {
 fun foo(text: String) {
     println({
         bar()
-        text
+        (text)
     })
 }
 

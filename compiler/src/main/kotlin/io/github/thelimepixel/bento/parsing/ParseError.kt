@@ -10,6 +10,7 @@ enum class ParseError : ErrorType {
     ExpectedExpression,
     ExpectedEquals,
     ExpectedCommaOrClosedParen,
+    ExpectedClosedParen,
     ExpectedClosedBrace,
     ExpectedScope,
     ExpectedIdentifier,

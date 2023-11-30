@@ -74,17 +74,17 @@ class BentoBinding {
 
     private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
-
         ST.Identifier -> bindIdentifier(node)
-
         ST.CallExpr -> bindCall(node)
-
         ST.ScopeExpr -> bindScope(node)
-
         ST.LetExpr -> bindLet(node)
-
+        ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
         else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
     }
+
+    private fun LC.bindParenthesizedExpr(node: RedNode): HIR.Expr =
+        node.firstChild(BaseSets.expressions)?.let { bindExpr(it) }
+            ?: HIRError.Propagation.at(node.ref)
 
     private fun LC.bindLet(node: RedNode): HIR.LetExpr {
         val pattern = findAndBindPattern(node)

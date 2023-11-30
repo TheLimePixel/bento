@@ -21,6 +21,7 @@ object BaseSets {
         SyntaxType.CallExpr,
         SyntaxType.ScopeExpr,
         SyntaxType.LetExpr,
+        SyntaxType.ParenthesizedExpr,
     )
     val patterns = syntaxSetOf(
         SyntaxType.IdentPattern,

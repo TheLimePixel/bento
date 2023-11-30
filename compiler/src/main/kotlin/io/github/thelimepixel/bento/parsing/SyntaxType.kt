@@ -43,6 +43,7 @@ enum class SyntaxType(
     LetExpr,
     ScopeExpr,
     CallExpr,
+    ParenthesizedExpr,
 
     TypeAnnotation,
 

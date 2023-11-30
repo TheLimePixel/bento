@@ -123,10 +123,17 @@ class BentoParsing {
         handleExpressionScope()
     }
 
+    private fun P.handleParenthesized() = node(ST.ParenthesizedExpr) {
+        push()  // (
+        expectTerm()
+        if (!consume(SyntaxType.RParen)) pushError(ParseError.ExpectedClosedParen)
+    }
+
     private fun P.expectBaseTerm() = when (current) {
         ST.StringLiteral -> push()
         ST.Identifier -> push()
         ST.LBrace -> parseScopeExpr()
+        ST.LParen -> handleParenthesized()
         ST.EOF -> {}
         else -> handleError(ParseError.ExpectedExpression)
     }

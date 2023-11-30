@@ -96,7 +96,10 @@ File
 │   │   │ │   └─RParen
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(        )
-│   │   │ ├─Identifier(text)
+│   │   │ ├─ParenthesizedExpr
+│   │   │ │ ├─LParen
+│   │   │ │ ├─Identifier(text)
+│   │   │ │ └─RParen
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(    )
 │   │   │ └─RBrace

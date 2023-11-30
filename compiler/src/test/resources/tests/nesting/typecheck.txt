@@ -55,18 +55,18 @@ ScopeExpr {
 
 ======= nesting::main::foo =======
 ScopeExpr {
-  ref: ScopeExpr@44..95
+  ref: ScopeExpr@44..97
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..55
+      ref: CallExpr@12..57
       type: bento::Unit
       fn: Function {
         bento::io::println
       }
       args: [
         ScopeExpr {
-          ref: ScopeExpr@2..36
+          ref: ScopeExpr@2..38
           type: bento::String
           statements: [
             CallExpr {
@@ -78,7 +78,7 @@ ScopeExpr {
               args: []
             }
             AccessExpr {
-              ref: Identifier@48..52
+              ref: Identifier@2..6
               type: bento::String
               binding: LocalRef {
                 node: IdentPattern {

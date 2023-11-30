@@ -83,7 +83,7 @@ Function {
 
 ======= nesting::main::foo =======
 Function {
-  ref: FunDef@0..73
+  ref: FunDef@0..75
   params: [
     Param {
       ref: Param@2..14
@@ -99,10 +99,10 @@ Function {
   ]
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@44..95
+    ref: ScopeExpr@44..97
     statements: [
       CallExpr {
-        ref: CallExpr@12..55
+        ref: CallExpr@12..57
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {
@@ -111,7 +111,7 @@ Function {
         }
         args: [
           ScopeExpr {
-            ref: ScopeExpr@2..36
+            ref: ScopeExpr@2..38
             statements: [
               CallExpr {
                 ref: CallExpr@20..25
@@ -124,7 +124,7 @@ Function {
                 args: []
               }
               IdentExpr {
-                ref: Identifier@48..52
+                ref: Identifier@2..6
                 binding: LocalRef {
                   node: IdentPattern {
                     ref: IdentPattern@0..4
