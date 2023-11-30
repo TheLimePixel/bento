@@ -10,7 +10,7 @@ class BentoParsing {
         when (current) {
             ST.EOF -> return
             ST.FunKeyword -> handleFunction()
-            else -> handleError(ParseError.ExpectedDeclaration)
+            else -> errorNode(ParseError.ExpectedDeclaration) { push() }
         }
         handleFile()
     }
@@ -60,12 +60,19 @@ class BentoParsing {
         }
     }
 
-    private fun P.expectParam() {
-        if (!at(SyntaxType.Identifier))
-            return handleError(ParseError.ExpectedFunctionParameter)
+    private fun P.consumePattern(): Boolean {
+        when (current) {
+            ST.Identifier -> node(ST.IdentPattern) { push() }
+            else -> return false
+        }
+        return true
+    }
 
-        node(SyntaxType.Param) {
-            push()  // identifier
+    private fun P.expectParam() {
+        if (!consumePattern())
+            return handleError(ParseError.ExpectedPattern)
+
+        nestLast(SyntaxType.Param) {
             expectTypeAnnotation()
         }
     }
@@ -90,13 +97,29 @@ class BentoParsing {
         parseScopeExpr()
     }
 
-    private tailrec fun P.handleExpressionScope(): Unit = when (current) {
-        ST.EOF -> handleError(ParseError.ExpectedClosedBrace)
-        ST.RBrace -> push()
-        else -> {
-            expectTerm()
-            handleExpressionScope()
+    private fun P.expectEqExpression() {
+        if (!consume(ST.Equals))
+            return pushError(ParseError.ExpectedEquals)
+
+        expectTerm()
+    }
+
+    private fun P.handleLetExpr() = node(ST.LetExpr) {
+        push()  // let keyword
+        if (!consumePattern()) pushError(ParseError.ExpectedPattern)
+        parseTypeAnnotation()
+        expectEqExpression()
+    }
+
+    private tailrec fun P.handleExpressionScope() {
+        when (current) {
+            ST.EOF -> return handleError(ParseError.ExpectedClosedBrace)
+            ST.RBrace -> return push()
+            ST.Comma -> push()
+            ST.LetKeyword -> handleLetExpr()
+            else -> expectTerm()
         }
+        handleExpressionScope()
     }
 
     private fun P.expectBaseTerm() = when (current) {

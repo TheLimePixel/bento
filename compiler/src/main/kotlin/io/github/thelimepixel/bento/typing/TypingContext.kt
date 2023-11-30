@@ -2,6 +2,7 @@ package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.BuiltinRefs
 import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.LocalRef
 import io.github.thelimepixel.bento.binding.Ref
 
 interface TypingContext {
@@ -18,10 +19,23 @@ class TopLevelTypingContext : TypingContext {
     }
 }
 
-class ChildTypingContext(
+class FileTypingContext(
     private val parent: TypingContext,
-    private val map: Map<Ref, Type>
+    private val map: Map<ItemRef, Type>
 ) : TypingContext {
     override fun typeOf(ref: Ref): Type =
         map[ref] ?: parent.typeOf(ref)
+}
+
+class FunctionTypingContext(
+    private val parent: TypingContext,
+    private val map: Map<LocalRef, Type>
+) : TypingContext {
+    private val locals = mutableMapOf<LocalRef, Type>()
+    override fun typeOf(ref: Ref): Type =
+        locals[ref] ?: map[ref] ?: parent.typeOf(ref)
+
+    operator fun set(ref: LocalRef, type: Type) {
+        locals[ref] = type
+    }
 }

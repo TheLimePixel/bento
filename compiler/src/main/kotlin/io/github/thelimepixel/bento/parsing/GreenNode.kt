@@ -60,7 +60,7 @@ data class GreenBranch(
     override val error: ParseError?
         get() = null
     override val content: String
-        get() = children.joinToString { it.node.content }
+        get() = children.joinToString("") { it.node.content }
 
     override val childCount: Int
         get() = children.size

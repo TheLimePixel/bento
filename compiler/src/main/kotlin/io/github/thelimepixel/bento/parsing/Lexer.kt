@@ -6,9 +6,6 @@ class Lexer(private val code: String, private var pos: Int = 0) {
     var current: GreenEdge = edgeAt(pos)
         private set
 
-    val currentSpan: IntRange
-        get() = pos..(pos + current.length)
-
     private fun at(index: Int): Char =
         if (index in code.indices) code[index] else eofChar
 
@@ -20,6 +17,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         '}' -> BaseEdges.rBrace
         ',' -> BaseEdges.comma
         ':' -> BaseEdges.colon
+        '=' -> BaseEdges.eq
         '\n' -> BaseEdges.nl
         '/' -> getSlash(index + 1)
         ' ', '\t', '\r', '\u000C', '\u2B7F' -> getWhitespace(index + 1)
@@ -93,6 +91,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
 
     private fun String.matchIdentifier() = when (this) {
         "fun" -> BaseEdges.funKeyword
+        "let" -> BaseEdges.letKeyword
         else -> SyntaxType.Identifier.edge(this)
     }
 

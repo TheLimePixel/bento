@@ -340,8 +340,6 @@ foo(b: 10)          // a and c get defalut values
 
 ## Let Statement
 
-TODO
-
 #### Requires
 
 - [Basic Patterns](features.md#basic-patterns)

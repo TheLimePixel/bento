@@ -11,7 +11,7 @@ data class JVMFunctionInfo(val varIds: Map<LocalRef, Int>, val maxStackSize: Int
 fun jvmFunctionInfoOf(hir: HIR.Function, thir: THIR?): JVMFunctionInfo {
     val paramIds = hir.params
         .withIndex()
-        .associateByTo(mutableMapOf(), { LocalRef(it.value) }, { it.index })
+        .associateByTo(mutableMapOf(), { LocalRef(it.value.pattern) }, { it.index })
 
     return if (thir == null) JVMFunctionInfo(paramIds, 0)
     else JVMInfoResolver(paramIds).apply { handle(thir) }.toInfo()
@@ -40,6 +40,10 @@ private class JVMInfoResolver(private val varIds: MutableMap<LocalRef, Int>) {
             is THIR.CallExpr -> frame { node.args.forEach { handleRec(it) } }
             is THIR.ScopeExpr -> node.statements.forEach { frame { handleRec(it) } }
             is THIR.AccessExpr, is THIR.ErrorExpr, is THIR.StringExpr -> Unit
+            is THIR.LetExpr -> {
+                frame { handleRec(node.expr) }
+                varIds[node.local] = varIds.size
+            }
         }
         if (node.type != BuiltinTypes.unit && node.type != BuiltinTypes.nothing)
             currentStackSize += 1

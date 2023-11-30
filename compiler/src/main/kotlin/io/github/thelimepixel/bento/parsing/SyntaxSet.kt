@@ -20,5 +20,6 @@ object BaseSets {
         SyntaxType.ScopeExpr,
         SyntaxType.CallExpr,
         SyntaxType.ScopeExpr,
+        SyntaxType.LetExpr,
     )
 }

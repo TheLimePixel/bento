@@ -39,10 +39,29 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
+    sealed interface Pattern : HIR
+
+    data class IdentPattern(override val ref: ASTRef, val name: String) : Pattern {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    data class LetExpr(
+        override val ref: ASTRef,
+        val pattern: Pattern?,
+        val type: TypeRef?,
+        val expr: Expr,
+    ) : Expr {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            pattern?.let { yield(it) }
+            type?.let { yield(it) }
+            yield(expr)
+        }
+    }
+
     data class ErrorExpr(
         override val ref: ASTRef,
         override val error: HIRError,
-    ) : Expr {
+    ) : Expr, Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -57,7 +76,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    data class Param(override val ref: ASTRef, val name: String, val type: TypeRef?) : HIR {
+    data class Param(override val ref: ASTRef, val pattern: Pattern, val type: TypeRef?) : HIR {
         override fun childSequence(): Sequence<HIR> = type?.let { sequenceOf(it) } ?: EmptySequence
     }
 

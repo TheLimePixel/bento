@@ -5,9 +5,7 @@ import io.github.thelimepixel.bento.parsing.SyntaxType
 
 sealed interface Ref
 
-data class LocalRef(val node: HIR): Ref {
-    override fun toString(): String = "LocalRef"
-}
+data class LocalRef(val node: HIR.Pattern): Ref
 
 enum class ItemType {
     Function,

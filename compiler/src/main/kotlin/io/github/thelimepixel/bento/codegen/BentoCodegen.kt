@@ -7,11 +7,13 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
+private typealias JC = JVMBindingContext
+
 class BentoCodegen {
     fun generate(
         file: ItemPath,
         items: List<ItemRef>,
-        fileContext: JVMBindingContext,
+        fileContext: JC,
         hirMap: Map<ItemRef, HIR.Function>,
         thirMap: Map<ItemRef, THIR>
     ): ByteArray {
@@ -39,7 +41,7 @@ class BentoCodegen {
                 null
             )
             val isVoid = sig.descriptor.endsWith("V")
-            genExpr(thirMap[ref]!!, methodVisitor, methodContext, isVoid)
+            methodContext.genExpr(thirMap[ref]!!, methodVisitor, isVoid)
             methodVisitor.visitInsn(if (isVoid) Opcodes.RETURN else Opcodes.ARETURN)
             methodVisitor.visitMaxs(info.maxStackSize, info.varIds.size)
             methodVisitor.visitEnd()
@@ -49,60 +51,65 @@ class BentoCodegen {
         return writer.toByteArray()
     }
 
-    private fun genScopeExpr(
+    private fun JC.genScopeExpr(
         node: THIR.ScopeExpr,
         methodWriter: MethodVisitor,
-        context: JVMBindingContext
     ): Boolean {
         val statements = node.statements
         if (statements.isEmpty()) return false
 
-        statements.subList(0, statements.lastIndex).forEach { genExpr(it, methodWriter, context, true) }
-        return genExpr(statements.last(), methodWriter, context, false)
+        statements.subList(0, statements.lastIndex).forEach { genExpr(it, methodWriter, true) }
+        return genExpr(statements.last(), methodWriter, false)
     }
 
     private fun MethodVisitor.visitMethodInsn(op: Int, signature: JVMSignature) {
         visitMethodInsn(op, signature.parent, signature.name, signature.descriptor, false)
     }
 
-    private fun genCallExpr(
+    private fun JC.genCallExpr(
         node: THIR.CallExpr,
         methodWriter: MethodVisitor,
-        context: JVMBindingContext
     ): Boolean {
-        node.args.forEach { genExpr(it, methodWriter, context, false) }
-        methodWriter.visitMethodInsn(Opcodes.INVOKESTATIC, context.signatureOf(node.fn))
+        node.args.forEach { genExpr(it, methodWriter, false) }
+        methodWriter.visitMethodInsn(Opcodes.INVOKESTATIC, signatureOf(node.fn))
         return node.type != BuiltinTypes.unit
     }
 
-    private fun genAccessExpr(
+    private fun JC.genAccessExpr(
         node: THIR.AccessExpr,
         methodWriter: MethodVisitor,
-        context: JVMBindingContext
     ): Boolean {
         when (val binding = node.binding) {
-            is LocalRef -> methodWriter.visitVarInsn(Opcodes.ALOAD, context.localId(binding))
+            is LocalRef -> methodWriter.visitVarInsn(Opcodes.ALOAD, localId(binding))
             is ItemRef -> TODO("Unsupported operation")
         }
         return true
     }
 
-    private fun genExpr(
+    private fun JC.genLetExpr(node: THIR.LetExpr, methodWriter: MethodVisitor): Boolean {
+        val id = localId(node.local)
+        genExpr(node.expr, methodWriter, false)
+        methodWriter.visitVarInsn(Opcodes.ASTORE, id)
+        return false
+    }
+
+    private fun JC.genStringExpr(node: THIR.StringExpr, methodWriter: MethodVisitor): Boolean {
+        methodWriter.visitLdcInsn(node.rawContext)
+        return true
+    }
+
+    private fun JC.genExpr(
         node: THIR,
         methodWriter: MethodVisitor,
-        context: JVMBindingContext,
         ignoreOutput: Boolean
     ): Boolean {
         val returns = when (node) {
-            is THIR.StringExpr -> {
-                methodWriter.visitLdcInsn(node.rawContext)
-                true
-            }
-
-            is THIR.CallExpr -> genCallExpr(node, methodWriter, context)
+            is THIR.StringExpr -> genStringExpr(node, methodWriter)
+            is THIR.CallExpr -> genCallExpr(node, methodWriter)
             is THIR.ErrorExpr -> false
-            is THIR.ScopeExpr -> genScopeExpr(node, methodWriter, context)
-            is THIR.AccessExpr -> genAccessExpr(node, methodWriter, context)
+            is THIR.ScopeExpr -> genScopeExpr(node, methodWriter)
+            is THIR.AccessExpr -> genAccessExpr(node, methodWriter)
+            is THIR.LetExpr -> genLetExpr(node, methodWriter)
         }
         if (returns && ignoreOutput) methodWriter.visitInsn(Opcodes.POP)
         return returns && !ignoreOutput

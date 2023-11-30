@@ -21,7 +21,7 @@ class FunctionBindingContext(
 class LocalBindingContext(private val parent: BindingContext) : BindingContext {
     private val localsMap = mutableMapOf<String, LocalRef>()
 
-    fun addLocal(name: String, node: HIR) {
+    fun addLocal(name: String, node: HIR.Pattern) {
         localsMap[name] = LocalRef(node)
     }
     override fun refFor(name: String): Ref? =

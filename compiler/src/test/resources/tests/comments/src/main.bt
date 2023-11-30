@@ -1,9 +1,7 @@
 // This is a comment
 fun main() {
-    println(
-        /*And this is a comment
-        /* in the middle of an expression*/
-        "Hello, Comments!" */
-        "Hello, Comments!"
-    )
+    let text = /*And this is a comment
+               /* in the middle of an expression*/
+               "Hello, Comments!" */ "Hello, Comments!"
+    println(text)
 }

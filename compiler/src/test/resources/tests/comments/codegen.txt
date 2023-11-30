@@ -1,0 +1,15 @@
+// class version 52.0 (52)
+// access flags 0x31
+public final class comments/mainBt {
+
+
+  // access flags 0x9
+  public static main()V
+    LDC "Hello, Comments!"
+    ASTORE 0
+    ALOAD 0
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.println (Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1
+}

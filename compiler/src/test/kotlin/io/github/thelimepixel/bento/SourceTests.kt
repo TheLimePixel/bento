@@ -53,7 +53,7 @@ class SourceTests {
                 }
             }
 
-            val typingContext = ChildTypingContext(
+            val typingContext = FileTypingContext(
                 TopLevelTypingContext(),
                 hirMap.mapValues { (_, value) -> value.type() }
             )

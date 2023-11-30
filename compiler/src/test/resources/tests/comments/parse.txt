@@ -13,18 +13,24 @@ File
 │   ├─LBrace
 │   ├─Newline
 │   ├─Whitespace(    )
+│   ├─LetExpr
+│   │ ├─LetKeyword
+│   │ ├─Whitespace( )
+│   │ ├─IdentPattern
+│   │ │ └─Identifier(text)
+│   │ ├─Whitespace( )
+│   │ ├─Equals
+│   │ ├─Whitespace( )
+│   │ ├─MultiLineComment(/*And this is a comment\n               /* in the middle of an expression*/\n               "Hello, Comments!" */)
+│   │ ├─Whitespace( )
+│   │ └─StringLiteral("Hello, Comments!")
+│   ├─Newline
+│   ├─Whitespace(    )
 │   ├─CallExpr
 │   │ ├─Identifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Newline
-│   │   ├─Whitespace(        )
-│   │   ├─MultiLineComment(/*And this is a comment\n        /* in the middle of an expression*/\n        "Hello, Comments!" */)
-│   │   ├─Newline
-│   │   ├─Whitespace(        )
-│   │   ├─StringLiteral("Hello, Comments!")
-│   │   ├─Newline
-│   │   ├─Whitespace(    )
+│   │   ├─Identifier(text)
 │   │   └─RParen
 │   ├─Newline
 │   └─RBrace

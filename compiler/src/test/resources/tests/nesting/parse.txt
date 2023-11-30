@@ -61,7 +61,8 @@ File
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
-│ │ │ ├─Identifier(text)
+│ │ │ ├─IdentPattern
+│ │ │ │ └─Identifier(text)
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )

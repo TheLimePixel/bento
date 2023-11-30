@@ -71,7 +71,10 @@ Function {
   params: [
     Param {
       ref: Param@2..14
-      name: text
+      pattern: IdentPattern {
+        ref: IdentPattern@0..4
+        name: text
+      }
       type: TypeRef {
         ref: Identifier@4..10
         type: bento::String
@@ -106,7 +109,12 @@ Function {
               }
               IdentExpr {
                 ref: Identifier@48..52
-                binding: LocalRef
+                binding: LocalRef {
+                  node: IdentPattern {
+                    ref: IdentPattern@0..4
+                    name: text
+                  }
+                }
               }
             ]
           }

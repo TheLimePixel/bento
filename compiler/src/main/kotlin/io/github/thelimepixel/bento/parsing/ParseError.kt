@@ -8,11 +8,13 @@ enum class ParseError : ErrorType {
     UnclosedString,
     ExpectedDeclaration,
     ExpectedExpression,
+    ExpectedEquals,
     ExpectedCommaOrClosedParen,
     ExpectedClosedBrace,
     ExpectedScope,
     ExpectedIdentifier,
     ExpectedParameterList,
     ExpectedTypeAnnotation,
-    ExpectedFunctionParameter
+    ExpectedPattern,
+    ;
 }
