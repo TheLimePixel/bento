@@ -5,7 +5,7 @@ Function {
     Param {
       ref: Param@2..11
       pattern: WildcardPattern {
-        ref: WildcardPattern@0..1
+        ref: Wildcard@0..1
       }
       type: TypeRef {
         ref: Identifier@4..10
@@ -88,7 +88,7 @@ Function {
     Param {
       ref: Param@2..14
       pattern: IdentPattern {
-        ref: IdentPattern@0..4
+        ref: Identifier@0..4
         name: text
       }
       type: TypeRef {
@@ -127,7 +127,7 @@ Function {
                 ref: Identifier@2..6
                 binding: LocalRef {
                   node: IdentPattern {
-                    ref: IdentPattern@0..4
+                    ref: Identifier@0..4
                     name: text
                   }
                 }

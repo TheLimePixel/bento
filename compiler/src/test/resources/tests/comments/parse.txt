@@ -4,7 +4,8 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
-│ ├─Identifier(main)
+│ ├─Identifier
+│ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
@@ -16,8 +17,8 @@ File
 │   ├─LetExpr
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
-│   │ ├─IdentPattern
-│   │ │ └─Identifier(text)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(text)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
@@ -27,22 +28,24 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(println)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Identifier(text)
+│   │   ├─Identifier
+│   │   │ └─StandardIdentifier(text)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─LetExpr
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
-│   │ ├─WildcardPattern
-│   │ │ └─Wildcard
+│   │ ├─Wildcard
 │   │ ├─TypeAnnotation
 │   │ │ ├─Colon
 │   │ │ ├─Whitespace( )
-│   │ │ └─Identifier(String)
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(String)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )

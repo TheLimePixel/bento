@@ -27,7 +27,7 @@ class BentoCodegen {
             null
         )
 
-        writer.visitSource(file.name + ".bt", null)
+        writer.visitSource(file.rawName + ".bt", null)
 
         items.forEach { ref ->
             val sig = fileContext.signatureOf(ref)

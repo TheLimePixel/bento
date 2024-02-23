@@ -7,9 +7,9 @@ data class JVMSignature(val parent: String, val name: String, val descriptor: St
 private fun refToJVMPath(ref: ItemPath?, builder: StringBuilder) {
     if (ref == null) return
     refToJVMPath(ref.parent, builder)
-    builder.append(ref.name).append("/")
+    builder.append(ref.rawName).append("/")
 }
 fun ItemPath.toJVMPath(): String = StringBuilder()
     .also { refToJVMPath(this.parent, it) }
-    .append(this.name)
+    .append(this.rawName)
     .toString()

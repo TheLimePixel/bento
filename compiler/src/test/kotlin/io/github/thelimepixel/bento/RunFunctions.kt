@@ -1,6 +1,7 @@
 package io.github.thelimepixel.bento
 
 val printBuffer = StringBuilder()
+
 fun fakePrintln(str: String) {
     printBuffer.appendLine(str)
 }

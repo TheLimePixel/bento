@@ -19,6 +19,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         ':' -> BaseEdges.colon
         '=' -> BaseEdges.eq
         '\n' -> BaseEdges.nl
+        '`' -> getRawIdentifier(index + 1)
         '/' -> getSlash(index + 1)
         ' ', '\t', '\r', '\u000C', '\u2B7F' -> getWhitespace(index + 1)
         in 'a'..'z', in 'A'..'Z' -> getIdentifier(index + 1)
@@ -97,10 +98,16 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         if (isIdentBody(at(curr))) getIdentifier(curr + 1)
         else code.substring(pos, curr).matchIdentifier()
 
+    private tailrec fun getRawIdentifier(curr: Int): GreenEdge = when (at(curr)) {
+        '`' -> SyntaxType.BacktickedIdentifier.edge(code, pos, curr + 1)
+        eofChar -> SyntaxType.UnclosedRawIdentifier.edge(code, pos, curr)
+        else -> getRawIdentifier(curr + 1)
+    }
+
     private fun String.matchIdentifier() = when (this) {
         "fun" -> BaseEdges.funKeyword
         "let" -> BaseEdges.letKeyword
-        else -> SyntaxType.Identifier.edge(this)
+        else -> SyntaxType.StandardIdentifier.edge(this)
     }
 
     fun move() {

@@ -26,8 +26,8 @@ class BentoBinding {
     private fun findAndBindPattern(node: RedNode): HIR.Pattern =
         node.firstChild(BaseSets.patterns)?.let {
             when (it.type) {
-                ST.IdentPattern -> HIR.IdentPattern(it.ref, it.content)
-                ST.WildcardPattern -> HIR.WildcardPattern(it.ref)
+                ST.Identifier -> HIR.IdentPattern(it.ref, it.content)
+                ST.Wildcard -> HIR.WildcardPattern(it.ref)
                 else -> error("Unsupported pattern type: ${it.type}")
             }
         } ?: HIRError.Propagation.at(node.ref)

@@ -8,6 +8,22 @@ data class ItemPath(val parent: ItemPath?, val name: String) {
         return builder.toString()
     }
 
+    val rawName: String
+        get() {
+            val builder = StringBuilder()
+            for (c in name) {
+                when (c) {
+                    '\\' -> builder.append("\\\\")
+                    '.' -> builder.append("\\d")
+                    ';' -> builder.append("\\s")
+                    '[' -> builder.append("\\b")
+                    '/' -> builder.append("\\f")
+                    else -> builder.append(c)
+                }
+            }
+            return builder.toString()
+        }
+
     fun subpath(name: String) = ItemPath(this, name)
 }
 

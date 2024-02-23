@@ -57,7 +57,7 @@ class FileJVMBindingContext(
     override fun signatureOf(ref: ItemRef): JVMSignature =
         if (ref == BuiltinRefs.println) parent.signatureOf(ref)
         else JVMSignature(
-            parent = ref.parent.let { it.copy(name = it.name + "Bt") }.toJVMPath(),
+            parent = ref.parent.let { it.copy(name = it.rawName + "Bt") }.toJVMPath(),
             name = ref.name,
             descriptor = mapType(typingContext.typeOf(ref))
         )

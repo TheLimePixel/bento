@@ -46,8 +46,8 @@ class BentoParsing {
     }
 
     private fun P.expectIdentifier() {
-        if (!consume(ST.Identifier))
-            handleError(ParseError.ExpectedIdentifier)
+        if (at(BaseSets.identifiers)) handleIdentifier()
+        else handleError(ParseError.ExpectedIdentifier)
     }
 
     private fun P.expectParamList() {
@@ -62,8 +62,8 @@ class BentoParsing {
 
     private fun P.consumePattern(): Boolean {
         when (current) {
-            ST.Identifier -> pushWrapped(ST.IdentPattern)
-            ST.Wildcard -> pushWrapped(ST.WildcardPattern)
+            ST.Wildcard -> push()
+            in BaseSets.identifiers -> handleIdentifier()
             else -> return false
         }
         return true
@@ -131,12 +131,14 @@ class BentoParsing {
 
     private fun P.expectBaseTerm() = when (current) {
         ST.StringLiteral -> push()
-        ST.Identifier -> push()
         ST.LBrace -> parseScopeExpr()
         ST.LParen -> handleParenthesized()
+        in BaseSets.identifiers -> handleIdentifier()
         ST.EOF -> {}
         else -> handleError(ParseError.ExpectedExpression)
     }
+
+    private fun P.handleIdentifier() = pushWrapped(SyntaxType.Identifier)
 
     private fun P.handleCall() = nestLast(ST.CallExpr) {
         node(ST.ArgList) {

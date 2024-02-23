@@ -10,6 +10,7 @@ enum class SyntaxType(
     Unknown(dynamic = true, error = ParseError.UnknownSymbol),
     UnclosedComment(dynamic = true, error = ParseError.UnclosedComment, ignore = true),
     UnclosedString(dynamic = true, error = ParseError.UnclosedString),
+    UnclosedRawIdentifier(dynamic = true, error = ParseError.UnclosedRawIdentifier),
 
     Whitespace(dynamic = true, ignore = true),
     Newline(ignore = true),
@@ -24,8 +25,8 @@ enum class SyntaxType(
     Colon,
     Equals,
 
-    Identifier(dynamic = true),
-
+    StandardIdentifier(dynamic = true),
+    BacktickedIdentifier(dynamic = true),
     StringLiteral(dynamic = true),
 
     FunKeyword,
@@ -37,8 +38,7 @@ enum class SyntaxType(
 
     ArgList,
 
-    IdentPattern,
-    WildcardPattern,
+    Identifier,
 
     LetExpr,
     ScopeExpr,

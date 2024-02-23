@@ -69,6 +69,8 @@ class Parser internal constructor(private val lexer: Lexer) {
 
     fun at(type: SyntaxType): Boolean = lexer.current.type == type
 
+    fun at(set: SyntaxSet): Boolean = lexer.current.type in set
+
     fun consume(type: SyntaxType): Boolean = at(type).also { if (it) push() }
 
     fun finish(type: SyntaxType): GreenNode {

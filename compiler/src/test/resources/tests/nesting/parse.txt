@@ -2,21 +2,23 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
-│ ├─Identifier(baz)
+│ ├─Identifier
+│ │ └─StandardIdentifier(baz)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
-│ │ │ ├─WildcardPattern
-│ │ │ │ └─Wildcard
+│ │ │ ├─Wildcard
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier(String)
+│ │ │   └─Identifier
+│ │ │     └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Identifier(String)
+│ │ └─Identifier
+│ │   └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace
@@ -30,7 +32,8 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
-│ ├─Identifier(bar)
+│ ├─Identifier
+│ │ └─StandardIdentifier(bar)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
@@ -40,11 +43,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(println)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─Identifier(baz)
+│   │   │ ├─Identifier
+│   │   │ │ └─StandardIdentifier(baz)
 │   │   │ └─ArgList
 │   │   │   ├─LParen
 │   │   │   ├─StringLiteral("Hellope!")
@@ -53,7 +58,8 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(println)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello from Bar!")
@@ -65,16 +71,18 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
-│ ├─Identifier(foo)
+│ ├─Identifier
+│ │ └─StandardIdentifier(foo)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
-│ │ │ ├─IdentPattern
-│ │ │ │ └─Identifier(text)
+│ │ │ ├─Identifier
+│ │ │ │ └─StandardIdentifier(text)
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier(String)
+│ │ │   └─Identifier
+│ │ │     └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ └─ScopeExpr
@@ -82,7 +90,8 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(println)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─ScopeExpr
@@ -90,7 +99,8 @@ File
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─CallExpr
-│   │   │ │ ├─Identifier(bar)
+│   │   │ │ ├─Identifier
+│   │   │ │ │ └─StandardIdentifier(bar)
 │   │   │ │ └─ArgList
 │   │   │ │   ├─LParen
 │   │   │ │   └─RParen
@@ -98,7 +108,8 @@ File
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─ParenthesizedExpr
 │   │   │ │ ├─LParen
-│   │   │ │ ├─Identifier(text)
+│   │   │ │ ├─Identifier
+│   │   │ │ │ └─StandardIdentifier(text)
 │   │   │ │ └─RParen
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(    )
@@ -111,7 +122,8 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
-│ ├─Identifier(main)
+│ ├─Identifier
+│ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
@@ -121,7 +133,8 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(foo)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(foo)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello from Foo!")
@@ -129,7 +142,8 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(println)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello from Main!")

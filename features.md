@@ -166,8 +166,7 @@ TODO
 - [Identifiers](features.md#identifiers)
 
 Identifiers may also be represented by a sequence of characters between two backticks. This
-allows the use of whitespace and various symbols inside the identifier. Note that newlines are
-not allowed.
+allows the use of whitespace and various symbols inside the identifier.
 
 ## Basic Functions
 

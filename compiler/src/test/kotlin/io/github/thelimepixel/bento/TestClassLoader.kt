@@ -6,12 +6,12 @@ class TestClassLoader(parent: ClassLoader) : ClassLoader(parent) {
     private fun refToName(ref: ItemPath?, builder: StringBuilder) {
         if (ref == null) return
         refToName(ref.parent, builder)
-        builder.append(ref.name).append('.')
+        builder.append(ref.rawName).append('.')
     }
 
     private fun ItemPath.toName(): String = StringBuilder()
         .also { refToName(this.parent, it) }
-        .append(this.name)
+        .append(this.rawName)
         .append("Bt")
         .toString()
 

@@ -17,5 +17,6 @@ enum class ParseError : ErrorType {
     ExpectedParameterList,
     ExpectedTypeAnnotation,
     ExpectedPattern,
+    UnclosedRawIdentifier,
     ;
 }

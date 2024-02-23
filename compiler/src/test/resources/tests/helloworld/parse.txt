@@ -2,7 +2,8 @@ File
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
-│ ├─Identifier(main)
+│ ├─Identifier
+│ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
@@ -12,7 +13,8 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier(println)
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello, World!")
