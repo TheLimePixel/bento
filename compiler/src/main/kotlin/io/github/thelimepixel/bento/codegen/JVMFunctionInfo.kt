@@ -8,7 +8,7 @@ import kotlin.math.max
 
 data class JVMFunctionInfo(val varIds: Map<LocalRef, Int>, val maxStackSize: Int)
 
-fun jvmFunctionInfoOf(hir: HIR.Function, thir: THIR?): JVMFunctionInfo {
+fun jvmFunctionInfoOf(hir: HIR.FunctionLike, thir: THIR?): JVMFunctionInfo {
     val paramIds = hir.params
         .withIndex()
         .associateByTo(mutableMapOf(), { LocalRef(it.value.pattern) }, { it.index })

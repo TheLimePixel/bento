@@ -1,0 +1,48 @@
+File
+├─GetDef
+│ ├─GetKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(hello)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─TypeAnnotation
+│ │ ├─Colon
+│ │ ├─Whitespace( )
+│ │ └─Identifier
+│ │   └─StandardIdentifier(String)
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(  )
+│   ├─StringLiteral("Hello, World!")
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(  )
+│   ├─CallExpr
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─Identifier
+│   │   │ └─StandardIdentifier(hello)
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+└─EOF

@@ -9,7 +9,8 @@ class BentoParsing {
     private fun P.handleFile() {
         when (current) {
             ST.EOF -> return
-            ST.FunKeyword -> handleFunction()
+            ST.FunKeyword -> handleFunctionLike(ST.FunDef)
+            ST.GetKeyword -> handleFunctionLike(ST.GetDef)
             else -> errorNode(ParseError.ExpectedDeclaration) { push() }
         }
         handleFile()
@@ -24,8 +25,8 @@ class BentoParsing {
         if (canRecover()) pushError(type)
         else errorNode(type) { push() }
 
-    private fun P.handleFunction() = node(ST.FunDef) {
-        push()  // fun keyword
+    private fun P.handleFunctionLike(type: ST) = node(type) {
+        push()  // keyword
         expectIdentifier()
         expectParamList()
         parseTypeAnnotation()

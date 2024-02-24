@@ -1,0 +1,7 @@
+get hello(): String {
+  "Hello, World!"
+}
+
+fun main() {
+  println(hello)
+}

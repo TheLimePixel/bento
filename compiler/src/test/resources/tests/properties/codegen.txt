@@ -1,0 +1,20 @@
+// class version 52.0 (52)
+// access flags 0x31
+public final class properties/mainBt {
+
+
+  // access flags 0x9
+  public static getHello()Ljava/lang/String;
+    LDC "Hello, World!"
+    ARETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+
+  // access flags 0x9
+  public static main()V
+    INVOKESTATIC properties/mainBt.getHello ()Ljava/lang/String;
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 0
+}

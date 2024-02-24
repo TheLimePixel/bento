@@ -107,6 +107,8 @@ class Lexer(private val code: String, private var pos: Int = 0) {
     private fun String.matchIdentifier() = when (this) {
         "fun" -> BaseEdges.funKeyword
         "let" -> BaseEdges.letKeyword
+        "get" -> BaseEdges.getKeyword
+        "set" -> BaseEdges.setKeyword
         else -> SyntaxType.StandardIdentifier.edge(this)
     }
 

@@ -31,6 +31,10 @@ enum class SyntaxType(
 
     FunKeyword,
     LetKeyword,
+
+    GetKeyword,
+    SetKeyword,
+
     Wildcard,
 
     Param,
@@ -48,6 +52,7 @@ enum class SyntaxType(
     TypeAnnotation,
 
     FunDef,
+    GetDef,
 
     File,
 
@@ -72,5 +77,7 @@ object BaseEdges {
     val eq = SyntaxType.Equals.edge("=")
     val funKeyword = SyntaxType.FunKeyword.edge( "fun")
     val letKeyword = SyntaxType.LetKeyword.edge( "let")
+    val getKeyword = SyntaxType.GetKeyword.edge( "get")
+    val setKeyword = SyntaxType.SetKeyword.edge( "set")
     val loneSlash = SyntaxType.Unknown.edge( "/")
 }

@@ -14,7 +14,7 @@ class BentoCodegen {
         file: ItemPath,
         items: List<ItemRef>,
         fileContext: JC,
-        hirMap: Map<ItemRef, HIR.Function>,
+        hirMap: Map<ItemRef, HIR.FunctionLike>,
         thirMap: Map<ItemRef, THIR>
     ): ByteArray {
         val writer = ClassWriter(0)

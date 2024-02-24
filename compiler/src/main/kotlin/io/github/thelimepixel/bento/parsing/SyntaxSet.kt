@@ -14,7 +14,12 @@ fun syntaxSetOf(vararg types: SyntaxType): SyntaxSet {
 }
 
 object BaseSets {
-    val identifiers = syntaxSetOf(SyntaxType.StandardIdentifier, SyntaxType.BacktickedIdentifier)
+    val identifiers = syntaxSetOf(
+        SyntaxType.StandardIdentifier,
+        SyntaxType.BacktickedIdentifier,
+        SyntaxType.GetKeyword,
+        SyntaxType.SetKeyword,
+    )
     val expressions = syntaxSetOf(
         SyntaxType.StringLiteral,
         SyntaxType.Identifier,
@@ -27,5 +32,9 @@ object BaseSets {
     val patterns = syntaxSetOf(
         SyntaxType.Identifier,
         SyntaxType.Wildcard,
+    )
+    val definitions = syntaxSetOf(
+        SyntaxType.FunDef,
+        SyntaxType.GetDef,
     )
 }

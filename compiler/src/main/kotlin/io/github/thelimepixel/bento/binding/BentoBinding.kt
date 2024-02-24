@@ -7,11 +7,17 @@ private typealias ST = SyntaxType
 private typealias LC = LocalBindingContext
 
 class BentoBinding {
-    fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR.Function> {
+    fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR.FunctionLike> {
         val context = FileBindingContext(parentContext, items.associateBy { it.name })
         return items.associateWith {
-            context.bindFunction(nodes[it.name]!!.first().node.toRedRoot())
+            context.bindDefinition(nodes[it.name]!!.first().node.toRedRoot())
         }
+    }
+
+    private fun BC.bindDefinition(node: RedNode): HIR.FunctionLike = when (node.type) {
+        ST.FunDef -> bindFunction(node)
+        ST.GetDef -> bindGetter(node)
+        else -> error("Unsupported definition type")
     }
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
@@ -19,7 +25,8 @@ class BentoBinding {
         ?.firstChild(SyntaxType.Identifier)
         ?.let {
             val itemRef = refFor(it.content)
-            if (itemRef is ItemRef && itemRef.type == ItemType.Type) HIR.TypeRef(it.ref, itemRef.path)
+            if (itemRef is ItemRef && itemRef.type == ItemType.Type)
+                HIR.TypeRef(it.ref, itemRef.path)
             else null
         }
 
@@ -32,27 +39,39 @@ class BentoBinding {
             }
         } ?: HIRError.Propagation.at(node.ref)
 
-    private fun BC.bindFunction(node: RedNode): HIR.Function {
-        val params = node.firstChild(SyntaxType.ParamList)
-            ?.childSequence()
-            ?.filter { it.type == SyntaxType.Param }
-            ?.map {
-                val name = findAndBindPattern(it)
-                val type = findAndBindTypeAnnotation(it)
-                HIR.Param(it.ref, name, type)
-            }
-            ?.toList()
-            ?: emptyList()
+    private fun BC.bindParamList(node: RedNode): List<HIR.Param> = node.firstChild(SyntaxType.ParamList)
+        ?.childSequence()
+        ?.filter { it.type == SyntaxType.Param }
+        ?.map {
+            val name = findAndBindPattern(it)
+            val type = findAndBindTypeAnnotation(it)
+            HIR.Param(it.ref, name, type)
+        }
+        ?.toList()
+        ?: emptyList()
 
+    private fun BC.bindFunction(node: RedNode): HIR.Function {
+        val params = bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
         val context = FunctionBindingContext(
-            this,
-            params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
+            this, params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
                 .associateBy({ it.name }, { LocalRef((it)) })
         )
         val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
 
         return HIR.Function(node.ref, params, returnType, body)
+    }
+
+    private fun BC.bindGetter(node: RedNode): HIR.Getter {
+        val params = bindParamList(node)
+        val returnType = findAndBindTypeAnnotation(node)
+        val context = FunctionBindingContext(
+            this, params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
+                .associateBy({ it.name }, { LocalRef((it)) })
+        )
+        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
+
+        return HIR.Getter(node.ref, params, returnType, body)
     }
 
     private fun LC.bindCall(node: RedNode): HIR.CallExpr {

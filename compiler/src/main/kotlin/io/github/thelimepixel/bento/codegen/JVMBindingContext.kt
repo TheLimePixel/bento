@@ -1,10 +1,9 @@
 package io.github.thelimepixel.bento.codegen
 
-import io.github.thelimepixel.bento.binding.BuiltinRefs
-import io.github.thelimepixel.bento.binding.ItemPath
-import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.LocalRef
+import io.github.thelimepixel.bento.binding.*
+import io.github.thelimepixel.bento.parsing.SyntaxType
 import io.github.thelimepixel.bento.typing.*
+import java.util.*
 
 interface JVMBindingContext {
     fun signatureOf(ref: ItemRef): JVMSignature
@@ -48,6 +47,11 @@ class TopLevelJVMBindingContext(
     override fun localId(ref: LocalRef): Int = error("Unexpected call")
 }
 
+private val ItemRef.jvmName get() = when (this.type) {
+    ItemType.Getter -> "get" + this.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+    else -> this.name
+}
+
 class FileJVMBindingContext(
     private val parent: JVMBindingContext,
     private val typingContext: TypingContext,
@@ -58,7 +62,7 @@ class FileJVMBindingContext(
         if (ref == BuiltinRefs.println) parent.signatureOf(ref)
         else JVMSignature(
             parent = ref.parent.let { it.copy(name = it.rawName + "Bt") }.toJVMPath(),
-            name = ref.name,
+            name = ref.jvmName,
             descriptor = mapType(typingContext.typeOf(ref))
         )
 

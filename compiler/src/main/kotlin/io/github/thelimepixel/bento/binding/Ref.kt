@@ -1,5 +1,6 @@
 package io.github.thelimepixel.bento.binding
 
+import io.github.thelimepixel.bento.parsing.BaseSets
 import io.github.thelimepixel.bento.parsing.GreenNode
 import io.github.thelimepixel.bento.parsing.SyntaxType
 
@@ -9,7 +10,8 @@ data class LocalRef(val node: HIR.Pattern): Ref
 
 enum class ItemType {
     Function,
-    Type
+    Type,
+    Getter,
 }
 
 data class ItemRef(val path: ItemPath, val type: ItemType) : Ref {
@@ -28,11 +30,17 @@ typealias ItemMap = Map<String, List<ItemData>>
 
 fun GreenNode.collectItems(): ItemMap = childSequence()
     .map { it.node }
-    .filter { it.type == SyntaxType.FunDef }
+    .filter { it.type in BaseSets.definitions }
     .groupBy(
         keySelector = { it.firstChild(SyntaxType.Identifier)?.content ?: "" },
-        valueTransform = { ItemData(ItemType.Function, it) }
+        valueTransform = { ItemData(itemTypeFrom(it.type), it) }
     )
+
+fun itemTypeFrom(type: SyntaxType) = when (type) {
+    SyntaxType.GetDef -> ItemType.Getter
+    SyntaxType.FunDef -> ItemType.Function
+    else -> error("Unsupported definition type")
+}
 
 fun collectRefs(itemPath: ItemPath, itemMap: ItemMap): List<ItemRef> = itemMap.mapNotNull { (key, value) ->
     if (value.size != 1) null else ItemRef(itemPath.subpath(key), value.first().type)

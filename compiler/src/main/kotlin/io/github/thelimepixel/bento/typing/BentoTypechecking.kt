@@ -7,7 +7,7 @@ typealias TC = TypingContext
 typealias FC = FunctionTypingContext
 
 class BentoTypechecking {
-    fun type(hir: HIR.Function, context: TC): THIR? {
+    fun type(hir: HIR.FunctionLike, context: TC): THIR? {
         val node = hir.body ?: return null
         val expect = hir.returnType.toType() ?: BuiltinTypes.unit
         val childContext = FunctionTypingContext(
@@ -27,8 +27,11 @@ class BentoTypechecking {
     }
 
     private fun TC.typeIdentExpr(hir: HIR.IdentExpr) = when (val binding = hir.binding) {
-        is ItemRef -> THIRError.InvalidIdentifierUse.at(hir.ref)
-        is LocalRef -> THIR.AccessExpr(hir.ref, typeOf(binding), binding)
+        is ItemRef ->
+            if (binding.type == ItemType.Getter)
+                THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+            else THIRError.InvalidIdentifierUse.at(hir.ref)
+        is LocalRef -> THIR.AccessExpr(hir.ref, typeOf(binding).accessType, binding)
     }
 
     private fun FC.typeExpr(hir: HIR.Expr, unit: Boolean): THIR = when (hir) {

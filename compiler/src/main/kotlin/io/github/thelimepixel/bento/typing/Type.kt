@@ -4,17 +4,23 @@ import io.github.thelimepixel.bento.binding.BuiltinRefs
 import io.github.thelimepixel.bento.binding.HIR
 import io.github.thelimepixel.bento.binding.ItemPath
 
-sealed interface Type
+sealed interface Type {
+    val accessType: Type
+}
 
 data class PathType(val path: ItemPath) : Type {
     override fun toString(): String = path.toString()
+    override val accessType: Type
+        get() = this
 }
 
 data class FunctionType(val paramTypes: List<Type>, val returnType: Type) : Type {
     override fun toString(): String = "(${paramTypes.joinToString(", ")}) -> $returnType"
+    override val accessType: Type
+        get() = returnType.accessType
 }
 
-fun HIR.Function.type(): FunctionType = FunctionType(
+fun HIR.FunctionLike.type(): Type = FunctionType(
     paramTypes = params.map { it.type.toType() ?: BuiltinTypes.nothing },
     returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)
 )

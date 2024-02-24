@@ -159,8 +159,6 @@ references to items and values, which can be used for accessing or calling said 
 
 ## Backticked Identifiers
 
-TODO
-
 #### Requires
 
 - [Identifiers](features.md#identifiers)
@@ -379,8 +377,6 @@ equals sign and a value. Top-level `let` statements essentially store a value in
 used to access it.
 
 ## Getters
-
-TODO
 
 #### Requires
 
