@@ -1,21 +1,25 @@
 package io.github.thelimepixel.bento.binding
 
 interface BindingContext {
-    fun refFor(name: String): Ref?
+    fun refForImmutable(name: String): Ref?
+    fun refForMutable(name: String): Ref?
 }
 
 class FileBindingContext(
     private val parent: BindingContext?,
-    private val map: Map<String, ItemRef>
+    private val immutables: Map<String, ItemRef>,
+    private val mutables: Map<String, ItemRef>,
 ) : BindingContext {
-    override fun refFor(name: String): Ref? = map[name] ?: parent?.refFor(name)
+    override fun refForImmutable(name: String): Ref? = immutables[name] ?: parent?.refForImmutable(name)
+    override fun refForMutable(name: String): Ref? = mutables[name] ?: parent?.refForMutable(name)
 }
 
 class FunctionBindingContext(
     private val parent: BindingContext,
     private val paramMap: Map<String, LocalRef>,
 ) : BindingContext {
-    override fun refFor(name: String): Ref? = paramMap[name] ?: parent.refFor(name)
+    override fun refForImmutable(name: String): Ref? = paramMap[name] ?: parent.refForImmutable(name)
+    override fun refForMutable(name: String): Ref? = parent.refForMutable(name)
 }
 
 class LocalBindingContext(private val parent: BindingContext) : BindingContext {
@@ -24,6 +28,9 @@ class LocalBindingContext(private val parent: BindingContext) : BindingContext {
     fun addLocal(name: String, node: HIR.Pattern) {
         localsMap[name] = LocalRef(node)
     }
-    override fun refFor(name: String): Ref? =
-        localsMap[name] ?: parent.refFor(name)
+    override fun refForImmutable(name: String): Ref? =
+        localsMap[name] ?: parent.refForImmutable(name)
+
+    override fun refForMutable(name: String): Ref? =
+        parent.refForMutable(name)
 }

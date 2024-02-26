@@ -21,7 +21,7 @@ class SourceTests {
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
     private val objFormatter: Formatter<Any?> = ObjectFormatter()
-    private val topBindingContext: BindingContext = FileBindingContext(null, BuiltinRefs.map)
+    private val topBindingContext: BindingContext = FileBindingContext(null, BuiltinRefs.map, emptyMap())
     private val topTypingContext: TypingContext = TopLevelTypingContext()
     private val topJVMBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
         printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),

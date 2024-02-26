@@ -28,6 +28,7 @@ object BaseSets {
         SyntaxType.ScopeExpr,
         SyntaxType.LetExpr,
         SyntaxType.ParenthesizedExpr,
+        SyntaxType.AssignmentExpr,
     )
     val patterns = syntaxSetOf(
         SyntaxType.Identifier,
@@ -36,5 +37,6 @@ object BaseSets {
     val definitions = syntaxSetOf(
         SyntaxType.FunDef,
         SyntaxType.GetDef,
+        SyntaxType.SetDef,
     )
 }

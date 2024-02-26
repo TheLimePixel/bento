@@ -48,11 +48,13 @@ enum class SyntaxType(
     ScopeExpr,
     CallExpr,
     ParenthesizedExpr,
+    AssignmentExpr,
 
     TypeAnnotation,
 
     FunDef,
     GetDef,
+    SetDef,
 
     File,
 

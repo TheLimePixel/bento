@@ -2,6 +2,7 @@ package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.*
 import kotlin.math.exp
+import kotlin.reflect.typeOf
 
 typealias TC = TypingContext
 typealias FC = FunctionTypingContext
@@ -36,12 +37,17 @@ class BentoTypechecking {
 
     private fun FC.typeExpr(hir: HIR.Expr, unit: Boolean): THIR = when (hir) {
         is HIR.CallExpr -> typeCall(hir)
+        is HIR.AssignmentExpr -> typeAssignment(hir)
         is HIR.ErrorExpr -> THIRError.Propagation.at(hir.ref)
         is HIR.IdentExpr -> typeIdentExpr(hir)
         is HIR.ScopeExpr -> typeScope(hir, unit)
         is HIR.StringExpr -> THIR.StringExpr(hir.ref, hir.content)
         is HIR.LetExpr -> typeLetExpr(hir)
     }
+
+    private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR = hir.left?.let { left ->
+        THIR.CallExpr(hir.ref, typeOf(left).accessType, left as ItemRef, listOf(typeExpr(hir.right, false)))
+    } ?: THIRError.Propagation.at(hir.ref)
 
     private fun FC.typeLetExpr(hir: HIR.LetExpr): THIR {
         val expr = hir.type.toType()?.let { expectExpr(hir.expr, it) } ?: typeExpr(hir.expr, false)

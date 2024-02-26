@@ -22,6 +22,39 @@ File
 │   └─RBrace
 ├─Newline
 ├─Newline
+├─SetDef
+│ ├─SetKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(hello)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ ├─Param
+│ │ │ ├─Identifier
+│ │ │ │ └─StandardIdentifier(new)
+│ │ │ └─TypeAnnotation
+│ │ │   ├─Colon
+│ │ │   ├─Whitespace( )
+│ │ │   └─Identifier
+│ │ │     └─StandardIdentifier(String)
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(  )
+│   ├─CallExpr
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─Identifier
+│   │   │ └─StandardIdentifier(new)
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
@@ -43,6 +76,15 @@ File
 │   │   ├─Identifier
 │   │   │ └─StandardIdentifier(hello)
 │   │   └─RParen
+│   ├─Newline
+│   ├─Whitespace(  )
+│   ├─AssignmentExpr
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(hello)
+│   │ ├─Whitespace( )
+│   │ ├─Equals
+│   │ ├─Whitespace( )
+│   │ └─StringLiteral("Hiiiiiiiiiiiiii")
 │   ├─Newline
 │   └─RBrace
 └─EOF

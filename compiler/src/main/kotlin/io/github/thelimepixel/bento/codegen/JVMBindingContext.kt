@@ -47,10 +47,13 @@ class TopLevelJVMBindingContext(
     override fun localId(ref: LocalRef): Int = error("Unexpected call")
 }
 
-private val ItemRef.jvmName get() = when (this.type) {
-    ItemType.Getter -> "get" + this.name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-    else -> this.name
+private val ItemRef.jvmName get() = when (type) {
+    ItemType.Getter -> "get" + name.capitalize()
+    ItemType.Setter -> "set" + name.capitalize()
+    ItemType.Type, ItemType.Function -> name
 }
+
+private fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
 class FileJVMBindingContext(
     private val parent: JVMBindingContext,

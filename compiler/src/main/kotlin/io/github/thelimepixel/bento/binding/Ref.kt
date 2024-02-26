@@ -8,13 +8,16 @@ sealed interface Ref
 
 data class LocalRef(val node: HIR.Pattern): Ref
 
-enum class ItemType {
+enum class ItemType(val mutable: Boolean = false) {
     Function,
     Type,
     Getter,
+    Setter(mutable = true),
 }
 
-data class ItemRef(val path: ItemPath, val type: ItemType) : Ref {
+val ItemType.immutable: Boolean get() = !mutable
+
+data class ItemRef(val path: ItemPath, val type: ItemType, val index: Int) : Ref {
     val name: String
         get() = path.name
 
@@ -39,9 +42,10 @@ fun GreenNode.collectItems(): ItemMap = childSequence()
 fun itemTypeFrom(type: SyntaxType) = when (type) {
     SyntaxType.GetDef -> ItemType.Getter
     SyntaxType.FunDef -> ItemType.Function
+    SyntaxType.SetDef -> ItemType.Setter
     else -> error("Unsupported definition type")
 }
 
-fun collectRefs(itemPath: ItemPath, itemMap: ItemMap): List<ItemRef> = itemMap.mapNotNull { (key, value) ->
-    if (value.size != 1) null else ItemRef(itemPath.subpath(key), value.first().type)
+fun collectRefs(itemPath: ItemPath, itemMap: ItemMap): List<ItemRef> = itemMap.flatMap { (key, value) ->
+    value.asSequence().mapIndexed { index, itemData -> ItemRef(itemPath.subpath(key), itemData.type, index) }
 }

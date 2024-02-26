@@ -2,6 +2,11 @@ get hello(): String {
   "Hello, World!"
 }
 
+set hello(new: String) {
+  println(new)
+}
+
 fun main() {
   println(hello)
+  hello = "Hiiiiiiiiiiiiii"
 }

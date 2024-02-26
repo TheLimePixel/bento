@@ -11,6 +11,7 @@ class BentoParsing {
             ST.EOF -> return
             ST.FunKeyword -> handleFunctionLike(ST.FunDef)
             ST.GetKeyword -> handleFunctionLike(ST.GetDef)
+            ST.SetKeyword -> handleFunctionLike(ST.SetDef)
             else -> errorNode(ParseError.ExpectedDeclaration) { push() }
         }
         handleFile()
@@ -148,6 +149,11 @@ class BentoParsing {
         }
     }
 
+    private fun P.handleAssignment() = nestLast(ST.AssignmentExpr) {
+        push() // equals
+        expectTerm()
+    }
+
     private fun P.handleParamListEnd(): Boolean {
         when (current) {
             ST.EOF, ST.RBrace, ST.LBrace -> pushError(ParseError.ExpectedCommaOrClosedParen)
@@ -178,9 +184,11 @@ class BentoParsing {
         handleArgList()
     }
 
-    private fun P.handlePostfix() =
-        if (!seenNewline && at(ST.LParen)) handleCall()
-        else Unit
+    private fun P.handlePostfix() = when {
+        !seenNewline && at(ST.LParen) -> handleCall()
+        at(ST.Equals) -> handleAssignment()
+        else -> Unit
+    }
 
     private fun P.expectTerm() {
         expectBaseTerm()

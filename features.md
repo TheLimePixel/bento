@@ -399,8 +399,6 @@ ten + ten           // this prints "Called ten" twice
 
 ## Setters
 
-TODO
-
 #### Requires
 
 - [Properties](features.md#properties)

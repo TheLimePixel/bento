@@ -32,6 +32,16 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         }
     }
 
+    data class AssignmentExpr(
+        override val ref: ASTRef,
+        val left: Ref?,
+        val right: Expr,
+    ) : Expr {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            yield(right)
+        }
+    }
+
     data class IdentExpr(
         override val ref: ASTRef,
         val binding: Ref,
@@ -103,6 +113,13 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
     ) : FunctionLike
 
     data class Getter(
+        override val ref: ASTRef,
+        override val params: List<Param>,
+        override val returnType: TypeRef?,
+        override val body: ScopeExpr?
+    ) : FunctionLike
+
+    data class Setter(
         override val ref: ASTRef,
         override val params: List<Param>,
         override val returnType: TypeRef?,

@@ -8,15 +8,20 @@ private typealias LC = LocalBindingContext
 
 class BentoBinding {
     fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR.FunctionLike> {
-        val context = FileBindingContext(parentContext, items.associateBy { it.name })
+        val context = FileBindingContext(
+            parentContext,
+            items.asSequence().filter { it.type.immutable }.associateBy { it.name },
+            items.asSequence().filter { it.type.mutable }.associateBy { it.name },
+        )
         return items.associateWith {
-            context.bindDefinition(nodes[it.name]!!.first().node.toRedRoot())
+            context.bindDefinition(nodes[it.name]!![it.index].node.toRedRoot())
         }
     }
 
     private fun BC.bindDefinition(node: RedNode): HIR.FunctionLike = when (node.type) {
-        ST.FunDef -> bindFunction(node)
-        ST.GetDef -> bindGetter(node)
+        ST.FunDef -> bindFunctionLike(node, HIR::Function)
+        ST.GetDef -> bindFunctionLike(node, HIR::Getter)
+        ST.SetDef -> bindFunctionLike(node, HIR::Setter)
         else -> error("Unsupported definition type")
     }
 
@@ -24,7 +29,7 @@ class BentoBinding {
         .firstChild(SyntaxType.TypeAnnotation)
         ?.firstChild(SyntaxType.Identifier)
         ?.let {
-            val itemRef = refFor(it.content)
+            val itemRef = refForImmutable(it.content)
             if (itemRef is ItemRef && itemRef.type == ItemType.Type)
                 HIR.TypeRef(it.ref, itemRef.path)
             else null
@@ -50,7 +55,11 @@ class BentoBinding {
         ?.toList()
         ?: emptyList()
 
-    private fun BC.bindFunction(node: RedNode): HIR.Function {
+    private inline fun BC.bindFunctionLike(
+        node: RedNode, ctor: (
+            ref: ASTRef, params: List<HIR.Param>, returnType: HIR.TypeRef?, body: HIR.ScopeExpr?
+        ) -> HIR.FunctionLike
+    ): HIR.FunctionLike {
         val params = bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
         val context = FunctionBindingContext(
@@ -59,19 +68,7 @@ class BentoBinding {
         )
         val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
 
-        return HIR.Function(node.ref, params, returnType, body)
-    }
-
-    private fun BC.bindGetter(node: RedNode): HIR.Getter {
-        val params = bindParamList(node)
-        val returnType = findAndBindTypeAnnotation(node)
-        val context = FunctionBindingContext(
-            this, params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
-                .associateBy({ it.name }, { LocalRef((it)) })
-        )
-        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
-
-        return HIR.Getter(node.ref, params, returnType, body)
+        return ctor(node.ref, params, returnType, body)
     }
 
     private fun LC.bindCall(node: RedNode): HIR.CallExpr {
@@ -87,7 +84,7 @@ class BentoBinding {
         return HIR.CallExpr(node.ref, on, args)
     }
 
-    private fun BC.bindIdentifier(node: RedNode) = refFor(node.content)
+    private fun BC.bindIdentifier(node: RedNode) = refForImmutable(node.content)
         ?.let { HIR.IdentExpr(node.ref, it) }
         ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
@@ -98,7 +95,17 @@ class BentoBinding {
         ST.ScopeExpr -> bindScope(node)
         ST.LetExpr -> bindLet(node)
         ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
+        ST.AssignmentExpr -> bindAssignmentExpr(node)
         else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
+    }
+
+    private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
+        val leftRef = node.firstChild(BaseSets.expressions)?.let { expr ->
+            if (expr.type == ST.Identifier) refForMutable(expr.content)
+            else null
+        }
+        val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)
+        return HIR.AssignmentExpr(node.ref, leftRef, right)
     }
 
     private fun LC.bindParenthesizedExpr(node: RedNode): HIR.Expr =
