@@ -47,10 +47,10 @@ class TopLevelJVMBindingContext(
     override fun localId(ref: LocalRef): Int = error("Unexpected call")
 }
 
-private val ItemRef.jvmName get() = when (type) {
-    ItemType.Getter -> "get" + name.capitalize()
-    ItemType.Setter -> "set" + name.capitalize()
-    ItemType.Type, ItemType.Function -> name
+val ItemRef.jvmName get() = when (type) {
+    ItemType.Getter, ItemType.Constant -> "get" + rawName.capitalize()
+    ItemType.Setter -> "set" + rawName.capitalize()
+    ItemType.Type, ItemType.Function -> rawName
 }
 
 private fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -64,7 +64,7 @@ class FileJVMBindingContext(
     override fun signatureOf(ref: ItemRef): JVMSignature =
         if (ref == BuiltinRefs.println) parent.signatureOf(ref)
         else JVMSignature(
-            parent = ref.parent.let { it.copy(name = it.rawName + "Bt") }.toJVMPath(),
+            parent = ref.fileJVMPath,
             name = ref.jvmName,
             descriptor = mapType(typingContext.typeOf(ref))
         )
@@ -72,6 +72,8 @@ class FileJVMBindingContext(
     override fun localId(ref: LocalRef): Int = parent.localId(ref)
 }
 
+val ItemRef.fileJVMPath: String
+    get() = parent.let { it.copy(name = it.rawName + "Bt") }.toJVMPath()
 class LocalJVMBindingContext(
     private val parent: JVMBindingContext,
     private val localMap: Map<LocalRef, Int>

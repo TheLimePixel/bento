@@ -1,5 +1,5 @@
 ======= helloworld::main::main =======
-Function {
+FunctionDef {
   ref: FunDef@0..43
   params: []
   returnType: null

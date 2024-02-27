@@ -7,21 +7,29 @@ private typealias ST = SyntaxType
 private typealias LC = LocalBindingContext
 
 class BentoBinding {
-    fun bind(items: List<ItemRef>, nodes: ItemMap, parentContext: BindingContext): Map<ItemRef, HIR.FunctionLike> {
+    fun bind(
+        items: List<ItemRef>,
+        nodes: Map<String, List<GreenNode>>,
+        parentContext: BindingContext
+    ): Map<ItemRef, HIR.Def> {
+        val initialized = mutableSetOf<ItemRef>()
         val context = FileBindingContext(
             parentContext,
             items.asSequence().filter { it.type.immutable }.associateBy { it.name },
             items.asSequence().filter { it.type.mutable }.associateBy { it.name },
+            initialized
         )
-        return items.associateWith {
-            context.bindDefinition(nodes[it.name]!![it.index].node.toRedRoot())
+        return items.associateWith { ref ->
+            context.bindDefinition(nodes[ref.name]!![ref.index].toRedRoot())
+                .also { initialized.add(ref) }
         }
     }
 
-    private fun BC.bindDefinition(node: RedNode): HIR.FunctionLike = when (node.type) {
-        ST.FunDef -> bindFunctionLike(node, HIR::Function)
-        ST.GetDef -> bindFunctionLike(node, HIR::Getter)
-        ST.SetDef -> bindFunctionLike(node, HIR::Setter)
+    private fun BC.bindDefinition(node: RedNode): HIR.Def = when (node.type) {
+        ST.FunDef -> bindFunctionLike(node, HIR::FunctionDef)
+        ST.GetDef -> bindFunctionLike(node, HIR::GetterDef)
+        ST.SetDef -> bindFunctionLike(node, HIR::SetterDef)
+        ST.LetDef -> bindLet(node)
         else -> error("Unsupported definition type")
     }
 
@@ -35,14 +43,13 @@ class BentoBinding {
             else null
         }
 
-    private fun findAndBindPattern(node: RedNode): HIR.Pattern =
-        node.firstChild(BaseSets.patterns)?.let {
-            when (it.type) {
-                ST.Identifier -> HIR.IdentPattern(it.ref, it.content)
-                ST.Wildcard -> HIR.WildcardPattern(it.ref)
-                else -> error("Unsupported pattern type: ${it.type}")
-            }
-        } ?: HIRError.Propagation.at(node.ref)
+    private fun findAndBindPattern(node: RedNode): HIR.Pattern = node.firstChild(BaseSets.patterns)?.let {
+        when (it.type) {
+            ST.Identifier -> HIR.IdentPattern(it.ref, it.content)
+            ST.Wildcard -> HIR.WildcardPattern(it.ref)
+            else -> error("Unsupported pattern type: ${it.type}")
+        }
+    } ?: HIRError.Propagation.at(node.ref)
 
     private fun BC.bindParamList(node: RedNode): List<HIR.Param> = node.firstChild(SyntaxType.ParamList)
         ?.childSequence()
@@ -58,8 +65,8 @@ class BentoBinding {
     private inline fun BC.bindFunctionLike(
         node: RedNode, ctor: (
             ref: ASTRef, params: List<HIR.Param>, returnType: HIR.TypeRef?, body: HIR.ScopeExpr?
-        ) -> HIR.FunctionLike
-    ): HIR.FunctionLike {
+        ) -> HIR.FunctionLikeDef
+    ): HIR.FunctionLikeDef {
         val params = bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
         val context = FunctionBindingContext(
@@ -69,6 +76,14 @@ class BentoBinding {
         val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
 
         return ctor(node.ref, params, returnType, body)
+    }
+
+    private fun BC.bindLet(node: RedNode): HIR.ConstantDef {
+        val type = findAndBindTypeAnnotation(node)
+        val context = LocalBindingContext(this)
+        val body = node.lastChild(BaseSets.expressions)?.let { context.bindExpr(it) }
+            ?: HIRError.Propagation.at(node.ref)
+        return HIR.ConstantDef(node.ref, type, body)
     }
 
     private fun LC.bindCall(node: RedNode): HIR.CallExpr {
@@ -85,8 +100,10 @@ class BentoBinding {
     }
 
     private fun BC.bindIdentifier(node: RedNode) = refForImmutable(node.content)
-        ?.let { HIR.IdentExpr(node.ref, it) }
-        ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
+        ?.let {
+            if (isInitialized(it)) HIR.IdentExpr(node.ref, it)
+            else HIR.ErrorExpr(node.ref, HIRError.UninitializedConstant)
+        } ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
     private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)

@@ -1,18 +1,24 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.*
-import kotlin.math.exp
-import kotlin.reflect.typeOf
+import io.github.thelimepixel.bento.binding.HIR
+import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.ItemType
+import io.github.thelimepixel.bento.binding.LocalRef
 
 typealias TC = TypingContext
 typealias FC = FunctionTypingContext
 
 class BentoTypechecking {
-    fun type(hir: HIR.FunctionLike, context: TC): THIR? {
+    fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
+        is HIR.FunctionLikeDef -> context.typeFunctionLikeDef(hir)
+        is HIR.ConstantDef -> context.typeConstantDef(hir)
+    }
+
+    private fun TC.typeFunctionLikeDef(hir: HIR.FunctionLikeDef): THIR? {
         val node = hir.body ?: return null
         val expect = hir.returnType.toType() ?: BuiltinTypes.unit
         val childContext = FunctionTypingContext(
-            context,
+            this,
             hir.params.mapNotNull {
                 val pat = it.pattern as? HIR.IdentPattern ?: return@mapNotNull null
                 LocalRef(pat) to (it.type.toType() ?: BuiltinTypes.nothing)
@@ -22,6 +28,11 @@ class BentoTypechecking {
         return childContext.expectExpr(node, expect)
     }
 
+    private fun TC.typeConstantDef(hir: HIR.ConstantDef): THIR {
+        val context = FunctionTypingContext(this, emptyMap())
+        return context.expectExpr(hir.expr, hir.type.toType() ?: BuiltinTypes.unit)
+    }
+
     private fun FC.expectExpr(hir: HIR.Expr, type: Type): THIR {
         val expr = typeExpr(hir, type == BuiltinTypes.unit)
         return if (expr.type == type) expr else THIRError.InvalidType.at(hir.ref, listOf(expr), type)
@@ -29,9 +40,12 @@ class BentoTypechecking {
 
     private fun TC.typeIdentExpr(hir: HIR.IdentExpr) = when (val binding = hir.binding) {
         is ItemRef ->
-            if (binding.type == ItemType.Getter)
-                THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
-            else THIRError.InvalidIdentifierUse.at(hir.ref)
+            when (binding.type) {
+                ItemType.Getter -> THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+                ItemType.Constant -> THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+                ItemType.Type, ItemType.Setter, ItemType.Function -> THIRError.InvalidIdentifierUse.at(hir.ref)
+            }
+
         is LocalRef -> THIR.AccessExpr(hir.ref, typeOf(binding).accessType, binding)
     }
 

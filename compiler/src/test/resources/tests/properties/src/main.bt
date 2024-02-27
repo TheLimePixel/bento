@@ -6,7 +6,9 @@ set hello(new: String) {
   println(new)
 }
 
+let `Hey, World!`: String = "Hey, World!"
+
 fun main() {
   println(hello)
-  hello = "Hiiiiiiiiiiiiii"
+  hello = `Hey, World!`
 }

@@ -20,9 +20,12 @@ data class FunctionType(val paramTypes: List<Type>, val returnType: Type) : Type
         get() = returnType.accessType
 }
 
-fun HIR.FunctionLike.type(): Type = FunctionType(
-    paramTypes = params.map { it.type.toType() ?: BuiltinTypes.nothing },
-    returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)
-)
+fun HIR.Def.type(): Type = when (this) {
+    is HIR.FunctionLikeDef -> FunctionType(
+        paramTypes = params.map { it.type.toType() ?: BuiltinTypes.nothing },
+        returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)
+    )
+    is HIR.ConstantDef -> FunctionType(emptyList(),  PathType(this.type?.type ?: BuiltinRefs.unit))
+}
 
 fun HIR.TypeRef?.toType(): PathType? = this?.type?.let { PathType(it) }

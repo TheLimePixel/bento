@@ -13,11 +13,13 @@ data class ItemPath(val parent: ItemPath?, val name: String) {
             val builder = StringBuilder()
             for (c in name) {
                 when (c) {
+                    '`' -> Unit
                     '\\' -> builder.append("\\\\")
                     '.' -> builder.append("\\d")
                     ';' -> builder.append("\\s")
                     '[' -> builder.append("\\b")
                     '/' -> builder.append("\\f")
+                    '<' -> builder.append("\\l")
                     else -> builder.append(c)
                 }
             }

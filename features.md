@@ -354,8 +354,6 @@ let squared: I32 = a * a
 
 ## Top Level Let
 
-TODO
-
 #### Requires
 
 - [Let Statement](features.md#let-statement)
@@ -364,8 +362,6 @@ Just as in the local scope, `let` can be used in the global scope to make global
 bindings to values which are only created once; when the file is being initialized.
 
 ## Properties
-
-TODO
 
 #### Requires
 - [Top Level Let](features.md#let-statement)

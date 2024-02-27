@@ -9,6 +9,7 @@ enum class HIRError : ErrorType {
             get() = true
     },
     UnboundIdentifier,
+    UninitializedConstant,
     ;
 
     fun at(ref: ASTRef) = HIR.ErrorExpr(ref, this)

@@ -38,5 +38,6 @@ object BaseSets {
         SyntaxType.FunDef,
         SyntaxType.GetDef,
         SyntaxType.SetDef,
+        SyntaxType.LetDef,
     )
 }

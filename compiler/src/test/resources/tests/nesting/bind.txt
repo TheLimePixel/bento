@@ -1,5 +1,5 @@
 ======= nesting::main::baz =======
-Function {
+FunctionDef {
   ref: FunDef@0..52
   params: [
     Param {
@@ -29,7 +29,7 @@ Function {
 }
 
 ======= nesting::main::bar =======
-Function {
+FunctionDef {
   ref: FunDef@0..73
   params: []
   returnType: null
@@ -82,7 +82,7 @@ Function {
 }
 
 ======= nesting::main::foo =======
-Function {
+FunctionDef {
   ref: FunDef@0..75
   params: [
     Param {
@@ -141,7 +141,7 @@ Function {
 }
 
 ======= nesting::main::main =======
-Function {
+FunctionDef {
   ref: FunDef@0..73
   params: []
   returnType: null

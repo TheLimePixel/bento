@@ -13,6 +13,7 @@ enum class ItemType(val mutable: Boolean = false) {
     Type,
     Getter,
     Setter(mutable = true),
+    Constant,
 }
 
 val ItemType.immutable: Boolean get() = !mutable
@@ -21,31 +22,40 @@ data class ItemRef(val path: ItemPath, val type: ItemType, val index: Int) : Ref
     val name: String
         get() = path.name
 
+    val rawName: String
+        get() = path.rawName
+
     val parent: ItemPath
         get() = path.parent!!
 
     override fun toString(): String = "$type($path)"
 }
 
-data class ItemData(val type: ItemType, val node: GreenNode)
+data class FileItemInfo(
+    val items: List<ItemRef>,
+    val dataMap: Map<String, List<GreenNode>>,
+)
 
-typealias ItemMap = Map<String, List<ItemData>>
+fun GreenNode.collectItems(parentPath: ItemPath): FileItemInfo {
+    val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
+    val items = childSequence()
+        .map { it.node }
+        .filter { it.type in BaseSets.definitions }
+        .map {
+            val name = it.firstChild(SyntaxType.Identifier)?.content ?: ""
+            val list = dataMap.computeIfAbsent(name) { mutableListOf() }
+            list.add(it)
+            ItemRef(parentPath.subpath(name), itemTypeFrom(it.type), list.lastIndex)
+        }
+        .toList()
 
-fun GreenNode.collectItems(): ItemMap = childSequence()
-    .map { it.node }
-    .filter { it.type in BaseSets.definitions }
-    .groupBy(
-        keySelector = { it.firstChild(SyntaxType.Identifier)?.content ?: "" },
-        valueTransform = { ItemData(itemTypeFrom(it.type), it) }
-    )
+    return FileItemInfo(items, dataMap)
+}
 
 fun itemTypeFrom(type: SyntaxType) = when (type) {
     SyntaxType.GetDef -> ItemType.Getter
     SyntaxType.FunDef -> ItemType.Function
     SyntaxType.SetDef -> ItemType.Setter
+    SyntaxType.LetDef -> ItemType.Constant
     else -> error("Unsupported definition type")
-}
-
-fun collectRefs(itemPath: ItemPath, itemMap: ItemMap): List<ItemRef> = itemMap.flatMap { (key, value) ->
-    value.asSequence().mapIndexed { index, itemData -> ItemRef(itemPath.subpath(key), itemData.type, index) }
 }

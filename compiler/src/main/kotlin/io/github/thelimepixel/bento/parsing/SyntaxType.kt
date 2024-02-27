@@ -55,6 +55,7 @@ enum class SyntaxType(
     FunDef,
     GetDef,
     SetDef,
+    LetDef,
 
     File,
 

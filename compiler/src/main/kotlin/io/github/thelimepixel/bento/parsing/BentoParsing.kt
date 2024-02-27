@@ -12,6 +12,7 @@ class BentoParsing {
             ST.FunKeyword -> handleFunctionLike(ST.FunDef)
             ST.GetKeyword -> handleFunctionLike(ST.GetDef)
             ST.SetKeyword -> handleFunctionLike(ST.SetDef)
+            ST.LetKeyword -> handleTopLevelLet()
             else -> errorNode(ParseError.ExpectedDeclaration) { push() }
         }
         handleFile()
@@ -110,6 +111,13 @@ class BentoParsing {
     private fun P.handleLetExpr() = node(ST.LetExpr) {
         push()  // let keyword
         if (!consumePattern()) pushError(ParseError.ExpectedPattern)
+        parseTypeAnnotation()
+        expectEqExpression()
+    }
+
+    private fun P.handleTopLevelLet() = node(ST.LetDef) {
+        push()  // let keyword
+        expectIdentifier()
         parseTypeAnnotation()
         expectEqExpression()
     }

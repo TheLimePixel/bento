@@ -21,7 +21,7 @@ class SourceTests {
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
     private val objFormatter: Formatter<Any?> = ObjectFormatter()
-    private val topBindingContext: BindingContext = FileBindingContext(null, BuiltinRefs.map, emptyMap())
+    private val topBindingContext: BindingContext = FileBindingContext(null, BuiltinRefs.map, emptyMap(), emptySet())
     private val topTypingContext: TypingContext = TopLevelTypingContext()
     private val topJVMBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
         printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
@@ -49,9 +49,8 @@ class SourceTests {
             test(dir, code, "Parse") { formatAST(node) }
 
             val fileRef = pathOf(dir.name, "main")
-            val itemMap = node.collectItems()
-            val itemRefs = collectRefs(fileRef, itemMap)
-            val hirMap = binding.bind(itemRefs, itemMap, topBindingContext)
+            val fileInfo = node.collectItems(fileRef)
+            val hirMap = binding.bind(fileInfo.items, fileInfo.dataMap, topBindingContext)
             test(dir, code, "Bind") { formatItemTrees(hirMap) }
 
             val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (_, value) -> value.type() })
@@ -62,7 +61,7 @@ class SourceTests {
             test(dir, code, "Typecheck") { formatItemTrees(thirMap) }
 
             val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext)
-            val bytecode = bentoCodegen.generate(fileRef, itemRefs, jvmBindingContext, hirMap, thirMap)
+            val bytecode = bentoCodegen.generate(fileRef, fileInfo.items, jvmBindingContext, hirMap, thirMap)
             test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }
 
             test(dir, code, "Output") { invokeBytecode(fileRef, bytecode) }

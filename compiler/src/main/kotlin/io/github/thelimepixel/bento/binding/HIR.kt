@@ -94,7 +94,9 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = type?.let { sequenceOf(it) } ?: EmptySequence
     }
 
-    sealed interface FunctionLike : HIR {
+    sealed interface Def: HIR
+
+    sealed interface FunctionLikeDef : Def {
         val params: List<Param>
         val returnType: TypeRef?
         val body: ScopeExpr?
@@ -105,24 +107,35 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         }
     }
 
-    data class Function(
+    data class FunctionDef(
         override val ref: ASTRef,
         override val params: List<Param>,
         override val returnType: TypeRef?,
         override val body: ScopeExpr?
-    ) : FunctionLike
+    ) : FunctionLikeDef
 
-    data class Getter(
+    data class GetterDef(
         override val ref: ASTRef,
         override val params: List<Param>,
         override val returnType: TypeRef?,
         override val body: ScopeExpr?
-    ) : FunctionLike
+    ) : FunctionLikeDef
 
-    data class Setter(
+    data class SetterDef(
         override val ref: ASTRef,
         override val params: List<Param>,
         override val returnType: TypeRef?,
         override val body: ScopeExpr?
-    ) : FunctionLike
+    ) : FunctionLikeDef
+
+    data class ConstantDef(
+        override val ref: ASTRef,
+        val type: TypeRef?,
+        val expr: Expr,
+    ) : Def {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            type?.let { yield(it) }
+            yield(expr)
+        }
+    }
 }

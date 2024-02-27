@@ -55,6 +55,22 @@ File
 │   └─RBrace
 ├─Newline
 ├─Newline
+├─LetDef
+│ ├─LetKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─BacktickedIdentifier(`Hey, World!`)
+│ ├─TypeAnnotation
+│ │ ├─Colon
+│ │ ├─Whitespace( )
+│ │ └─Identifier
+│ │   └─StandardIdentifier(String)
+│ ├─Whitespace( )
+│ ├─Equals
+│ ├─Whitespace( )
+│ └─StringLiteral("Hey, World!")
+├─Newline
+├─Newline
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
@@ -84,7 +100,8 @@ File
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
-│   │ └─StringLiteral("Hiiiiiiiiiiiiii")
+│   │ └─Identifier
+│   │   └─BacktickedIdentifier(`Hey, World!`)
 │   ├─Newline
 │   └─RBrace
 └─EOF
