@@ -26,6 +26,8 @@ data class ItemPath(val parent: ItemPath?, val name: String) {
             return builder.toString()
         }
 
+    fun isSubpathOf(other: ItemPath) = toString().startsWith(other.toString())
+
     fun subpath(name: String) = ItemPath(this, name)
 }
 

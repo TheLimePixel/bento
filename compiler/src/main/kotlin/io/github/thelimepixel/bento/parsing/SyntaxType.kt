@@ -70,7 +70,9 @@ fun SyntaxType.edge(code: String, start: Int, exclusiveEnd: Int) =
 
 object BaseEdges {
     val eof = SyntaxType.EOF.edge("")
-    val nl = SyntaxType.Newline.edge( "\n")
+    val nlN = SyntaxType.Newline.edge( "\n")
+    val nlR = SyntaxType.Newline.edge( "\r")
+    val nlRN = SyntaxType.Newline.edge( "\r\n")
     val lParen = SyntaxType.LParen.edge( "(")
     val rParen = SyntaxType.RParen.edge( ")")
     val lBrace = SyntaxType.LBrace.edge( "{")

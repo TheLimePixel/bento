@@ -1,10 +1,10 @@
 ======= helloworld::main::main =======
 ScopeExpr {
-  ref: ScopeExpr@22..54
+  ref: ScopeExpr@22..56
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..36
+      ref: CallExpr@14..38
       type: bento::Unit
       fn: Function {
         bento::io::println

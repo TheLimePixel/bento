@@ -1,6 +1,6 @@
 ======= nesting::main::baz =======
 FunctionDef {
-  ref: FunDef@0..52
+  ref: FunDef@0..54
   params: [
     Param {
       ref: Param@2..11
@@ -18,10 +18,10 @@ FunctionDef {
     type: bento::String
   }
   body: ScopeExpr {
-    ref: ScopeExpr@54..79
+    ref: ScopeExpr@54..81
     statements: [
       StringExpr {
-        ref: StringLiteral@12..29
+        ref: StringLiteral@14..31
         content: "Hello from Baz!"
       }
     ]
@@ -30,14 +30,14 @@ FunctionDef {
 
 ======= nesting::main::bar =======
 FunctionDef {
-  ref: FunDef@0..73
+  ref: FunDef@0..76
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@20..83
+    ref: ScopeExpr@20..86
     statements: [
       CallExpr {
-        ref: CallExpr@12..36
+        ref: CallExpr@14..38
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {
@@ -63,7 +63,7 @@ FunctionDef {
         ]
       }
       CallExpr {
-        ref: CallExpr@70..96
+        ref: CallExpr@74..100
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {
@@ -83,7 +83,7 @@ FunctionDef {
 
 ======= nesting::main::foo =======
 FunctionDef {
-  ref: FunDef@0..75
+  ref: FunDef@0..80
   params: [
     Param {
       ref: Param@2..14
@@ -99,10 +99,10 @@ FunctionDef {
   ]
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@44..97
+    ref: ScopeExpr@44..102
     statements: [
       CallExpr {
-        ref: CallExpr@12..57
+        ref: CallExpr@14..62
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {
@@ -111,10 +111,10 @@ FunctionDef {
         }
         args: [
           ScopeExpr {
-            ref: ScopeExpr@2..38
+            ref: ScopeExpr@2..41
             statements: [
               CallExpr {
-                ref: CallExpr@20..25
+                ref: CallExpr@22..27
                 on: IdentExpr {
                   ref: Identifier@0..3
                   binding: Function {
@@ -142,14 +142,14 @@ FunctionDef {
 
 ======= nesting::main::main =======
 FunctionDef {
-  ref: FunDef@0..73
+  ref: FunDef@0..76
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..84
+    ref: ScopeExpr@22..87
     statements: [
       CallExpr {
-        ref: CallExpr@12..34
+        ref: CallExpr@14..36
         on: IdentExpr {
           ref: Identifier@0..3
           binding: Function {
@@ -164,7 +164,7 @@ FunctionDef {
         ]
       }
       CallExpr {
-        ref: CallExpr@66..93
+        ref: CallExpr@70..97
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {

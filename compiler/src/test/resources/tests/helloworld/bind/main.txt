@@ -1,13 +1,13 @@
 ======= helloworld::main::main =======
 FunctionDef {
-  ref: FunDef@0..43
+  ref: FunDef@0..45
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..54
+    ref: ScopeExpr@22..56
     statements: [
       CallExpr {
-        ref: CallExpr@12..36
+        ref: CallExpr@14..38
         on: IdentExpr {
           ref: Identifier@0..7
           binding: Function {

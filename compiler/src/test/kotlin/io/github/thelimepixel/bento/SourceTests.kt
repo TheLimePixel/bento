@@ -43,29 +43,69 @@ class SourceTests {
         File(resource.toURI()).listFiles()!!.forEach { handleTestDir(it) }
     }
 
-    private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File) =
-        withContentOf(dir, "src/main.bt") { code ->
-            val node = parsing.parseFIle(code)
-            test(dir, code, "Parse") { formatAST(node) }
-
-            val fileRef = pathOf(dir.name, "main")
-            val fileInfo = node.collectItems(fileRef)
-            val hirMap = binding.bind(fileInfo.items, fileInfo.dataMap, topBindingContext)
-            test(dir, code, "Bind") { formatItemTrees(hirMap) }
-
-            val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (_, value) -> value.type() })
-
-            val thirMap = hirMap.mapValues { (_, node) ->
-                typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
+    private fun traversePackageFiles(
+        path: ItemPath,
+        file: File,
+        hierarchy: PackageTree,
+        sources: MutableMap<ItemPath, String>
+    ) {
+        if (file.canRead()) {
+            hierarchy.add(path)
+            sources[path] = file.readText()
+        } else {
+            file.listFiles()?.forEach { child ->
+                traversePackageFiles(path.subpath(child.nameWithoutExtension), child, hierarchy, sources)
             }
-            test(dir, code, "Typecheck") { formatItemTrees(thirMap) }
-
-            val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext)
-            val bytecode = bentoCodegen.generate(fileRef, fileInfo.items, jvmBindingContext, hirMap, thirMap)
-            test(dir, code, "Codegen") { bytecodeFormatter.format(bytecode) }
-
-            test(dir, code, "Output") { invokeBytecode(fileRef, bytecode) }
         }
+    }
+
+    private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File) {
+        val hierarchy = PackageTree()
+        val sources = mutableMapOf<ItemPath, String>()
+        val rootPath = ItemPath(null, dir.name)
+
+        File(dir, "src").listFiles()?.forEach {
+            traversePackageFiles(ItemPath(rootPath, it.nameWithoutExtension), it, hierarchy, sources)
+        } ?: return
+
+
+        val nodes = sources.mapValues { (path, code) ->
+            val node = parsing.parseFIle(code)
+            test(dir, "Parse", path) { formatAST(node) }
+            node.collectItems(path)
+        }
+
+        val hirMap = nodes
+            .flatMap { (path, fileInfo) ->
+                val bindings = binding.bind(fileInfo.items, fileInfo.dataMap, topBindingContext)
+                test(dir, "Bind", path) { formatItemTrees(bindings) }
+                bindings.asSequence()
+            }.associate { (key, value) -> key to value }
+
+
+        val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (_, value) -> value.type() })
+
+        val thirMap = hirMap.mapValues { (_, node) ->
+            typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
+        }
+
+        sources.forEach { (path, _) ->
+            test(dir, "Typecheck", path) {
+                formatItemTrees(thirMap.filterKeys { ref ->
+                    ref.path.isSubpathOf(path)
+                })
+            }
+        }
+
+        val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext)
+
+        nodes.forEach { (path, fileInfo) ->
+            val bytecode = bentoCodegen.generate(path, fileInfo.items, jvmBindingContext, hirMap, thirMap)
+            test(dir, "Codegen", path) { bytecodeFormatter.format(bytecode) }
+
+            test(dir, "Output", path) { invokeBytecode(path, bytecode) }
+        }
+    }
 
     private fun invokeBytecode(fileRef: ItemPath, bytecode: ByteArray): String {
         val clazz = classLoader.load(fileRef, bytecode)
@@ -91,12 +131,27 @@ class SourceTests {
         if (file.canRead()) fn(file.readText().trimIndent().trim())
     }
 
+    private fun itemPathToFilePath(itemPath: ItemPath?, builder: StringBuilder) {
+        if (itemPath === null) return
+        itemPathToFilePath(itemPath.parent, builder)
+        builder.append(itemPath.name).append(File.separatorChar)
+    }
+
+    private val ItemPath.toFilePath: String
+        get() = StringBuilder()
+            .also { builder -> itemPathToFilePath(this.parent, builder) }
+            .append(this.name)
+            .toString()
+
     private suspend fun SequenceScope<DynamicTest>.test(
         dir: File,
-        code: String,
         type: String,
-        function: (code: String) -> String
-    ) = withContentOf(dir, type.lowercase() + ".txt") { expected ->
-        yield(dynamicTest("${dir.name}: $type") { assertEquals(expected, function(code).trimIndent().trim()) })
+        pack: ItemPath,
+        function: () -> String
+    ) {
+        val path = type.lowercase() + pack.toFilePath.removePrefix(dir.name) + ".txt"
+        withContentOf(dir, path) { expected ->
+            yield(dynamicTest("$pack: $type") { assertEquals(expected, function().trimIndent().trim()) })
+        }
     }
 }

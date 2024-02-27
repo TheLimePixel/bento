@@ -25,5 +25,5 @@ File
 ├─UnclosedComment(/* My bad, I forgot the)
 └─EOF
 CodeError(type=ExpectedCommaOrClosedParen, span=2..2)
-CodeError(type=ExpectedClosedBrace, span=46..46)
-CodeError(type=UnclosedComment, span=70..93)
+CodeError(type=ExpectedClosedBrace, span=48..48)
+CodeError(type=UnclosedComment, span=76..99)

@@ -18,10 +18,11 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         ',' -> BaseEdges.comma
         ':' -> BaseEdges.colon
         '=' -> BaseEdges.eq
-        '\n' -> BaseEdges.nl
+        '\n' -> BaseEdges.nlN
+        '\r' -> if (at(index + 1) == '\n') BaseEdges.nlRN else BaseEdges.nlR
         '`' -> getRawIdentifier(index + 1)
         '/' -> getSlash(index + 1)
-        ' ', '\t', '\r', '\u000C', '\u2B7F' -> getWhitespace(index + 1)
+        ' ', '\t', '\u000C', '\u2B7F' -> getWhitespace(index + 1)
         in 'a'..'z', in 'A'..'Z' -> getIdentifier(index + 1)
         '_' -> getUnderscore(index + 1)
         '\"' -> getString(index + 1)
@@ -54,7 +55,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
     }
 
     private tailrec fun getLineComment(curr: Int): GreenEdge = when (at(curr)) {
-        eofChar, '\n' -> SyntaxType.LineComment.edge(code, pos, curr)
+        eofChar, '\n', '\r' -> SyntaxType.LineComment.edge(code, pos, curr)
         else -> getLineComment(curr + 1)
     }
 
@@ -81,7 +82,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
 
     private fun isWhitespace(c: Char) = when (c) {
         '\n', eofChar -> false
-        ' ', '\t', '\r', '\u000C', '\u2B7F' -> true
+        ' ', '\t', '\u000C', '\u2B7F' -> true
         else -> c.isWhitespace()
     }
 

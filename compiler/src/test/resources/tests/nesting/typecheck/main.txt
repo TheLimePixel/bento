@@ -1,10 +1,10 @@
 ======= nesting::main::baz =======
 ScopeExpr {
-  ref: ScopeExpr@54..79
+  ref: ScopeExpr@54..81
   type: bento::String
   statements: [
     StringExpr {
-      ref: StringLiteral@12..29
+      ref: StringLiteral@14..31
       content: "Hello from Baz!"
     }
   ]
@@ -12,11 +12,11 @@ ScopeExpr {
 
 ======= nesting::main::bar =======
 ScopeExpr {
-  ref: ScopeExpr@20..83
+  ref: ScopeExpr@20..86
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..36
+      ref: CallExpr@14..38
       type: bento::Unit
       fn: Function {
         bento::io::println
@@ -38,7 +38,7 @@ ScopeExpr {
       ]
     }
     CallExpr {
-      ref: CallExpr@70..96
+      ref: CallExpr@74..100
       type: bento::Unit
       fn: Function {
         bento::io::println
@@ -55,22 +55,22 @@ ScopeExpr {
 
 ======= nesting::main::foo =======
 ScopeExpr {
-  ref: ScopeExpr@44..97
+  ref: ScopeExpr@44..102
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..57
+      ref: CallExpr@14..62
       type: bento::Unit
       fn: Function {
         bento::io::println
       }
       args: [
         ScopeExpr {
-          ref: ScopeExpr@2..38
+          ref: ScopeExpr@2..41
           type: bento::String
           statements: [
             CallExpr {
-              ref: CallExpr@20..25
+              ref: CallExpr@22..27
               type: bento::Unit
               fn: Function {
                 nesting::main::bar
@@ -96,11 +96,11 @@ ScopeExpr {
 
 ======= nesting::main::main =======
 ScopeExpr {
-  ref: ScopeExpr@22..84
+  ref: ScopeExpr@22..87
   type: bento::Unit
   statements: [
     CallExpr {
-      ref: CallExpr@12..34
+      ref: CallExpr@14..36
       type: bento::Unit
       fn: Function {
         nesting::main::foo
@@ -113,7 +113,7 @@ ScopeExpr {
       ]
     }
     CallExpr {
-      ref: CallExpr@66..93
+      ref: CallExpr@70..97
       type: bento::Unit
       fn: Function {
         bento::io::println

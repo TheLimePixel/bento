@@ -10,10 +10,12 @@ class ASTFormatter(
     private fun format(node: GreenNode, builder: StringBuilder, prefix: StringBuilder) {
         builder.append(node.type)
 
-        if (node.type.dynamic) builder
-            .append('(')
-            .append(node.content.replace("\n", "\\n"))
-            .append(')')
+        if (node.type.dynamic) {
+            builder
+                .append('(')
+                .append(node.content.replace("(\r(\n)?)|\n".toRegex(), "\\\\n"))
+                .append(')')
+        }
 
         builder.append('\n')
 
