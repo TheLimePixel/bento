@@ -17,7 +17,7 @@ File
 │   ├─LetExpr
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
-│   │ ├─Identifier
+│   │ ├─IdentPattern
 │   │ │ └─StandardIdentifier(text)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
@@ -28,11 +28,11 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Identifier
+│   │   ├─IdentExpr
 │   │   │ └─StandardIdentifier(text)
 │   │   └─RParen
 │   ├─Newline
@@ -40,7 +40,8 @@ File
 │   ├─LetExpr
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
-│   │ ├─Wildcard
+│   │ ├─WildcardPattern
+│   │ │ └─Wildcard
 │   │ ├─TypeAnnotation
 │   │ │ ├─Colon
 │   │ │ ├─Whitespace( )

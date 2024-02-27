@@ -9,6 +9,8 @@ private data class MutablePackageTreeNode(
     override val path: ItemPath?
 ) : PackageTreeNode {
     override val children = mutableMapOf<String, MutablePackageTreeNode>()
+
+    override fun toString(): String = "$path: $children"
 }
 
 class PackageTree {

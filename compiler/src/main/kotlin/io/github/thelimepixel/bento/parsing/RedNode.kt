@@ -11,6 +11,9 @@ data class RedNode internal constructor(
     val content: String
         get() = green.content
 
+    val rawContent: String
+        get() = green.rawContent
+
     val type: SyntaxType
         get() = green.type
 

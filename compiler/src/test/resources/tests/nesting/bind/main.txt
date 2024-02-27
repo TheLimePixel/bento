@@ -5,7 +5,7 @@ FunctionDef {
     Param {
       ref: Param@2..11
       pattern: WildcardPattern {
-        ref: Wildcard@0..1
+        ref: WildcardPattern@0..1
       }
       type: TypeRef {
         ref: Identifier@4..10
@@ -39,7 +39,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..38
         on: IdentExpr {
-          ref: Identifier@0..7
+          ref: IdentExpr@0..7
           binding: Function {
             bento::io::println
           }
@@ -48,7 +48,7 @@ FunctionDef {
           CallExpr {
             ref: CallExpr@2..17
             on: IdentExpr {
-              ref: Identifier@0..3
+              ref: IdentExpr@0..3
               binding: Function {
                 nesting::main::baz
               }
@@ -65,7 +65,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@74..100
         on: IdentExpr {
-          ref: Identifier@0..7
+          ref: IdentExpr@0..7
           binding: Function {
             bento::io::println
           }
@@ -88,7 +88,7 @@ FunctionDef {
     Param {
       ref: Param@2..14
       pattern: IdentPattern {
-        ref: Identifier@0..4
+        ref: IdentPattern@0..4
         name: text
       }
       type: TypeRef {
@@ -104,7 +104,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..62
         on: IdentExpr {
-          ref: Identifier@0..7
+          ref: IdentExpr@0..7
           binding: Function {
             bento::io::println
           }
@@ -116,7 +116,7 @@ FunctionDef {
               CallExpr {
                 ref: CallExpr@22..27
                 on: IdentExpr {
-                  ref: Identifier@0..3
+                  ref: IdentExpr@0..3
                   binding: Function {
                     nesting::main::bar
                   }
@@ -124,10 +124,10 @@ FunctionDef {
                 args: []
               }
               IdentExpr {
-                ref: Identifier@2..6
+                ref: IdentExpr@2..6
                 binding: LocalRef {
                   node: IdentPattern {
-                    ref: Identifier@0..4
+                    ref: IdentPattern@0..4
                     name: text
                   }
                 }
@@ -151,7 +151,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..36
         on: IdentExpr {
-          ref: Identifier@0..3
+          ref: IdentExpr@0..3
           binding: Function {
             nesting::main::foo
           }
@@ -166,7 +166,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@70..97
         on: IdentExpr {
-          ref: Identifier@0..7
+          ref: IdentExpr@0..7
           binding: Function {
             bento::io::println
           }

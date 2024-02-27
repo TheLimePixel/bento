@@ -1,0 +1,71 @@
+File
+├─ImportStatement
+│ ├─ImportKeyword
+│ ├─Whitespace( )
+│ └─ImportBlock
+│   ├─LBrace
+│   ├─Whitespace( )
+│   ├─ImportPath
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(packages)
+│   │ ├─ColonColon
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(foo)
+│   │ ├─ColonColon
+│   │ └─Identifier
+│   │   └─StandardIdentifier(foo)
+│   ├─Whitespace( )
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(bar)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─TypeAnnotation
+│ │ ├─Colon
+│ │ ├─Whitespace( )
+│ │ └─Identifier
+│ │   └─StandardIdentifier(String)
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─StringLiteral("Bar")
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─IdentExpr
+│   │ │ └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─CallExpr
+│   │   │ ├─IdentExpr
+│   │   │ │ └─StandardIdentifier(foo)
+│   │   │ └─ArgList
+│   │   │   ├─LParen
+│   │   │   └─RParen
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+└─EOF

@@ -4,7 +4,10 @@ private typealias P = Parser
 private typealias ST = SyntaxType
 
 class BentoParsing {
-    fun parseFIle(code: String) = parser(Lexer(code), ST.File) { handleFile() }
+    fun parseFIle(code: String) = parser(Lexer(code), ST.File) {
+        parseImportStatement()
+        handleFile()
+    }
 
     private fun P.handleFile() {
         when (current) {
@@ -16,6 +19,42 @@ class BentoParsing {
             else -> errorNode(ParseError.ExpectedDeclaration) { push() }
         }
         handleFile()
+    }
+
+    private fun P.parseImportStatement() {
+        if (at(ST.ImportKeyword)) node(ST.ImportStatement) {
+            push()      // ImportKeyword
+            expectImportBlock()
+        }
+    }
+
+    private fun P.expectImportBlock() {
+        if (!at(ST.LBrace))
+            return handleError(ParseError.ExpectedImportBlock)
+
+        node(ST.ImportBlock) {
+            push()      // LBrace
+            handleImportBlock()
+        }
+    }
+
+    private tailrec fun P.handleImportBlock() {
+        when (current) {
+            ST.EOF -> return handleError(ParseError.ExpectedClosedBrace)
+            ST.RBrace -> return push()
+            ST.Comma -> push()
+            else -> expectImportPath()
+        }
+        handleImportBlock()
+    }
+
+    private fun P.expectImportPath() {
+        node(ST.ImportPath) {
+            expectIdentifier()
+            while (consume(ST.ColonColon)) {
+                expectIdentifier()
+            }
+        }
     }
 
     private fun P.canRecover() = when (current) {
@@ -49,7 +88,7 @@ class BentoParsing {
     }
 
     private fun P.expectIdentifier() {
-        if (at(BaseSets.identifiers)) handleIdentifier()
+        if (at(BaseSets.identifiers)) pushWrapped(ST.Identifier)
         else handleError(ParseError.ExpectedIdentifier)
     }
 
@@ -65,8 +104,8 @@ class BentoParsing {
 
     private fun P.consumePattern(): Boolean {
         when (current) {
-            ST.Wildcard -> push()
-            in BaseSets.identifiers -> handleIdentifier()
+            ST.Wildcard -> pushWrapped(ST.WildcardPattern)
+            in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
             else -> return false
         }
         return true
@@ -143,12 +182,18 @@ class BentoParsing {
         ST.StringLiteral -> push()
         ST.LBrace -> parseScopeExpr()
         ST.LParen -> handleParenthesized()
-        in BaseSets.identifiers -> handleIdentifier()
+        in BaseSets.identifiers -> handleIdentExpr()
         ST.EOF -> {}
         else -> handleError(ParseError.ExpectedExpression)
     }
 
-    private fun P.handleIdentifier() = pushWrapped(SyntaxType.Identifier)
+    private fun P.handleIdentExpr() {
+        pushWrapped(ST.IdentExpr)
+        while (at(ST.ColonColon)) nestLast(ST.ScopeAccessExpr) {
+            push()      // colonColon
+            expectIdentifier()
+        }
+    }
 
     private fun P.handleCall() = nestLast(ST.CallExpr) {
         node(ST.ArgList) {

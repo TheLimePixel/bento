@@ -24,6 +24,7 @@ enum class SyntaxType(
     Comma,
     Colon,
     Equals,
+    ColonColon,
 
     StandardIdentifier(dynamic = true),
     BacktickedIdentifier(dynamic = true),
@@ -31,6 +32,7 @@ enum class SyntaxType(
 
     FunKeyword,
     LetKeyword,
+    ImportKeyword,
 
     GetKeyword,
     SetKeyword,
@@ -49,6 +51,8 @@ enum class SyntaxType(
     CallExpr,
     ParenthesizedExpr,
     AssignmentExpr,
+    IdentExpr,
+    ScopeAccessExpr,
 
     TypeAnnotation,
 
@@ -56,6 +60,13 @@ enum class SyntaxType(
     GetDef,
     SetDef,
     LetDef,
+
+    IdentPattern,
+    WildcardPattern,
+
+    ImportBlock,
+    ImportPath,
+    ImportStatement,
 
     File,
 
@@ -80,9 +91,11 @@ object BaseEdges {
     val comma = SyntaxType.Comma.edge( ",")
     val colon = SyntaxType.Colon.edge(":")
     val eq = SyntaxType.Equals.edge("=")
+    val colonColon = SyntaxType.ColonColon.edge("::")
     val funKeyword = SyntaxType.FunKeyword.edge( "fun")
     val letKeyword = SyntaxType.LetKeyword.edge( "let")
     val getKeyword = SyntaxType.GetKeyword.edge( "get")
     val setKeyword = SyntaxType.SetKeyword.edge( "set")
+    val importKeyword = SyntaxType.ImportKeyword.edge( "import")
     val loneSlash = SyntaxType.Unknown.edge( "/")
 }

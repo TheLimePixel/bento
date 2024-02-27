@@ -7,7 +7,8 @@ File
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
-│ │ │ ├─Wildcard
+│ │ │ ├─WildcardPattern
+│ │ │ │ └─Wildcard
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
@@ -43,12 +44,12 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─Identifier
+│   │   │ ├─IdentExpr
 │   │   │ │ └─StandardIdentifier(baz)
 │   │   │ └─ArgList
 │   │   │   ├─LParen
@@ -58,7 +59,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
@@ -76,7 +77,7 @@ File
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
-│ │ │ ├─Identifier
+│ │ │ ├─IdentPattern
 │ │ │ │ └─StandardIdentifier(text)
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
@@ -90,7 +91,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
@@ -99,7 +100,7 @@ File
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─CallExpr
-│   │   │ │ ├─Identifier
+│   │   │ │ ├─IdentExpr
 │   │   │ │ │ └─StandardIdentifier(bar)
 │   │   │ │ └─ArgList
 │   │   │ │   ├─LParen
@@ -108,7 +109,7 @@ File
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─ParenthesizedExpr
 │   │   │ │ ├─LParen
-│   │   │ │ ├─Identifier
+│   │   │ │ ├─IdentExpr
 │   │   │ │ │ └─StandardIdentifier(text)
 │   │   │ │ └─RParen
 │   │   │ ├─Newline
@@ -133,7 +134,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(foo)
 │   │ └─ArgList
 │   │   ├─LParen
@@ -142,7 +143,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen

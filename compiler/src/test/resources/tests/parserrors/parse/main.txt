@@ -13,7 +13,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Identifier
+│   │ ├─IdentExpr
 │   │ │ └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen

@@ -27,9 +27,9 @@ data class ItemPath(val parent: ItemPath?, val name: String) {
         }
 
     fun isSubpathOf(other: ItemPath) = toString().startsWith(other.toString())
-
-    fun subpath(name: String) = ItemPath(this, name)
 }
+
+fun ItemPath?.subpath(name: String) = ItemPath(this, name)
 
 private tailrec fun pathOf(parent: ItemPath, path: Array<out String>, index: Int): ItemPath =
     if (index == path.size) parent else pathOf(ItemPath(parent, path[index]), path, index + 1)

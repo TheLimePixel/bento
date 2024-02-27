@@ -9,7 +9,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..38
         on: IdentExpr {
-          ref: Identifier@0..7
+          ref: IdentExpr@0..7
           binding: Function {
             bento::io::println
           }

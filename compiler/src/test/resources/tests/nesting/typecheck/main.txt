@@ -78,11 +78,11 @@ ScopeExpr {
               args: []
             }
             AccessExpr {
-              ref: Identifier@2..6
+              ref: IdentExpr@2..6
               type: bento::String
               binding: LocalRef {
                 node: IdentPattern {
-                  ref: Identifier@0..4
+                  ref: IdentPattern@0..4
                   name: text
                 }
               }

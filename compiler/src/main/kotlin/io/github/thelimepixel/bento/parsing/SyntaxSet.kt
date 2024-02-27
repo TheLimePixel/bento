@@ -22,17 +22,18 @@ object BaseSets {
     )
     val expressions = syntaxSetOf(
         SyntaxType.StringLiteral,
-        SyntaxType.Identifier,
+        SyntaxType.IdentExpr,
         SyntaxType.ScopeExpr,
         SyntaxType.CallExpr,
         SyntaxType.ScopeExpr,
         SyntaxType.LetExpr,
         SyntaxType.ParenthesizedExpr,
         SyntaxType.AssignmentExpr,
+        SyntaxType.ScopeAccessExpr,
     )
     val patterns = syntaxSetOf(
-        SyntaxType.Identifier,
-        SyntaxType.Wildcard,
+        SyntaxType.IdentPattern,
+        SyntaxType.WildcardPattern,
     )
     val definitions = syntaxSetOf(
         SyntaxType.FunDef,

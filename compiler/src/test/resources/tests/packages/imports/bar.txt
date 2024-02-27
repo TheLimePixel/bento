@@ -1,0 +1,38 @@
+BoundImportData {
+  mutableItems: {}
+  immutableItems: {
+    foo: Function {
+      packages::foo::foo
+    }
+  }
+  packages: {}
+  binding: [
+    BoundImportPath {
+      ref: ImportPath@4..22
+      segments: [
+        BoundImportPathSegment {
+          ref: Identifier@0..8
+          node: packages: {
+            bar: packages::bar: {}
+            foo: packages::foo: {}
+          }
+          items: []
+        }
+        BoundImportPathSegment {
+          ref: Identifier@20..23
+          node: packages::foo: {}
+          items: []
+        }
+        BoundImportPathSegment {
+          ref: Identifier@30..33
+          node: null
+          items: [
+            Function {
+              packages::foo::foo
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

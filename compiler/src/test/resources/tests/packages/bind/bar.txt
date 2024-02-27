@@ -1,0 +1,51 @@
+======= packages::bar::bar =======
+FunctionDef {
+  ref: FunDef@0..33
+  params: []
+  returnType: TypeRef {
+    ref: Identifier@4..10
+    type: bento::String
+  }
+  body: ScopeExpr {
+    ref: ScopeExpr@36..51
+    statements: [
+      StringExpr {
+        ref: StringLiteral@14..19
+        content: "Bar"
+      }
+    ]
+  }
+}
+
+======= packages::bar::main =======
+FunctionDef {
+  ref: FunDef@0..35
+  params: []
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@22..46
+    statements: [
+      CallExpr {
+        ref: CallExpr@14..28
+        on: IdentExpr {
+          ref: IdentExpr@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          CallExpr {
+            ref: CallExpr@2..7
+            on: IdentExpr {
+              ref: IdentExpr@0..3
+              binding: Function {
+                packages::foo::foo
+              }
+            }
+            args: []
+          }
+        ]
+      }
+    ]
+  }
+}

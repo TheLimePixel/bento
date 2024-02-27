@@ -16,7 +16,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         '{' -> BaseEdges.lBrace
         '}' -> BaseEdges.rBrace
         ',' -> BaseEdges.comma
-        ':' -> BaseEdges.colon
+        ':' -> getColon(index + 1)
         '=' -> BaseEdges.eq
         '\n' -> BaseEdges.nlN
         '\r' -> if (at(index + 1) == '\n') BaseEdges.nlRN else BaseEdges.nlR
@@ -31,6 +31,11 @@ class Lexer(private val code: String, private var pos: Int = 0) {
             char.isWhitespace() -> getWhitespace(index + 1)
             else -> SyntaxType.Unknown.edge(char.toString())
         }
+    }
+
+    private fun getColon(curr: Int) = when (at(curr)) {
+        ':' -> BaseEdges.colonColon
+        else -> BaseEdges.colon
     }
 
     private tailrec fun getUnderscore(curr: Int): GreenEdge = when (val char = at(curr)) {
@@ -110,6 +115,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         "let" -> BaseEdges.letKeyword
         "get" -> BaseEdges.getKeyword
         "set" -> BaseEdges.setKeyword
+        "import" -> BaseEdges.importKeyword
         else -> SyntaxType.StandardIdentifier.edge(this)
     }
 

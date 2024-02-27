@@ -68,20 +68,22 @@ class SourceTests {
             traversePackageFiles(ItemPath(rootPath, it.nameWithoutExtension), it, hierarchy, sources)
         } ?: return
 
-
-        val nodes = sources.mapValues { (path, code) ->
+        val packageItems = sources.mapValues { (path, code) ->
             val node = parsing.parseFIle(code)
             test(dir, "Parse", path) { formatAST(node) }
             node.collectItems(path)
         }
 
-        val hirMap = nodes
+        val hirMap = packageItems
             .flatMap { (path, fileInfo) ->
-                val bindings = binding.bind(fileInfo.items, fileInfo.dataMap, topBindingContext)
+                val imports = binding.bindImport(fileInfo.importNode, hierarchy.root, packageItems)
+                test(dir, "Imports", path) { objFormatter.format(imports.toString()) }
+
+                val bindings = binding.bind(fileInfo, imports, topBindingContext)
                 test(dir, "Bind", path) { formatItemTrees(bindings) }
+
                 bindings.asSequence()
             }.associate { (key, value) -> key to value }
-
 
         val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (_, value) -> value.type() })
 
@@ -99,17 +101,19 @@ class SourceTests {
 
         val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext)
 
-        nodes.forEach { (path, fileInfo) ->
+        val classes = packageItems.mapValues { (path, fileInfo) ->
             val bytecode = bentoCodegen.generate(path, fileInfo.items, jvmBindingContext, hirMap, thirMap)
             test(dir, "Codegen", path) { bytecodeFormatter.format(bytecode) }
+            classLoader.load(path, bytecode)
+        }
 
-            test(dir, "Output", path) { invokeBytecode(path, bytecode) }
+        classes.forEach { (path, `class`) ->
+            test(dir, "Output", path) { invokeBytecode(`class`) }
         }
     }
 
-    private fun invokeBytecode(fileRef: ItemPath, bytecode: ByteArray): String {
-        val clazz = classLoader.load(fileRef, bytecode)
-        clazz.getDeclaredMethod("main").invoke(null)
+    private fun invokeBytecode(`class`: Class<*>): String {
+        `class`.getDeclaredMethod("main").invoke(null)
         return printBuffer.toString().also { printBuffer.clear() }
     }
 

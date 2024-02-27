@@ -33,7 +33,11 @@ class ObjectFormatter : Formatter<Any?> {
                     builder.append(prefix)
                 }
 
-                '{' -> {
+                '{' -> if (str[index + 1] == '}') {
+                    builder.append("{}")
+                    index += 2
+                    continue
+                } else {
                     builder.append("$curr\n ")
                     prefix.append("  ")
                     builder.append(prefix)

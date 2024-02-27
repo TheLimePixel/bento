@@ -1,0 +1,9 @@
+import { packages::foo::foo }
+
+fun bar(): String {
+    "Bar"
+}
+
+fun main() {
+    println(foo())
+}

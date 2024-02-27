@@ -31,25 +31,27 @@ data class ItemRef(val path: ItemPath, val type: ItemType, val index: Int) : Ref
     override fun toString(): String = "$type($path)"
 }
 
-data class FileItemInfo(
+data class PackageASTInfo(
     val items: List<ItemRef>,
     val dataMap: Map<String, List<GreenNode>>,
+    val importNode: GreenNode?
 )
 
-fun GreenNode.collectItems(parentPath: ItemPath): FileItemInfo {
+fun GreenNode.collectItems(parentPath: ItemPath): PackageASTInfo {
     val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
+    val importNode = firstChild(ST.ImportStatement)?.node
     val items = childSequence()
         .map { it.node }
         .filter { it.type in BaseSets.definitions }
         .map {
-            val name = it.firstChild(SyntaxType.Identifier)?.content ?: ""
+            val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
             val list = dataMap.computeIfAbsent(name) { mutableListOf() }
             list.add(it)
             ItemRef(parentPath.subpath(name), itemTypeFrom(it.type), list.lastIndex)
         }
         .toList()
 
-    return FileItemInfo(items, dataMap)
+    return PackageASTInfo(items, dataMap, importNode)
 }
 
 fun itemTypeFrom(type: SyntaxType) = when (type) {

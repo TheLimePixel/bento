@@ -29,6 +29,9 @@ sealed interface GreenNode : CodeTree<GreenChild, ParseError> {
 
     fun lastChild(set: SyntaxSet): GreenChild? =
         revChildSequence().firstOrNull { it.type in set }
+
+    val rawContent: String
+        get() = content.removeSurrounding("`")
 }
 
 data class GreenEdge(override val type: SyntaxType, override val content: String) : GreenNode {
@@ -50,6 +53,7 @@ data class GreenEdge(override val type: SyntaxType, override val content: String
 data class GreenChild(val offset: Int, val node: GreenNode) {
     val type: SyntaxType get() = node.type
     val content: String get() = node.content
+    val rawContent: String get() = node.rawContent
 }
 
 data class GreenBranch(
