@@ -44,12 +44,14 @@ File
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─IdentExpr
-│   │   │ └─StandardIdentifier(new)
+│   │   ├─PathExpr
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(new)
 │   │   └─RParen
 │   ├─Newline
 │   └─RBrace
@@ -85,23 +87,27 @@ File
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─IdentExpr
-│   │   │ └─StandardIdentifier(hello)
+│   │   ├─PathExpr
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(hello)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─AssignmentExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(hello)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(hello)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
-│   │ └─IdentExpr
-│   │   └─BacktickedIdentifier(`Hey, World!`)
+│   │ └─PathExpr
+│   │   └─Identifier
+│   │     └─BacktickedIdentifier(`Hey, World!`)
 │   ├─Newline
 │   └─RBrace
 └─EOF

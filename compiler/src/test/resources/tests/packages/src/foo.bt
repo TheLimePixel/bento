@@ -1,9 +1,9 @@
-import { packages::bar::bar }
+import { packages::bar }
 
 fun foo(): String {
     "Foo"
 }
 
 fun main() {
-    println(bar())
+    println(bar::bar())
 }

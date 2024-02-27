@@ -1,14 +1,12 @@
 BoundImportData {
   mutableItems: {}
-  immutableItems: {
-    bar: Function {
-      packages::bar::bar
-    }
+  immutableItems: {}
+  packages: {
+    bar: packages::bar: {}
   }
-  packages: {}
   binding: [
     BoundImportPath {
-      ref: ImportPath@4..22
+      ref: ImportPath@4..17
       segments: [
         BoundImportPathSegment {
           ref: Identifier@0..8
@@ -22,15 +20,6 @@ BoundImportData {
           ref: Identifier@20..23
           node: packages::bar: {}
           items: []
-        }
-        BoundImportPathSegment {
-          ref: Identifier@30..33
-          node: null
-          items: [
-            Function {
-              packages::bar::bar
-            }
-          ]
         }
       ]
     }

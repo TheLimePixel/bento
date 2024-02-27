@@ -28,12 +28,14 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─IdentExpr
-│   │   │ └─StandardIdentifier(text)
+│   │   ├─PathExpr
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(text)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )

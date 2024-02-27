@@ -19,25 +19,25 @@ FunctionDef {
 
 ======= packages::foo::main =======
 FunctionDef {
-  ref: FunDef@0..35
+  ref: FunDef@0..40
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..46
+    ref: ScopeExpr@22..51
     statements: [
       CallExpr {
-        ref: CallExpr@14..28
-        on: IdentExpr {
-          ref: IdentExpr@0..7
+        ref: CallExpr@14..33
+        on: PathExpr {
+          ref: PathExpr@0..7
           binding: Function {
             bento::io::println
           }
         }
         args: [
           CallExpr {
-            ref: CallExpr@2..7
-            on: IdentExpr {
-              ref: IdentExpr@0..3
+            ref: CallExpr@2..12
+            on: PathExpr {
+              ref: PathExpr@0..8
               binding: Function {
                 packages::bar::bar
               }

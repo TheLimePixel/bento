@@ -42,7 +42,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         }
     }
 
-    data class IdentExpr(
+    data class PathExpr(
         override val ref: ASTRef,
         val binding: Ref,
     ) : Expr {

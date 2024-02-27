@@ -9,9 +9,6 @@ File
 │   │ ├─Identifier
 │   │ │ └─StandardIdentifier(packages)
 │   │ ├─ColonColon
-│   │ ├─Identifier
-│   │ │ └─StandardIdentifier(bar)
-│   │ ├─ColonColon
 │   │ └─Identifier
 │   │   └─StandardIdentifier(bar)
 │   ├─Whitespace( )
@@ -55,13 +52,18 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─IdentExpr
-│   │   │ │ └─StandardIdentifier(bar)
+│   │   │ ├─PathExpr
+│   │   │ │ ├─Identifier
+│   │   │ │ │ └─StandardIdentifier(bar)
+│   │   │ │ ├─ColonColon
+│   │   │ │ └─Identifier
+│   │   │ │   └─StandardIdentifier(bar)
 │   │   │ └─ArgList
 │   │   │   ├─LParen
 │   │   │   └─RParen

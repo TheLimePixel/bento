@@ -27,8 +27,8 @@ FunctionDef {
     statements: [
       CallExpr {
         ref: CallExpr@14..28
-        on: IdentExpr {
-          ref: IdentExpr@0..7
+        on: PathExpr {
+          ref: PathExpr@0..7
           binding: Function {
             bento::io::println
           }
@@ -36,8 +36,8 @@ FunctionDef {
         args: [
           CallExpr {
             ref: CallExpr@2..7
-            on: IdentExpr {
-              ref: IdentExpr@0..3
+            on: PathExpr {
+              ref: PathExpr@0..3
               binding: Function {
                 packages::foo::foo
               }

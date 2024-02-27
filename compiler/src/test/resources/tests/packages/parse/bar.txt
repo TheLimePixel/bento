@@ -55,13 +55,15 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─IdentExpr
-│   │   │ │ └─StandardIdentifier(foo)
+│   │   │ ├─PathExpr
+│   │   │ │ └─Identifier
+│   │   │ │   └─StandardIdentifier(foo)
 │   │   │ └─ArgList
 │   │   │   ├─LParen
 │   │   │   └─RParen

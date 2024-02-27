@@ -475,8 +475,6 @@ pack fun bar(foo: Foo) {// package-private function
 
 ## Scope Operator
 
-TODO
-
 #### Requires
 
 - [Scopes](features.md#scopes)

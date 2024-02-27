@@ -8,8 +8,8 @@ FunctionDef {
     statements: [
       CallExpr {
         ref: CallExpr@14..38
-        on: IdentExpr {
-          ref: IdentExpr@0..7
+        on: PathExpr {
+          ref: PathExpr@0..7
           binding: Function {
             bento::io::println
           }

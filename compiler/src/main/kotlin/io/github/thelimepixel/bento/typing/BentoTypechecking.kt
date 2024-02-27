@@ -38,7 +38,7 @@ class BentoTypechecking {
         return if (expr.type == type) expr else THIRError.InvalidType.at(hir.ref, listOf(expr), type)
     }
 
-    private fun TC.typeIdentExpr(hir: HIR.IdentExpr) = when (val binding = hir.binding) {
+    private fun TC.typeIdentExpr(hir: HIR.PathExpr) = when (val binding = hir.binding) {
         is ItemRef ->
             when (binding.type) {
                 ItemType.Getter -> THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
@@ -53,7 +53,7 @@ class BentoTypechecking {
         is HIR.CallExpr -> typeCall(hir)
         is HIR.AssignmentExpr -> typeAssignment(hir)
         is HIR.ErrorExpr -> THIRError.Propagation.at(hir.ref)
-        is HIR.IdentExpr -> typeIdentExpr(hir)
+        is HIR.PathExpr -> typeIdentExpr(hir)
         is HIR.ScopeExpr -> typeScope(hir, unit)
         is HIR.StringExpr -> THIR.StringExpr(hir.ref, hir.content)
         is HIR.LetExpr -> typeLetExpr(hir)
@@ -81,7 +81,7 @@ class BentoTypechecking {
     }
 
     private fun FC.typeCall(hir: HIR.CallExpr): THIR {
-        val on = hir.on as? HIR.IdentExpr
+        val on = hir.on as? HIR.PathExpr
             ?: return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
 
         val binding = on.binding

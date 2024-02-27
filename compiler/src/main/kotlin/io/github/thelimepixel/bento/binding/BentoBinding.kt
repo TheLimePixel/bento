@@ -5,19 +5,23 @@ import io.github.thelimepixel.bento.parsing.*
 private typealias BC = BindingContext
 typealias ST = SyntaxType
 private typealias LC = LocalBindingContext
+private typealias RC = RootBindingContext
 
 class BentoBinding {
     fun bind(
-        info: PackageASTInfo,
+        packagePath: ItemPath,
         importData: BoundImportData,
         parentContext: BindingContext,
     ): Map<ItemRef, HIR.Def> {
         val initialized = mutableSetOf<ItemRef>()
-        val context = FileBindingContext(
+        val info = parentContext.packageInfoOf(packagePath)!!
+        val context = PackageBindingContext(
             parentContext,
+            packagePath,
             info.items.asSequence().filter { it.type.immutable }.associateBy { it.name } + importData.immutableItems,
             info.items.asSequence().filter { it.type.mutable }.associateBy { it.name } + importData.mutableItems,
-            initialized
+            importData.packages,
+            initialized,
         )
         return info.items.associateWith { ref ->
             context.bindDefinition(info.dataMap[ref.name]!![ref.index].toRedRoot())
@@ -99,15 +103,32 @@ class BentoBinding {
         return HIR.CallExpr(node.ref, on, args)
     }
 
-    private fun BC.bindIdentifier(node: RedNode) = refForImmutable(node.rawContent)
+    private fun BC.bindIdentifier(node: RedNode) = handlePathExpr(node, mutable = false)
         ?.let {
-            if (isInitialized(it)) HIR.IdentExpr(node.ref, it)
+            if (isInitialized(it)) HIR.PathExpr(node.ref, it)
             else HIR.ErrorExpr(node.ref, HIRError.UninitializedConstant)
         } ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
+    private fun BC.handlePathExpr(node: RedNode, mutable: Boolean): Ref? {
+        val segments = node.childSequence().filter { it.type == ST.Identifier }.toList()
+
+        if (segments.size == 1) {
+            val name = segments[0].rawContent
+            return if (mutable) refForMutable(name) else refForImmutable(name)
+        }
+
+        var packNode = packageNodeFor(segments.first().rawContent) ?: return null
+        segments.subList(1, segments.lastIndex).forEach {
+            packNode = packNode.children[it.rawContent] ?: return null
+        }
+        return (packageInfoOf(packNode.path) ?: return null)
+            .items.filter { it.name == segments.last().rawContent }
+            .lastOrNull { it.type.mutable == mutable }
+    }
+
     private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
-        ST.IdentExpr -> bindIdentifier(node)
+        ST.PathExpr -> bindIdentifier(node)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
         ST.LetExpr -> bindLet(node)
@@ -118,7 +139,7 @@ class BentoBinding {
 
     private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
         val leftRef = node.firstChild(BaseSets.expressions)?.let { expr ->
-            if (expr.type == ST.IdentExpr) refForMutable(expr.rawContent)
+            if (expr.type == ST.PathExpr) handlePathExpr(expr, mutable = true)
             else null
         }
         val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)
@@ -152,11 +173,7 @@ class BentoBinding {
         return HIR.ScopeExpr(node.ref, statements)
     }
 
-    fun bindImport(
-        node: GreenNode?,
-        rootPackage: PackageTreeNode,
-        items: Map<ItemPath, PackageASTInfo>
-    ): BoundImportData {
+    fun bindImport(node: GreenNode?, context: RC): BoundImportData {
         val block = node?.toRedRoot()?.firstChild(ST.ImportBlock) ?: return emptyImportData
         val importedMutableItems = mutableMapOf<String, ItemRef>()
         val importedImmutableItems = mutableMapOf<String, ItemRef>()
@@ -164,22 +181,20 @@ class BentoBinding {
         val paths = block.childSequence()
             .filter { it.type == ST.ImportPath }
             .map {
-                bindImportPath(it, importedMutableItems, importedImmutableItems, importedPackages, rootPackage, items)
+                context.bindImportPath(it, importedMutableItems, importedImmutableItems, importedPackages)
             }
             .toList()
 
         return BoundImportData(importedMutableItems, importedImmutableItems, importedPackages, paths)
     }
 
-    private fun bindImportPath(
+    private fun RC.bindImportPath(
         node: RedNode,
         importedMutableItems: MutableMap<String, ItemRef>,
         importedImmutableItems: MutableMap<String, ItemRef>,
         importedPackages: MutableMap<String, PackageTreeNode>,
-        rootPackage: PackageTreeNode,
-        packageItems: Map<ItemPath, PackageASTInfo>
     ): BoundImportPath {
-        var lastPackage: PackageTreeNode? = rootPackage
+        var lastPackage: PackageTreeNode? = root
         var name = ""
         val segments = node.childSequence()
             .filter { it.type == ST.Identifier }
@@ -188,7 +203,8 @@ class BentoBinding {
                 val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.ref, null, emptyList())
                 lastPackage = lastPack.children[name]
                 val items =
-                    packageItems[lastPack.path]?.items?.filter { it.path == lastPack.path.subpath(name) } ?: emptyList()
+                    astInfoMap[lastPack.path]?.items?.filter { it.path == lastPack.path.subpath(name) } ?:
+                    emptyList()
                 BoundImportPathSegment(segment.ref, lastPackage, items)
             }
             .toList()

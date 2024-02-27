@@ -44,13 +44,15 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─IdentExpr
-│   │   │ │ └─StandardIdentifier(baz)
+│   │   │ ├─PathExpr
+│   │   │ │ └─Identifier
+│   │   │ │   └─StandardIdentifier(baz)
 │   │   │ └─ArgList
 │   │   │   ├─LParen
 │   │   │   ├─StringLiteral("Hellope!")
@@ -59,8 +61,9 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello from Bar!")
@@ -91,8 +94,9 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─ScopeExpr
@@ -100,8 +104,9 @@ File
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─CallExpr
-│   │   │ │ ├─IdentExpr
-│   │   │ │ │ └─StandardIdentifier(bar)
+│   │   │ │ ├─PathExpr
+│   │   │ │ │ └─Identifier
+│   │   │ │ │   └─StandardIdentifier(bar)
 │   │   │ │ └─ArgList
 │   │   │ │   ├─LParen
 │   │   │ │   └─RParen
@@ -109,8 +114,9 @@ File
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─ParenthesizedExpr
 │   │   │ │ ├─LParen
-│   │   │ │ ├─IdentExpr
-│   │   │ │ │ └─StandardIdentifier(text)
+│   │   │ │ ├─PathExpr
+│   │   │ │ │ └─Identifier
+│   │   │ │ │   └─StandardIdentifier(text)
 │   │   │ │ └─RParen
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(    )
@@ -134,8 +140,9 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(foo)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(foo)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello from Foo!")
@@ -143,8 +150,9 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─IdentExpr
-│   │ │ └─StandardIdentifier(println)
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─StringLiteral("Hello from Main!")

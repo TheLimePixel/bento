@@ -21,7 +21,14 @@ class SourceTests {
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
     private val objFormatter: Formatter<Any?> = ObjectFormatter()
-    private val topBindingContext: BindingContext = FileBindingContext(null, BuiltinRefs.map, emptyMap(), emptySet())
+    private val topBindingContext: BindingContext = PackageBindingContext(
+        null,
+        null,
+        BuiltinRefs.map,
+        emptyMap(),
+        emptyMap(),
+        emptySet()
+    )
     private val topTypingContext: TypingContext = TopLevelTypingContext()
     private val topJVMBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
         printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
@@ -74,12 +81,14 @@ class SourceTests {
             node.collectItems(path)
         }
 
+        val rootContext = RootBindingContext(topBindingContext, hierarchy.root, packageItems)
+
         val hirMap = packageItems
             .flatMap { (path, fileInfo) ->
-                val imports = binding.bindImport(fileInfo.importNode, hierarchy.root, packageItems)
+                val imports = binding.bindImport(fileInfo.importNode, rootContext)
                 test(dir, "Imports", path) { objFormatter.format(imports.toString()) }
 
-                val bindings = binding.bind(fileInfo, imports, topBindingContext)
+                val bindings = binding.bind(path, imports, rootContext)
                 test(dir, "Bind", path) { formatItemTrees(bindings) }
 
                 bindings.asSequence()

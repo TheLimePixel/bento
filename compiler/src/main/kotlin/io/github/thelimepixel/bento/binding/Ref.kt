@@ -37,6 +37,8 @@ data class PackageASTInfo(
     val importNode: GreenNode?
 )
 
+typealias PackageInfoMap = Map<ItemPath, PackageASTInfo>
+
 fun GreenNode.collectItems(parentPath: ItemPath): PackageASTInfo {
     val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
     val importNode = firstChild(ST.ImportStatement)?.node

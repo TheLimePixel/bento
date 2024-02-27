@@ -51,8 +51,7 @@ enum class SyntaxType(
     CallExpr,
     ParenthesizedExpr,
     AssignmentExpr,
-    IdentExpr,
-    ScopeAccessExpr,
+    PathExpr,
 
     TypeAnnotation,
 

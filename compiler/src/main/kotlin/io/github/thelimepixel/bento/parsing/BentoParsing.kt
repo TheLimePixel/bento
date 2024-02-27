@@ -182,15 +182,14 @@ class BentoParsing {
         ST.StringLiteral -> push()
         ST.LBrace -> parseScopeExpr()
         ST.LParen -> handleParenthesized()
-        in BaseSets.identifiers -> handleIdentExpr()
+        in BaseSets.identifiers -> handlePathExpr()
         ST.EOF -> {}
         else -> handleError(ParseError.ExpectedExpression)
     }
 
-    private fun P.handleIdentExpr() {
-        pushWrapped(ST.IdentExpr)
-        while (at(ST.ColonColon)) nestLast(ST.ScopeAccessExpr) {
-            push()      // colonColon
+    private fun P.handlePathExpr() = node(ST.PathExpr) {
+        pushWrapped(ST.Identifier)
+        while (consume(ST.ColonColon)) {
             expectIdentifier()
         }
     }
