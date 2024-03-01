@@ -1,0 +1,67 @@
+File
+├─TypeDef
+│ ├─DataKeyword
+│ ├─Whitespace( )
+│ └─Identifier
+│   └─StandardIdentifier(Foo)
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(foo)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ ├─Param
+│ │ │ ├─IdentPattern
+│ │ │ │ └─StandardIdentifier(foo)
+│ │ │ └─TypeAnnotation
+│ │ │   ├─Colon
+│ │ │   ├─Whitespace( )
+│ │ │   └─Identifier
+│ │ │     └─StandardIdentifier(Foo)
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─StringLiteral("Foooooooooo")
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(main)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(foo)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─PathExpr
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(Foo)
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+└─EOF

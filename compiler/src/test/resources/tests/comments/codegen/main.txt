@@ -9,8 +9,6 @@ public final class comments/mainBt {
     ASTORE 0
     ALOAD 0
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
-    LDC "Haha"
-    POP
     RETURN
     MAXSTACK = 1
     MAXLOCALS = 1

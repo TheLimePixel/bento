@@ -1,7 +1,9 @@
 ======= nesting::main::baz =======
 ScopeExpr {
   ref: ScopeExpr@54..81
-  type: bento::String
+  type: RecordType {
+    bento::String
+  }
   statements: [
     StringExpr {
       ref: StringLiteral@14..31
@@ -13,18 +15,24 @@ ScopeExpr {
 ======= nesting::main::bar =======
 ScopeExpr {
   ref: ScopeExpr@20..86
-  type: bento::Unit
+  type: SingletonType {
+    bento::Unit
+  }
   statements: [
     CallExpr {
       ref: CallExpr@14..38
-      type: bento::Unit
+      type: SingletonType {
+        bento::Unit
+      }
       fn: Function {
         bento::io::println
       }
       args: [
         CallExpr {
           ref: CallExpr@2..17
-          type: bento::String
+          type: RecordType {
+            bento::String
+          }
           fn: Function {
             nesting::main::baz
           }
@@ -39,7 +47,9 @@ ScopeExpr {
     }
     CallExpr {
       ref: CallExpr@74..100
-      type: bento::Unit
+      type: SingletonType {
+        bento::Unit
+      }
       fn: Function {
         bento::io::println
       }
@@ -56,22 +66,30 @@ ScopeExpr {
 ======= nesting::main::foo =======
 ScopeExpr {
   ref: ScopeExpr@44..102
-  type: bento::Unit
+  type: SingletonType {
+    bento::Unit
+  }
   statements: [
     CallExpr {
       ref: CallExpr@14..62
-      type: bento::Unit
+      type: SingletonType {
+        bento::Unit
+      }
       fn: Function {
         bento::io::println
       }
       args: [
         ScopeExpr {
           ref: ScopeExpr@2..41
-          type: bento::String
+          type: RecordType {
+            bento::String
+          }
           statements: [
             CallExpr {
               ref: CallExpr@22..27
-              type: bento::Unit
+              type: SingletonType {
+                bento::Unit
+              }
               fn: Function {
                 nesting::main::bar
               }
@@ -79,7 +97,9 @@ ScopeExpr {
             }
             AccessExpr {
               ref: PathExpr@2..6
-              type: bento::String
+              type: RecordType {
+                bento::String
+              }
               binding: LocalRef {
                 node: IdentPattern {
                   ref: IdentPattern@0..4
@@ -97,11 +117,15 @@ ScopeExpr {
 ======= nesting::main::main =======
 ScopeExpr {
   ref: ScopeExpr@22..87
-  type: bento::Unit
+  type: SingletonType {
+    bento::Unit
+  }
   statements: [
     CallExpr {
       ref: CallExpr@14..36
-      type: bento::Unit
+      type: SingletonType {
+        bento::Unit
+      }
       fn: Function {
         nesting::main::foo
       }
@@ -114,7 +138,9 @@ ScopeExpr {
     }
     CallExpr {
       ref: CallExpr@70..97
-      type: bento::Unit
+      type: SingletonType {
+        bento::Unit
+      }
       fn: Function {
         bento::io::println
       }

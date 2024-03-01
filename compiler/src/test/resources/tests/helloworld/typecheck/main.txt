@@ -1,11 +1,15 @@
 ======= helloworld::main::main =======
 ScopeExpr {
   ref: ScopeExpr@22..56
-  type: bento::Unit
+  type: SingletonType {
+    bento::Unit
+  }
   statements: [
     CallExpr {
       ref: CallExpr@14..38
-      type: bento::Unit
+      type: SingletonType {
+        bento::Unit
+      }
       fn: Function {
         bento::io::println
       }

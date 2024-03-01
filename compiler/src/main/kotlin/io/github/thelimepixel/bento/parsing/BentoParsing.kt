@@ -16,9 +16,15 @@ class BentoParsing {
             ST.GetKeyword -> handleFunctionLike(ST.GetDef)
             ST.SetKeyword -> handleFunctionLike(ST.SetDef)
             ST.LetKeyword -> handleTopLevelLet()
+            ST.DataKeyword -> handleTypeDef()
             else -> errorNode(ParseError.ExpectedDeclaration) { push() }
         }
         handleFile()
+    }
+
+    private fun P.handleTypeDef() = node(ST.TypeDef) {
+        push()      // data keyword
+        expectIdentifier()
     }
 
     private fun P.parseImportStatement() {

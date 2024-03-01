@@ -1,0 +1,9 @@
+data Foo
+
+fun foo(foo: Foo) {
+    println("Foooooooooo")
+}
+
+fun main() {
+    foo(Foo)
+}

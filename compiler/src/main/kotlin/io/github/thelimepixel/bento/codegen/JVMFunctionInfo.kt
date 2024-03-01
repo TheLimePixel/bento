@@ -1,6 +1,7 @@
 package io.github.thelimepixel.bento.codegen
 
 import io.github.thelimepixel.bento.binding.HIR
+import io.github.thelimepixel.bento.binding.ItemType
 import io.github.thelimepixel.bento.binding.LocalRef
 import io.github.thelimepixel.bento.typing.BuiltinTypes
 import io.github.thelimepixel.bento.typing.THIR
@@ -34,21 +35,36 @@ private class JVMInfoResolver(private val varIds: MutableMap<LocalRef, Int>) {
     }
 
     fun handle(node: THIR) {
-        handleRec(node)
+        handleRec(node, node.type.isSingleton)
         maxStackSize = max(currentStackSize, maxStackSize)
     }
 
-    private fun handleRec(node: THIR) {
+    private fun handleRec(node: THIR, toIgnore: Boolean) {
         when (node) {
-            is THIR.CallExpr -> frame { node.args.forEach { handleRec(it) } }
-            is THIR.ScopeExpr -> node.statements.forEach { frame { handleRec(it) } }
-            is THIR.AccessExpr, is THIR.ErrorExpr, is THIR.StringExpr -> Unit
+            is THIR.CallExpr -> {
+                frame { node.args.forEach { handleRec(it, false) } }
+                if (!toIgnore || !node.type.isSingleton) currentStackSize += 1
+            }
+
+            is THIR.ScopeExpr -> {
+                val statements = node.statements
+                if (statements.isEmpty()) return
+                statements
+                    .subList(0, node.statements.size - 1)
+                    .forEach { frame { handleRec(it, true) } }
+                return frame { handleRec(statements.last(), toIgnore) }
+            }
+
             is THIR.LetExpr -> {
-                frame { handleRec(node.expr) }
+                frame { handleRec(node.expr, false) }
                 varIds[node.local] = varIds.size
             }
+
+            is THIR.ErrorExpr -> Unit
+
+            is THIR.AccessExpr, is THIR.StringExpr, is THIR.SingletonAccessExpr -> {
+                if (!toIgnore) currentStackSize += 1
+            }
         }
-        if (node.type != BuiltinTypes.unit && node.type != BuiltinTypes.nothing)
-            currentStackSize += 1
     }
 }

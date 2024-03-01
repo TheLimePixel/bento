@@ -1,26 +1,32 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.BuiltinRefs
-import io.github.thelimepixel.bento.binding.HIR
-import io.github.thelimepixel.bento.binding.ItemPath
+import io.github.thelimepixel.bento.binding.*
 
 sealed interface Type {
-    val accessType: Type
+    val accessType: PathType
+    val isSingleton: Boolean
 }
 
-data class PathType(val path: ItemPath) : Type {
+data class PathType(val path: ItemRef) : Type {
     override fun toString(): String = path.toString()
-    override val accessType: Type
+    override val accessType: PathType
         get() = this
+
+    override val isSingleton: Boolean
+        get() = path.type == ItemType.SingletonType
 }
 
 data class FunctionType(val paramTypes: List<Type>, val returnType: Type) : Type {
     override fun toString(): String = "(${paramTypes.joinToString(", ")}) -> $returnType"
-    override val accessType: Type
+    override val accessType: PathType
         get() = returnType.accessType
+
+    override val isSingleton: Boolean
+        get() = false
 }
 
-fun HIR.Def.type(): Type = when (this) {
+fun HIR.Def.type(defRef: ItemRef): Type = when (this) {
+    is HIR.TypeDef -> PathType(defRef)
     is HIR.FunctionLikeDef -> FunctionType(
         paramTypes = params.map { it.type.toType() ?: BuiltinTypes.nothing },
         returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)

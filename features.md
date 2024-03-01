@@ -522,6 +522,15 @@ type is bound to. Then, depending on what follows the identifier, there are 3 fo
 - Product Types
 - Sum Types
 
+## Singleton Types
+
+#### Requires
+
+- [Custom Types](features.md#custom-types)
+
+Singleton types are types with a single global instance. They are created by simply not putting
+anything after the type's name. An example of such a type is the `Unit` type.
+
 ## Product Types
 
 TODO
@@ -554,17 +563,6 @@ pub data User(
 
 let testUser = User("John Doe", 0, 100)
 ```
-
-## Singleton Types
-
-TODO
-
-#### Requires
-
-- [Custom Types](features.md#custom-types)
-
-Singleton types are types with a single global instance. They are created by simply not putting
-anything after the type's name. An example of such a type is the `Unit` type.
 
 ## Sum Types
 

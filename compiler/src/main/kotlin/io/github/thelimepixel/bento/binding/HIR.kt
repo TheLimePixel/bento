@@ -86,7 +86,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    data class TypeRef(override val ref: ASTRef, val type: ItemPath?) : HIR {
+    data class TypeRef(override val ref: ASTRef, val type: ItemRef?) : HIR {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -94,7 +94,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = type?.let { sequenceOf(it) } ?: EmptySequence
     }
 
-    sealed interface Def: HIR
+    sealed interface Def : HIR
 
     sealed interface FunctionLikeDef : Def {
         val params: List<Param>
@@ -137,5 +137,11 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
             type?.let { yield(it) }
             yield(expr)
         }
+    }
+
+    sealed interface TypeDef : Def
+
+    data class SingletonType(override val ref: ASTRef) : TypeDef {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 }

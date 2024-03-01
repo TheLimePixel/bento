@@ -12,6 +12,7 @@ class BentoTypechecking {
     fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
         is HIR.FunctionLikeDef -> context.typeFunctionLikeDef(hir)
         is HIR.ConstantDef -> context.typeConstantDef(hir)
+        is HIR.TypeDef -> null
     }
 
     private fun TC.typeFunctionLikeDef(hir: HIR.FunctionLikeDef): THIR? {
@@ -38,13 +39,20 @@ class BentoTypechecking {
         return if (expr.type == type) expr else THIRError.InvalidType.at(hir.ref, listOf(expr), type)
     }
 
-    private fun TC.typeIdentExpr(hir: HIR.PathExpr) = when (val binding = hir.binding) {
-        is ItemRef ->
-            when (binding.type) {
-                ItemType.Getter -> THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
-                ItemType.Constant -> THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
-                ItemType.Type, ItemType.Setter, ItemType.Function -> THIRError.InvalidIdentifierUse.at(hir.ref)
-            }
+    private fun TC.typeIdentExpr(hir: HIR.PathExpr): THIR = when (val binding = hir.binding) {
+        is ItemRef -> when (binding.type) {
+            ItemType.Getter ->
+                THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+
+            ItemType.Constant ->
+                THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+
+            ItemType.SingletonType ->
+                THIR.SingletonAccessExpr(hir.ref, PathType(binding))
+
+            ItemType.RecordType, ItemType.Setter, ItemType.Function ->
+                THIRError.InvalidIdentifierUse.at(hir.ref)
+        }
 
         is LocalRef -> THIR.AccessExpr(hir.ref, typeOf(binding).accessType, binding)
     }

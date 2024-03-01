@@ -8,9 +8,10 @@ sealed interface Ref
 
 data class LocalRef(val node: HIR.Pattern): Ref
 
-enum class ItemType(val mutable: Boolean = false) {
+enum class ItemType(val mutable: Boolean = false, val isType: Boolean = false) {
     Function,
-    Type,
+    SingletonType(isType = true),
+    RecordType(isType = true),
     Getter,
     Setter(mutable = true),
     Constant,
@@ -61,5 +62,6 @@ fun itemTypeFrom(type: SyntaxType) = when (type) {
     SyntaxType.FunDef -> ItemType.Function
     SyntaxType.SetDef -> ItemType.Setter
     SyntaxType.LetDef -> ItemType.Constant
+    SyntaxType.TypeDef -> ItemType.SingletonType
     else -> error("Unsupported definition type")
 }

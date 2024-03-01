@@ -86,7 +86,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
     }
 
     private fun isWhitespace(c: Char) = when (c) {
-        '\n', eofChar -> false
+        '\n', '\r', eofChar -> false
         ' ', '\t', '\u000C', '\u2B7F' -> true
         else -> c.isWhitespace()
     }
@@ -110,12 +110,13 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         else -> getRawIdentifier(curr + 1)
     }
 
-    private fun String.matchIdentifier() = when (this) {
+    private fun String.matchIdentifier(): GreenEdge = when (this) {
         "fun" -> BaseEdges.funKeyword
         "let" -> BaseEdges.letKeyword
         "get" -> BaseEdges.getKeyword
         "set" -> BaseEdges.setKeyword
         "import" -> BaseEdges.importKeyword
+        "data" -> BaseEdges.dataKeyword
         else -> SyntaxType.StandardIdentifier.edge(this)
     }
 

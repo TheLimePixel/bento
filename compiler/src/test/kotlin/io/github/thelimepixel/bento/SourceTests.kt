@@ -33,9 +33,9 @@ class SourceTests {
     private val topJVMBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
         printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
         printlnName = "fakePrintln",
-        stringJVMType = "Ljava/lang/String;",
-        unitJVMType = "V",
-        nothingJVMType = "V",
+        stringJVMType = "java/lang/String",
+        unitJVMType = "kotlin/Unit",
+        nothingJVMType = "kotlin/Nothing",
         topTypingContext
     )
     private val typing = BentoTypechecking()
@@ -94,7 +94,7 @@ class SourceTests {
                 bindings.asSequence()
             }.associate { (key, value) -> key to value }
 
-        val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (_, value) -> value.type() })
+        val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (ref, value) -> value.type(ref) })
 
         val thirMap = hirMap.mapValues { (_, node) ->
             typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
@@ -111,9 +111,9 @@ class SourceTests {
         val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext)
 
         val classes = packageItems.mapValues { (path, fileInfo) ->
-            val bytecode = bentoCodegen.generate(path, fileInfo.items, jvmBindingContext, hirMap, thirMap)
-            test(dir, "Codegen", path) { bytecodeFormatter.format(bytecode) }
-            classLoader.load(path, bytecode)
+            val classes = bentoCodegen.generate(path, fileInfo.items, jvmBindingContext, hirMap, thirMap)
+            test(dir, "Codegen", path) { classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) } }
+            classes.map { (name, clazz) -> classLoader.load(name, clazz) }.last()
         }
 
         classes.forEach { (path, `class`) ->

@@ -34,7 +34,12 @@ class BentoBinding {
         ST.GetDef -> bindFunctionLike(node, HIR::GetterDef)
         ST.SetDef -> bindFunctionLike(node, HIR::SetterDef)
         ST.LetDef -> bindLet(node)
+        ST.TypeDef -> bindTypeDef(node)
         else -> error("Unsupported definition type")
+    }
+
+    private fun bindTypeDef(node: RedNode): HIR.TypeDef {
+        return HIR.SingletonType(node.ref)
     }
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
@@ -42,8 +47,8 @@ class BentoBinding {
         ?.firstChild(SyntaxType.Identifier)
         ?.let {
             val itemRef = refForImmutable(it.rawContent)
-            if (itemRef is ItemRef && itemRef.type == ItemType.Type)
-                HIR.TypeRef(it.ref, itemRef.path)
+            if (itemRef is ItemRef && itemRef.type.isType)
+                HIR.TypeRef(it.ref, itemRef)
             else null
         }
 

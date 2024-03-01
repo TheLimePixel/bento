@@ -9,13 +9,17 @@ FunctionDef {
       }
       type: TypeRef {
         ref: Identifier@4..10
-        type: bento::String
+        type: RecordType {
+          bento::String
+        }
       }
     }
   ]
   returnType: TypeRef {
     ref: Identifier@4..10
-    type: bento::String
+    type: RecordType {
+      bento::String
+    }
   }
   body: ScopeExpr {
     ref: ScopeExpr@54..81
@@ -93,7 +97,9 @@ FunctionDef {
       }
       type: TypeRef {
         ref: Identifier@4..10
-        type: bento::String
+        type: RecordType {
+          bento::String
+        }
       }
     }
   ]

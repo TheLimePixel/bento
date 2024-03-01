@@ -69,8 +69,15 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class AccessExpr(
         override val ref: ASTRef,
         override val type: Type,
-        val binding: Ref,
+        val binding: LocalRef,
     ) : THIR {
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+    }
+
+    data class SingletonAccessExpr(
+        override val ref: ASTRef,
+        override val type: PathType,
+    ): THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 }
