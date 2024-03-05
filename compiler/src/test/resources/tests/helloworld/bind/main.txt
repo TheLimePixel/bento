@@ -1,4 +1,4 @@
-======= helloworld::main::main =======
+======= Function(helloworld::main::main) =======
 FunctionDef {
   ref: FunDef@0..45
   params: []

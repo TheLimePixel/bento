@@ -42,4 +42,7 @@ object BaseSets {
         SyntaxType.LetDef,
         SyntaxType.TypeDef,
     )
+    val typeBodies = syntaxSetOf(
+        SyntaxType.Constructor
+    )
 }

@@ -1,4 +1,4 @@
-======= nesting::main::baz =======
+======= Function(nesting::main::baz) =======
 FunctionDef {
   ref: FunDef@0..54
   params: [
@@ -32,7 +32,7 @@ FunctionDef {
   }
 }
 
-======= nesting::main::bar =======
+======= Function(nesting::main::bar) =======
 FunctionDef {
   ref: FunDef@0..76
   params: []
@@ -85,7 +85,7 @@ FunctionDef {
   }
 }
 
-======= nesting::main::foo =======
+======= Function(nesting::main::foo) =======
 FunctionDef {
   ref: FunDef@0..80
   params: [
@@ -146,7 +146,7 @@ FunctionDef {
   }
 }
 
-======= nesting::main::main =======
+======= Function(nesting::main::main) =======
 FunctionDef {
   ref: FunDef@0..76
   params: []

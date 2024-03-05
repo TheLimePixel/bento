@@ -1,12 +1,12 @@
 package io.github.thelimepixel.bento.binding
 
 sealed interface PackageTreeNode {
-    val path: ItemPath?
+    val path: PackageRef
     val children: Map<String, PackageTreeNode>
 }
 
 private data class MutablePackageTreeNode(
-    override val path: ItemPath?
+    override val path: PackageRef
 ) : PackageTreeNode {
     override val children = mutableMapOf<String, MutablePackageTreeNode>()
 
@@ -14,14 +14,14 @@ private data class MutablePackageTreeNode(
 }
 
 class PackageTree {
-    private val _root = MutablePackageTreeNode(null)
-    private val nodes = mutableMapOf<ItemPath?, MutablePackageTreeNode>(null to _root)
+    private val _root = MutablePackageTreeNode(RootRef)
+    private val nodes = mutableMapOf<PackageRef, MutablePackageTreeNode>(RootRef to _root)
     val root: PackageTreeNode get() = _root
-    fun get(path: ItemPath?): PackageTreeNode? =
+    fun get(path: PackageRef): PackageTreeNode? =
         nodes[path]
 
-    private fun addAndGet(path: ItemPath?): MutablePackageTreeNode {
-        if (path == null) return _root
+    private fun addAndGet(path: PackageRef): MutablePackageTreeNode {
+        if (path !is SubpackageRef) return _root
         val node = nodes[path]
         if (node != null) return node
         val parent = addAndGet(path.parent)
@@ -31,5 +31,5 @@ class PackageTree {
         return newNode
     }
 
-    fun add(path: ItemPath): PackageTreeNode = addAndGet(path)
+    fun add(path: SubpackageRef): PackageTreeNode = addAndGet(path)
 }

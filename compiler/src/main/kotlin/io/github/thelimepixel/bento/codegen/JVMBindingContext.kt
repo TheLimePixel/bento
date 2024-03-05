@@ -22,7 +22,7 @@ private fun JVMBindingContext.mapType(type: Type, returnType: Boolean): String =
 }
 
 class TopLevelJVMBindingContext(
-    printlnFilePath: ItemPath,
+    printlnFilePath: PackageRef,
     printlnName: String,
     private val stringJVMType: String,
     private val unitJVMType: String,
@@ -44,7 +44,7 @@ class TopLevelJVMBindingContext(
         BuiltinTypes.string -> stringJVMType
         BuiltinTypes.unit -> unitJVMType
         BuiltinTypes.nothing -> nothingJVMType
-        else -> ref.ref.path.toJVMPath()
+        else -> ref.ref.toJVMPath()
     }
 
     override fun localId(ref: LocalRef): Int = error("Unexpected call")
@@ -84,7 +84,7 @@ class FileJVMBindingContext(
 }
 
 val ItemRef.fileJVMPath: String
-    get() = parent.let { it.copy(name = it.rawName + "Bt") }.toJVMPath()
+    get() = parent.toJVMPath() + "Bt"
 
 class LocalJVMBindingContext(
     private val parent: JVMBindingContext,

@@ -1,4 +1,4 @@
-======= types::main::foo =======
+======= Function(types::main::foo) =======
 FunctionDef {
   ref: FunDef@0..57
   params: [
@@ -39,7 +39,7 @@ FunctionDef {
   }
 }
 
-======= types::main::printBar =======
+======= Function(types::main::printBar) =======
 FunctionDef {
   ref: FunDef@0..57
   params: [
@@ -89,7 +89,7 @@ FunctionDef {
   }
 }
 
-======= types::main::main =======
+======= Function(types::main::main) =======
 FunctionDef {
   ref: FunDef@0..69
   params: []

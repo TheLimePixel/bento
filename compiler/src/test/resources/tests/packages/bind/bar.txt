@@ -1,4 +1,4 @@
-======= packages::bar::bar =======
+======= Function(packages::bar::bar) =======
 FunctionDef {
   ref: FunDef@0..33
   params: []
@@ -19,7 +19,7 @@ FunctionDef {
   }
 }
 
-======= packages::bar::main =======
+======= Function(packages::bar::main) =======
 FunctionDef {
   ref: FunDef@0..35
   params: []

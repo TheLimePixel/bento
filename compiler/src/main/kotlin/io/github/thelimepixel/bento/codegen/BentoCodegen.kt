@@ -14,7 +14,7 @@ private typealias JC = JVMBindingContext
 
 class BentoCodegen {
     fun generate(
-        file: ItemPath,
+        file: SubpackageRef,
         items: List<ItemRef>,
         fileContext: JC,
         hirMap: Map<ItemRef, HIR.Def>,
@@ -39,7 +39,7 @@ class BentoCodegen {
                     constants.add(ref)
                 }
 
-                is HIR.TypeDef -> classes.add(ref.path.toClassname() to fileContext.genType(ref, def))
+                is HIR.TypeDef -> classes.add(ref.toClassname() to fileContext.genType(ref, def))
             }
         }
 
@@ -62,16 +62,7 @@ class BentoCodegen {
         )
     }
 
-    private fun refToName(ref: ItemPath?, builder: StringBuilder) {
-        if (ref == null) return
-        refToName(ref.parent, builder)
-        builder.append(ref.rawName).append('.')
-    }
-
-    private fun ItemPath.toClassname(): String = StringBuilder()
-        .also { refToName(this.parent, it) }
-        .append(this.rawName)
-        .toString()
+    private fun ParentRef.toClassname(): String = this.toJVMPath(".")
 
     private fun JC.genType(ref: ItemRef, hir: HIR.TypeDef): ByteArray = when (hir) {
         is HIR.SingletonType -> genSingletonType(ref)
@@ -86,7 +77,7 @@ class BentoCodegen {
     private fun JC.genRecordType(hir: HIR.RecordType, ref: ItemRef): ByteArray {
         val writer = ClassWriter(0)
 
-        val `class` = ref.path.toJVMPath()
+        val `class` = ref.toJVMPath()
         val fields = hir.constructor.fields
 
         createClass(writer, `class`)
@@ -141,7 +132,7 @@ class BentoCodegen {
     private fun genSingletonType(ref: ItemRef): ByteArray {
         val writer = ClassWriter(0)
 
-        val `class` = ref.path.toJVMPath()
+        val `class` = ref.toJVMPath()
         val type = "L$`class`;"
 
         createClass(writer, `class`)
@@ -395,7 +386,7 @@ class BentoCodegen {
         val getterName = "get${node.field.name.toJVMIdent().capitalize()}"
         val descriptor = "()${jvmTypeOf(node.type)}"
         methodWriter.visitMethodInsn(
-            Opcodes.INVOKEVIRTUAL, node.on.type.accessType.ref.path.toJVMPath(), getterName, descriptor, false
+            Opcodes.INVOKEVIRTUAL, node.on.type.accessType.ref.toJVMPath(), getterName, descriptor, false
         )
 
         return true

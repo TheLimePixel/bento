@@ -1,4 +1,4 @@
-======= nesting::main::baz =======
+======= Function(nesting::main::baz) =======
 ScopeExpr {
   ref: ScopeExpr@54..81
   type: RecordType {
@@ -12,7 +12,7 @@ ScopeExpr {
   ]
 }
 
-======= nesting::main::bar =======
+======= Function(nesting::main::bar) =======
 ScopeExpr {
   ref: ScopeExpr@20..86
   type: SingletonType {
@@ -63,7 +63,7 @@ ScopeExpr {
   ]
 }
 
-======= nesting::main::foo =======
+======= Function(nesting::main::foo) =======
 ScopeExpr {
   ref: ScopeExpr@44..102
   type: SingletonType {
@@ -114,7 +114,7 @@ ScopeExpr {
   ]
 }
 
-======= nesting::main::main =======
+======= Function(nesting::main::main) =======
 ScopeExpr {
   ref: ScopeExpr@22..87
   type: SingletonType {

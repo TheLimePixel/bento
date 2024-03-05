@@ -1,4 +1,4 @@
-======= helloworld::main::main =======
+======= Function(helloworld::main::main) =======
 ScopeExpr {
   ref: ScopeExpr@22..56
   type: SingletonType {

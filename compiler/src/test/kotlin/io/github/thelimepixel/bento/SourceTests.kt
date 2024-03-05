@@ -52,28 +52,28 @@ class SourceTests {
     }
 
     private fun traversePackageFiles(
-        path: ItemPath,
+        path: SubpackageRef,
         file: File,
         hierarchy: PackageTree,
-        sources: MutableMap<ItemPath, String>
+        sources: MutableMap<SubpackageRef, String>
     ) {
         if (file.canRead()) {
             hierarchy.add(path)
             sources[path] = file.readText()
         } else {
             file.listFiles()?.forEach { child ->
-                traversePackageFiles(path.subpath(child.nameWithoutExtension), child, hierarchy, sources)
+                traversePackageFiles(path.subpackage(child.nameWithoutExtension), child, hierarchy, sources)
             }
         }
     }
 
     private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File) {
         val hierarchy = PackageTree()
-        val sources = mutableMapOf<ItemPath, String>()
-        val rootPath = ItemPath(null, dir.name)
+        val sources = mutableMapOf<SubpackageRef, String>()
+        val rootPath = SubpackageRef(RootRef, dir.name)
 
         File(dir, "src").listFiles()?.forEach {
-            traversePackageFiles(ItemPath(rootPath, it.nameWithoutExtension), it, hierarchy, sources)
+            traversePackageFiles(SubpackageRef(rootPath, it.nameWithoutExtension), it, hierarchy, sources)
         } ?: return
 
         val packageItems = sources.mapValues { (path, code) ->
@@ -110,10 +110,10 @@ class SourceTests {
             typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
         }
 
-        sources.forEach { (path, _) ->
-            test(dir, "Typecheck", path) {
+        sources.forEach { (pack, _) ->
+            test(dir, "Typecheck", pack) {
                 formatItemTrees(thirMap.filterKeys { ref ->
-                    ref.path.isSubpathOf(path)
+                    ref.parent == pack
                 })
             }
         }
@@ -140,7 +140,7 @@ class SourceTests {
             where Err : ErrorType, Node : Spanned, Node : CodeTree<Node, Err> =
         hirMap.asSequence().joinToString("\n") { (key, value) ->
             val errors = collectErrors(value)
-            "$itemPadding ${key.path} $itemPadding\n${objFormatter.format(value) + errors.joinToString("\n", "\n")}"
+            "$itemPadding $key $itemPadding\n${objFormatter.format(value) + errors.joinToString("\n", "\n")}"
         }
 
     private fun formatAST(node: GreenNode): String {
@@ -154,13 +154,13 @@ class SourceTests {
         if (file.canRead()) fn(file.readText().trimIndent().trim())
     }
 
-    private fun itemPathToFilePath(itemPath: ItemPath?, builder: StringBuilder) {
-        if (itemPath === null) return
-        itemPathToFilePath(itemPath.parent, builder)
-        builder.append(itemPath.name).append(File.separatorChar)
+    private fun itemPathToFilePath(packageRef: PackageRef, builder: StringBuilder) {
+        if (packageRef !is SubpackageRef) return
+        itemPathToFilePath(packageRef.parent, builder)
+        builder.append(packageRef.name).append(File.separatorChar)
     }
 
-    private val ItemPath.toFilePath: String
+    private val SubpackageRef.toFilePath: String
         get() = StringBuilder()
             .also { builder -> itemPathToFilePath(this.parent, builder) }
             .append(this.name)
@@ -169,7 +169,7 @@ class SourceTests {
     private suspend fun SequenceScope<DynamicTest>.test(
         dir: File,
         type: String,
-        pack: ItemPath,
+        pack: SubpackageRef,
         function: () -> String
     ) {
         val path = type.lowercase() + pack.toFilePath.removePrefix(dir.name) + ".txt"

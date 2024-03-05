@@ -9,7 +9,7 @@ private typealias RC = RootBindingContext
 
 class BentoBinding {
     fun bind(
-        packagePath: ItemPath,
+        packagePath: SubpackageRef,
         importData: BoundImportData,
         parentContext: BindingContext,
     ): Map<ItemRef, HIR.Def> {
@@ -229,7 +229,7 @@ class BentoBinding {
                 val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.ref, null, emptyList())
                 lastPackage = lastPack.children[name]
                 val items =
-                    astInfoMap[lastPack.path]?.items?.filter { it.path == lastPack.path.subpath(name) } ?: emptyList()
+                    astInfoMap[lastPack.path]?.items?.filter { it.name == name } ?: emptyList()
                 BoundImportPathSegment(segment.ref, lastPackage, items)
             }
             .toList()
