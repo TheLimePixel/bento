@@ -20,11 +20,10 @@ class SourceTests {
     private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
-    private val memberCollection = BentoMemberCollection()
     private val objFormatter: Formatter<Any?> = ObjectFormatter()
-    private val topBindingContext: BindingContext = PackageBindingContext(
+    private val topBindingContext: BindingContext = ParentBindingContext(
         null,
-        null,
+        RootRef,
         BuiltinRefs.map,
         emptyMap(),
         emptyMap(),
@@ -76,34 +75,34 @@ class SourceTests {
             traversePackageFiles(SubpackageRef(rootPath, it.nameWithoutExtension), it, hierarchy, sources)
         } ?: return
 
-        val packageItems = sources.mapValues { (path, code) ->
-            val node = parsing.parseFIle(code)
-            test(dir, "Parse", path) { formatAST(node) }
-            node.collectItems(path)
+        val astMap: InfoMap = buildMap {
+            sources.forEach { (path, code) ->
+                val node = parsing.parseFIle(code)
+                test(dir, "Parse", path) { formatAST(node) }
+                collectItems(node, path, this)
+            }
         }
 
-        val rootContext = RootBindingContext(topBindingContext, hierarchy.root, packageItems)
+        val rootContext = RootBindingContext(topBindingContext, hierarchy.root, astMap)
 
-        val hirMap = packageItems
-            .flatMap { (path, fileInfo) ->
-                val imports = binding.bindImport(fileInfo.importNode, rootContext)
-                test(dir, "Imports", path) { objFormatter.format(imports.toString()) }
+        val hirMap = sources.keys.flatMap { pack ->
+            val fileInfo = astMap[pack] ?: return@flatMap emptySequence()
+            val imports = binding.bindImport(fileInfo.importNode, rootContext)
+            test(dir, "Imports", pack) { objFormatter.format(imports.toString()) }
 
-                val bindings = binding.bind(path, imports, rootContext)
-                test(dir, "Bind", path) { formatItemTrees(bindings) }
+            val bindings = binding.bind(pack, imports, rootContext)
+            test(dir, "Bind", pack) { formatItemTrees(bindings) }
 
-                bindings.asSequence()
-            }.associate { (key, value) -> key to value }
-
-        val memberMap = hirMap.mapValues { (ref, hir) ->
-            memberCollection.collectMembers(ref, hir)
-        }
+            bindings.asSequence() + fileInfo.items.asSequence().flatMap childMap@ { ref ->
+                binding.bind(ref, imports, rootContext).asSequence()
+            }
+        }.associate { (key, value) -> key to value }
 
         val typingContext = FileTypingContext(
             topTypingContext,
             hirMap.mapValues { (ref, value) -> value.type(ref) },
             hirMap,
-            memberMap
+            astMap,
         )
 
         val thirMap = hirMap.mapValues { (_, node) ->
@@ -120,9 +119,13 @@ class SourceTests {
 
         val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext, hirMap)
 
-        val classes = packageItems.mapValues { (path, fileInfo) ->
-            val classes = bentoCodegen.generate(path, fileInfo.items, jvmBindingContext, hirMap, thirMap)
-            test(dir, "Codegen", path) { classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) } }
+        val classes = sources.keys.associateWith { pack ->
+            val classes = bentoCodegen.generate(pack, astMap[pack]!!.items, jvmBindingContext, hirMap, thirMap)
+            test(
+                dir,
+                "Codegen",
+                pack
+            ) { classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) } }
             classes.map { (name, clazz) -> classLoader.load(name, clazz) }.last()
         }
 

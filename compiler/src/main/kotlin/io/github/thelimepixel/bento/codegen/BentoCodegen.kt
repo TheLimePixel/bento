@@ -40,6 +40,7 @@ class BentoCodegen {
                 }
 
                 is HIR.TypeDef -> classes.add(ref.toClassname() to fileContext.genType(ref, def))
+                is HIR.Field -> Unit
             }
         }
 
@@ -87,7 +88,7 @@ class BentoCodegen {
         val ctor = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", ctorDescriptor, null, null)
         ctor.visitSuper()
 
-        if (fields.isNotEmpty())  {
+        if (fields.isNotEmpty()) {
             ctor.visitVarInsn(Opcodes.ALOAD, 0)
             fields.forEachIndexed { index, field ->
                 if (index != fields.lastIndex)
@@ -97,8 +98,8 @@ class BentoCodegen {
                 ctor.visitFieldInsn(
                     Opcodes.PUTFIELD,
                     `class`,
-                    field.ident.toJVMIdent(),
-                    jvmTypeOf(field.type.toType() ?: BuiltinTypes.nothing)
+                    field.name.toJVMIdent(),
+                    typeOfField(field)
                 )
             }
         }
@@ -108,8 +109,8 @@ class BentoCodegen {
         ctor.visitEnd()
 
         fields.forEach { field ->
-            val type = jvmTypeOf(field.type.toType() ?: BuiltinTypes.nothing)
-            val name = field.ident.toJVMIdent()
+            val type = typeOfField(field)
+            val name = field.name.toJVMIdent()
             writer.visitField(Opcodes.ACC_FINAL + Opcodes.ACC_PRIVATE, name, type, null, null)
             val getter = writer.visitMethod(
                 Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
@@ -118,10 +119,10 @@ class BentoCodegen {
                 null,
                 null
             )
-            getter.visitVarInsn(Opcodes.ALOAD,0)
+            getter.visitVarInsn(Opcodes.ALOAD, 0)
             getter.visitFieldInsn(Opcodes.GETFIELD, `class`, name, type)
             getter.visitInsn(Opcodes.ARETURN)
-            getter.visitMaxs(1,1)
+            getter.visitMaxs(1, 1)
             getter.visitEnd()
         }
 
@@ -290,9 +291,10 @@ class BentoCodegen {
 
     context(JC)
     private val HIR.Constructor.descriptor
-        get() = fields.joinToString("", "(", ")V") { field ->
-            jvmTypeOf(field.type.toType() ?: BuiltinTypes.nothing)
-        }
+        get() = fields.joinToString("", "(", ")V") { field -> typeOfField(field) }
+
+    private fun JC.typeOfField(ref: ItemRef) =
+        jvmTypeOf((hirOf(ref) as? HIR.Field)?.type?.toType() ?: BuiltinTypes.nothing)
 
     private fun JC.genConstructorCallExpr(
         node: THIR.ConstructorCallExpr,
@@ -378,7 +380,11 @@ class BentoCodegen {
         is THIR.ConstructorCallExpr -> genConstructorCallExpr(node, methodWriter, ignoreOutput)
     }
 
-    private fun JC.genFieldAccessExpr(node: THIR.FieldAccessExpr, methodWriter: MethodVisitor, ignoreOutput: Boolean): Boolean {
+    private fun JC.genFieldAccessExpr(
+        node: THIR.FieldAccessExpr,
+        methodWriter: MethodVisitor,
+        ignoreOutput: Boolean
+    ): Boolean {
         genExpr(node.on, methodWriter, ignoreOutput)
 
         if (ignoreOutput) return false

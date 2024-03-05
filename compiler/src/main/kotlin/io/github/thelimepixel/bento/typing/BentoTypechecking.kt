@@ -12,7 +12,7 @@ class BentoTypechecking {
     fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
         is HIR.FunctionLikeDef -> context.typeFunctionLikeDef(hir)
         is HIR.ConstantDef -> context.typeConstantDef(hir)
-        is HIR.TypeDef -> null
+        is HIR.TypeDef, is HIR.Field -> null
     }
 
     private fun TC.typeFunctionLikeDef(hir: HIR.FunctionLikeDef): THIR? {
@@ -50,7 +50,7 @@ class BentoTypechecking {
             ItemType.SingletonType ->
                 THIR.SingletonAccessExpr(hir.ref, PathType(binding))
 
-            ItemType.RecordType, ItemType.Setter, ItemType.Function ->
+            ItemType.RecordType, ItemType.Setter, ItemType.Function, ItemType.Field ->
                 THIRError.InvalidIdentifierUse.at(hir.ref)
         }
 
@@ -71,7 +71,7 @@ class BentoTypechecking {
     private fun FC.typeAccessExpr(hir: HIR.AccessExpr): THIR {
         val on = typeExpr(hir.on, false)
         val member = memberOf(on.type.accessType.ref, hir.field) ?: return THIRError.UnknownMember.at(hir.ref)
-        return THIR.FieldAccessExpr(hir.ref, member, on)
+        return THIR.FieldAccessExpr(hir.ref, typeOf(member).accessType, member, on)
     }
 
     private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR = hir.left?.let { left ->
@@ -102,7 +102,7 @@ class BentoTypechecking {
         if (binding is ItemRef) when (binding.type) {
             ItemType.Function -> return typeFunctionCall(binding, hir)
             ItemType.RecordType -> return typeConstructorCall(binding, hir)
-            ItemType.SingletonType, ItemType.Setter, ItemType.Getter, ItemType.Constant -> Unit
+            ItemType.SingletonType, ItemType.Setter, ItemType.Getter, ItemType.Constant, ItemType.Field -> Unit
         }
 
         return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
@@ -118,7 +118,7 @@ class BentoTypechecking {
 
     private fun FC.typeConstructorCall(ref: ItemRef, hir: HIR.CallExpr): THIR {
         val typeHIR = hirOf(ref) as HIR.RecordType
-        val paramTypes = typeHIR.constructor.fields.map { it.type.toType() ?: BuiltinTypes.nothing }
+        val paramTypes = typeHIR.constructor.fields.map { typeOf(it) }
         val args = typeArgs(hir.args, paramTypes)
 
         return THIR.ConstructorCallExpr(hir.ref, PathType(ref), args)

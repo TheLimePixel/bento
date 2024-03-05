@@ -9,46 +9,41 @@ private typealias RC = RootBindingContext
 
 class BentoBinding {
     fun bind(
-        packagePath: SubpackageRef,
+        parentRef: ParentRef,
         importData: BoundImportData,
         parentContext: BindingContext,
     ): Map<ItemRef, HIR.Def> {
         val initialized = mutableSetOf<ItemRef>()
-        val info = parentContext.packageInfoOf(packagePath)!!
-        val context = PackageBindingContext(
+        val info = parentContext.astInfoOf(parentRef) ?: return emptyMap()
+        val context = ParentBindingContext(
             parentContext,
-            packagePath,
+            parentRef,
             info.items.asSequence().filter { it.type.immutable }.associateBy { it.name } + importData.immutableItems,
             info.items.asSequence().filter { it.type.mutable }.associateBy { it.name } + importData.mutableItems,
             importData.packages,
             initialized,
         )
         return info.items.associateWith { ref ->
-            context.bindDefinition(info.dataMap[ref.name]!![ref.index].toRedRoot())
+            context.bindDefinition(ref, info.dataMap[ref.name]!![ref.index].toRedRoot())
                 .also { initialized.add(ref) }
         }
     }
 
-    private fun BC.bindDefinition(node: RedNode): HIR.Def = when (node.type) {
+    private fun BC.bindDefinition(ref: ParentRef, node: RedNode): HIR.Def = when (node.type) {
         ST.FunDef -> bindFunctionLike(node, HIR::FunctionDef)
         ST.GetDef -> bindFunctionLike(node, HIR::GetterDef)
         ST.SetDef -> bindFunctionLike(node, HIR::SetterDef)
         ST.LetDef -> bindLet(node)
-        ST.TypeDef -> bindTypeDef(node)
+        ST.TypeDef -> bindTypeDef(ref, node)
+        ST.Field -> bindField(node)
         else -> error("Unsupported definition type")
     }
 
-    private fun BC.bindTypeDef(node: RedNode): HIR.TypeDef {
+    private fun BC.bindTypeDef(ref: ParentRef, node: RedNode): HIR.TypeDef {
         val ctor = node.lastChild(ST.Constructor) ?: return HIR.SingletonType(node.ref)
-        return HIR.RecordType(node.ref, bindCtor(ctor))
+        val fields = astInfoOf(ref)!!.items
+        return HIR.RecordType(node.ref, HIR.Constructor(ctor.ref, fields))
     }
-
-    private fun BC.bindCtor(node: RedNode): HIR.Constructor =
-        node.childSequence()
-            .filter { it.type == ST.Field }
-            .map { bindField(it) }
-            .toList()
-            .let { HIR.Constructor(node.ref, it) }
 
     private fun BC.bindField(node: RedNode): HIR.Field {
         val name = node.firstChild(ST.Identifier)?.rawContent ?: ""
@@ -140,7 +135,7 @@ class BentoBinding {
         segments.subList(1, segments.lastIndex).forEach {
             packNode = packNode.children[it.rawContent] ?: return null
         }
-        return (packageInfoOf(packNode.path) ?: return null)
+        return (astInfoOf(packNode.path) ?: return null)
             .items.filter { it.name == segments.last().rawContent }
             .lastOrNull { it.type.mutable == mutable }
     }

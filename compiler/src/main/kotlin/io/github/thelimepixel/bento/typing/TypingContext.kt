@@ -4,7 +4,7 @@ import io.github.thelimepixel.bento.binding.*
 
 interface TypingContext {
     fun typeOf(ref: Ref): Type
-    fun memberOf(type: ItemRef, name: String): MemberRef?
+    fun memberOf(type: ItemRef, name: String): ItemRef?
     fun hirOf(type: ItemRef): HIR.Def
 }
 
@@ -17,7 +17,7 @@ class TopLevelTypingContext : TypingContext {
         else -> errorSignature
     }
 
-    override fun memberOf(type: ItemRef, name: String): MemberRef? = null
+    override fun memberOf(type: ItemRef, name: String): ItemRef? = null
 
     override fun hirOf(type: ItemRef): HIR.Def = error("Missing HIR for $type")
 }
@@ -26,13 +26,13 @@ class FileTypingContext(
     private val parent: TypingContext,
     private val itemTypes: Map<ItemRef, Type>,
     private val hirMap: Map<ItemRef, HIR.Def>,
-    private val members: Map<ItemRef, Map<String, MemberRef>>,
+    private val astMap: InfoMap,
 ) : TypingContext {
     override fun typeOf(ref: Ref): Type =
         itemTypes[ref] ?: parent.typeOf(ref)
 
-    override fun memberOf(type: ItemRef, name: String): MemberRef? =
-        members[type]?.get(name) ?: parent.memberOf(type, name)
+    override fun memberOf(type: ItemRef, name: String): ItemRef? =
+        astMap[type]?.items?.lastOrNull { it.name == name } ?: parent.memberOf(type, name)
 
     override fun hirOf(type: ItemRef): HIR.Def = hirMap[type] ?: parent.hirOf(type)
 }
@@ -49,7 +49,7 @@ class FunctionTypingContext(
         locals[ref] = type
     }
 
-    override fun memberOf(type: ItemRef, name: String): MemberRef? =
+    override fun memberOf(type: ItemRef, name: String): ItemRef? =
         parent.memberOf(type, name)
 
     override fun hirOf(type: ItemRef): HIR.Def = parent.hirOf(type)

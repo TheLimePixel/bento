@@ -10,8 +10,6 @@ sealed interface ParentRef
 
 data class LocalRef(val node: HIR.Pattern) : Ref
 
-data class MemberRef(val parent: ItemRef, val name: String, val type: ItemRef?)
-
 enum class ItemType(val mutable: Boolean = false, val isType: Boolean = false) {
     Function,
     SingletonType(isType = true),
@@ -19,6 +17,7 @@ enum class ItemType(val mutable: Boolean = false, val isType: Boolean = false) {
     Getter,
     Setter(mutable = true),
     Constant,
+    Field,
 }
 
 val ItemType.immutable: Boolean get() = !mutable
@@ -30,29 +29,48 @@ data class ItemRef(val parent: ParentRef, val name: String, val type: ItemType, 
     override fun toString(): String = "$type($parent::$name)"
 }
 
-data class PackageASTInfo(
+data class ASTInfo(
     val items: List<ItemRef>,
     val dataMap: Map<String, List<GreenNode>>,
     val importNode: GreenNode?
 )
 
-typealias PackageInfoMap = Map<SubpackageRef, PackageASTInfo>
+typealias InfoMap = Map<ParentRef, ASTInfo>
 
-fun GreenNode.collectItems(parent: PackageRef): PackageASTInfo {
+fun collectItems(node: GreenNode, parent: PackageRef, collection: MutableMap<ParentRef, ASTInfo>) {
     val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
-    val importNode = firstChild(ST.ImportStatement)?.node
-    val items = childSequence()
+    val importNode = node.firstChild(ST.ImportStatement)?.node
+    val items = node.childSequence()
         .map { it.node }
         .filter { it.type in BaseSets.definitions }
         .map {
             val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
             val list = dataMap.computeIfAbsent(name) { mutableListOf() }
             list.add(it)
-            ItemRef(parent, name, itemTypeFrom(it), list.lastIndex)
+            val ref = ItemRef(parent, name, itemTypeFrom(it), list.lastIndex)
+            if (ref.type == ItemType.RecordType) {
+                collection[ref] = collectFields(it.firstChild(ST.Constructor)!!.node, ref)
+            }
+            ref
         }
         .toList()
 
-    return PackageASTInfo(items, dataMap, importNode)
+    collection[parent] = ASTInfo(items, dataMap, importNode)
+}
+
+private fun collectFields(node: GreenNode, parent: ItemRef): ASTInfo {
+    val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
+    val fields = node.childSequence()
+        .filter { it.type == ST.Field }
+        .map {
+            val name = it.node.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
+            val list = dataMap.computeIfAbsent(name) { mutableListOf() }
+            list.add(it.node)
+            ItemRef(parent, name, ItemType.Field, list.lastIndex)
+        }
+        .toList()
+
+    return ASTInfo(fields, dataMap, null)
 }
 
 sealed interface PackageRef : ParentRef

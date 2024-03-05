@@ -1,13 +1,12 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.ItemType
 import io.github.thelimepixel.bento.binding.LocalRef
-import io.github.thelimepixel.bento.binding.MemberRef
 import io.github.thelimepixel.bento.parsing.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
 import io.github.thelimepixel.bento.utils.Spanned
-import kotlin.time.measureTime
 
 sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     val ref: ASTRef
@@ -85,13 +84,11 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class FieldAccessExpr(
         override val ref: ASTRef,
-        val field: MemberRef,
+        override val type: PathType,
+        val field: ItemRef,
         val on: THIR,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = sequenceOf(on)
-
-        override val type: PathType
-            get() = this.field.type?.let(::PathType) ?: BuiltinTypes.nothing
     }
 
     data class SingletonAccessExpr(

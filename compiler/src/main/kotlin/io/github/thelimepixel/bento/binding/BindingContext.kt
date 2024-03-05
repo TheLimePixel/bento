@@ -5,24 +5,24 @@ interface BindingContext {
     fun refForMutable(name: String): Ref?
     fun packageNodeFor(name: String): PackageTreeNode?
     fun isInitialized(ref: Ref): Boolean
-    fun packageInfoOf(path: PackageRef): PackageASTInfo?
+    fun astInfoOf(ref: ParentRef): ASTInfo?
 }
 
 class RootBindingContext(
     val parent: BindingContext,
     val root: PackageTreeNode,
-    val astInfoMap: PackageInfoMap,
+    val astInfoMap: InfoMap,
 ) : BindingContext {
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
     override fun refForImmutable(name: String): Ref? = parent.refForImmutable(name)
     override fun refForMutable(name: String): Ref? = refForMutable(name)
-    override fun packageInfoOf(path: PackageRef): PackageASTInfo? = astInfoMap[path] ?: parent.packageInfoOf(path)
+    override fun astInfoOf(ref: ParentRef): ASTInfo? = astInfoMap[ref] ?: parent.astInfoOf(ref)
 }
 
-class PackageBindingContext(
+class ParentBindingContext(
     private val parent: BindingContext?,
-    private val currentPackage: SubpackageRef?,
+    private val current: ParentRef,
     private val immutables: Map<String, ItemRef>,
     private val mutables: Map<String, ItemRef>,
     private val packages: Map<String, PackageTreeNode>,
@@ -35,12 +35,12 @@ class PackageBindingContext(
         mutables[name] ?: parent?.refForMutable(name)
 
     override fun isInitialized(ref: Ref): Boolean =
-        ref !is ItemRef || ref.type != ItemType.Constant || ref in initialized || ref.parent != currentPackage
+        ref !is ItemRef || ref.type != ItemType.Constant || ref in initialized || ref.parent != current
 
     override fun packageNodeFor(name: String): PackageTreeNode? =
         packages[name] ?: parent?.packageNodeFor(name)
 
-    override fun packageInfoOf(path: PackageRef): PackageASTInfo? = parent?.packageInfoOf(path)
+    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent?.astInfoOf(ref)
 }
 
 class FunctionBindingContext(
@@ -51,7 +51,7 @@ class FunctionBindingContext(
     override fun refForMutable(name: String): Ref? = parent.refForMutable(name)
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
-    override fun packageInfoOf(path: PackageRef): PackageASTInfo? = parent.packageInfoOf(path)
+    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 }
 
 class LocalBindingContext(private val parent: BindingContext) : BindingContext {
@@ -71,5 +71,5 @@ class LocalBindingContext(private val parent: BindingContext) : BindingContext {
 
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
 
-    override fun packageInfoOf(path: PackageRef): PackageASTInfo? = parent.packageInfoOf(path)
+    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 }
