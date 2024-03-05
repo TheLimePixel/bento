@@ -3,7 +3,7 @@ FunctionDef {
   ref: FunDef@0..33
   params: []
   returnType: TypeRef {
-    ref: Identifier@4..10
+    ref: Path@4..10
     type: RecordType {
       bento::String
     }
@@ -30,7 +30,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..28
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }
@@ -39,7 +39,7 @@ FunctionDef {
           CallExpr {
             ref: CallExpr@2..7
             on: PathExpr {
-              ref: PathExpr@0..3
+              ref: Path@0..3
               binding: Function {
                 packages::foo::foo
               }

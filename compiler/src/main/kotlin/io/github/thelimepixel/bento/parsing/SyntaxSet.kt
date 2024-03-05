@@ -22,7 +22,7 @@ object BaseSets {
     )
     val expressions = syntaxSetOf(
         SyntaxType.StringLiteral,
-        SyntaxType.PathExpr,
+        SyntaxType.Path,
         SyntaxType.ScopeExpr,
         SyntaxType.CallExpr,
         SyntaxType.ScopeExpr,

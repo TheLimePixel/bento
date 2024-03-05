@@ -96,7 +96,7 @@ ScopeExpr {
               args: []
             }
             LocalAccessExpr {
-              ref: PathExpr@2..6
+              ref: Path@2..6
               type: RecordType {
                 bento::String
               }

@@ -53,7 +53,7 @@ enum class SyntaxType(
     CallExpr,
     ParenthesizedExpr,
     AssignmentExpr,
-    PathExpr,
+    Path,
     AccessExpr,
 
     TypeAnnotation,

@@ -58,9 +58,9 @@ class BentoBinding {
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
         .firstChild(SyntaxType.TypeAnnotation)
-        ?.firstChild(SyntaxType.Identifier)
+        ?.firstChild(SyntaxType.Path)
         ?.let {
-            val itemRef = refForImmutable(it.rawContent)
+            val itemRef = handlePath(it, false)
             if (itemRef is ItemRef && itemRef.type.isType)
                 HIR.TypeRef(it.ref, itemRef)
             else null
@@ -122,13 +122,13 @@ class BentoBinding {
         return HIR.CallExpr(node.ref, on, args)
     }
 
-    private fun BC.bindIdentifier(node: RedNode) = handlePathExpr(node, mutable = false)
+    private fun BC.bindIdentifier(node: RedNode) = handlePath(node, mutable = false)
         ?.let {
             if (isInitialized(it)) HIR.PathExpr(node.ref, it)
             else HIR.ErrorExpr(node.ref, HIRError.UninitializedConstant)
         } ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
-    private fun BC.handlePathExpr(node: RedNode, mutable: Boolean): Ref? {
+    private fun BC.handlePath(node: RedNode, mutable: Boolean): Ref? {
         val segments = node.childSequence().filter { it.type == ST.Identifier }.toList()
 
         if (segments.size == 1) {
@@ -147,7 +147,7 @@ class BentoBinding {
 
     private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
-        ST.PathExpr -> bindIdentifier(node)
+        ST.Path -> bindIdentifier(node)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
         ST.LetExpr -> bindLet(node)
@@ -165,7 +165,7 @@ class BentoBinding {
 
     private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
         val leftRef = node.firstChild(BaseSets.expressions)?.let { expr ->
-            if (expr.type == ST.PathExpr) handlePathExpr(expr, mutable = true)
+            if (expr.type == ST.Path) handlePath(expr, mutable = true)
             else null
         }
         val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)

@@ -111,7 +111,7 @@ class BentoParsing {
         val canParse = at(SyntaxType.Colon)
         if (canParse) node(SyntaxType.TypeAnnotation) {
             push()  // colon
-            expectIdentifier()
+            expectPath()
         }
         return canParse
     }
@@ -215,12 +215,17 @@ class BentoParsing {
         ST.StringLiteral -> push()
         ST.LBrace -> parseScopeExpr()
         ST.LParen -> handleParenthesized()
-        in BaseSets.identifiers -> handlePathExpr()
+        in BaseSets.identifiers -> handlePath()
         ST.EOF -> {}
         else -> handleError(ParseError.ExpectedExpression)
     }
 
-    private fun P.handlePathExpr() = node(ST.PathExpr) {
+    private fun P.expectPath() {
+        if (!at(BaseSets.identifiers)) return handleError(ParseError.ExpectedIdentifier)
+        handlePath()
+    }
+
+    private fun P.handlePath() = node(ST.Path) {
         pushWrapped(ST.Identifier)
         while (consume(ST.ColonColon)) {
             expectIdentifier()

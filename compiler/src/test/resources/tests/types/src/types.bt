@@ -1,0 +1,3 @@
+data Foo
+
+data Bar(name: String)

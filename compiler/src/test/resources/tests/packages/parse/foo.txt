@@ -26,8 +26,9 @@ File
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Identifier
-│ │   └─StandardIdentifier(String)
+│ │ └─Path
+│ │   └─Identifier
+│ │     └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace
@@ -52,13 +53,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─PathExpr
+│   │   │ ├─Path
 │   │   │ │ ├─Identifier
 │   │   │ │ │ └─StandardIdentifier(bar)
 │   │   │ │ ├─ColonColon

@@ -10,8 +10,9 @@ File
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Identifier
-│ │   └─StandardIdentifier(String)
+│ │ └─Path
+│ │   └─Identifier
+│ │     └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace
@@ -35,8 +36,9 @@ File
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier
-│ │ │     └─StandardIdentifier(String)
+│ │ │   └─Path
+│ │ │     └─Identifier
+│ │ │       └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ └─ScopeExpr
@@ -44,12 +46,12 @@ File
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─PathExpr
+│   │   ├─Path
 │   │   │ └─Identifier
 │   │   │   └─StandardIdentifier(new)
 │   │   └─RParen
@@ -65,8 +67,9 @@ File
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Identifier
-│ │   └─StandardIdentifier(String)
+│ │ └─Path
+│ │   └─Identifier
+│ │     └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
@@ -87,25 +90,25 @@ File
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─PathExpr
+│   │   ├─Path
 │   │   │ └─Identifier
 │   │   │   └─StandardIdentifier(hello)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─AssignmentExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(hello)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
-│   │ └─PathExpr
+│   │ └─Path
 │   │   └─Identifier
 │   │     └─BacktickedIdentifier(`Hey, World!`)
 │   ├─Newline

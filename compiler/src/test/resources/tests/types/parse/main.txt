@@ -1,27 +1,18 @@
 File
-├─TypeDef
-│ ├─DataKeyword
+├─ImportStatement
+│ ├─ImportKeyword
 │ ├─Whitespace( )
-│ └─Identifier
-│   └─StandardIdentifier(Foo)
-├─Newline
-├─Newline
-├─TypeDef
-│ ├─DataKeyword
-│ ├─Whitespace( )
-│ ├─Identifier
-│ │ └─StandardIdentifier(Bar)
-│ └─Constructor
-│   ├─LParen
-│   ├─Field
+│ └─ImportBlock
+│   ├─LBrace
+│   ├─Whitespace( )
+│   ├─ImportPath
 │   │ ├─Identifier
-│   │ │ └─StandardIdentifier(name)
-│   │ └─TypeAnnotation
-│   │   ├─Colon
-│   │   ├─Whitespace( )
-│   │   └─Identifier
-│   │     └─StandardIdentifier(String)
-│   └─RParen
+│   │ │ └─StandardIdentifier(types)
+│   │ ├─ColonColon
+│   │ └─Identifier
+│   │   └─StandardIdentifier(types)
+│   ├─Whitespace( )
+│   └─RBrace
 ├─Newline
 ├─Newline
 ├─FunDef
@@ -37,8 +28,12 @@ File
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier
-│ │ │     └─StandardIdentifier(Foo)
+│ │ │   └─Path
+│ │ │     ├─Identifier
+│ │ │     │ └─StandardIdentifier(types)
+│ │ │     ├─ColonColon
+│ │ │     └─Identifier
+│ │ │       └─StandardIdentifier(Foo)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ └─ScopeExpr
@@ -46,7 +41,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
@@ -70,8 +65,12 @@ File
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier
-│ │ │     └─StandardIdentifier(Bar)
+│ │ │   └─Path
+│ │ │     ├─Identifier
+│ │ │     │ └─StandardIdentifier(types)
+│ │ │     ├─ColonColon
+│ │ │     └─Identifier
+│ │ │       └─StandardIdentifier(Bar)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ └─ScopeExpr
@@ -79,13 +78,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─AccessExpr
-│   │   │ ├─PathExpr
+│   │   │ ├─Path
 │   │   │ │ └─Identifier
 │   │   │ │   └─StandardIdentifier(bar)
 │   │   │ ├─Dot
@@ -110,25 +109,31 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(foo)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─PathExpr
+│   │   ├─Path
+│   │   │ ├─Identifier
+│   │   │ │ └─StandardIdentifier(types)
+│   │   │ ├─ColonColon
 │   │   │ └─Identifier
 │   │   │   └─StandardIdentifier(Foo)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(printBar)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─PathExpr
+│   │   │ ├─Path
+│   │   │ │ ├─Identifier
+│   │   │ │ │ └─StandardIdentifier(types)
+│   │   │ │ ├─ColonColon
 │   │   │ │ └─Identifier
 │   │   │ │   └─StandardIdentifier(Bar)
 │   │   │ └─ArgList

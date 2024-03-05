@@ -13,7 +13,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList

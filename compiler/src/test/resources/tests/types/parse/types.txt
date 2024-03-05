@@ -1,0 +1,26 @@
+File
+├─TypeDef
+│ ├─DataKeyword
+│ ├─Whitespace( )
+│ └─Identifier
+│   └─StandardIdentifier(Foo)
+├─Newline
+├─Newline
+├─TypeDef
+│ ├─DataKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(Bar)
+│ └─Constructor
+│   ├─LParen
+│   ├─Field
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(name)
+│   │ └─TypeAnnotation
+│   │   ├─Colon
+│   │   ├─Whitespace( )
+│   │   └─Path
+│   │     └─Identifier
+│   │       └─StandardIdentifier(String)
+│   └─RParen
+└─EOF

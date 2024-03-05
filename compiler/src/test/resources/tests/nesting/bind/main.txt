@@ -8,7 +8,7 @@ FunctionDef {
         ref: WildcardPattern@0..1
       }
       type: TypeRef {
-        ref: Identifier@4..10
+        ref: Path@4..10
         type: RecordType {
           bento::String
         }
@@ -16,7 +16,7 @@ FunctionDef {
     }
   ]
   returnType: TypeRef {
-    ref: Identifier@4..10
+    ref: Path@4..10
     type: RecordType {
       bento::String
     }
@@ -43,7 +43,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..38
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }
@@ -52,7 +52,7 @@ FunctionDef {
           CallExpr {
             ref: CallExpr@2..17
             on: PathExpr {
-              ref: PathExpr@0..3
+              ref: Path@0..3
               binding: Function {
                 nesting::main::baz
               }
@@ -69,7 +69,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@74..100
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }
@@ -96,7 +96,7 @@ FunctionDef {
         name: text
       }
       type: TypeRef {
-        ref: Identifier@4..10
+        ref: Path@4..10
         type: RecordType {
           bento::String
         }
@@ -110,7 +110,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..62
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }
@@ -122,7 +122,7 @@ FunctionDef {
               CallExpr {
                 ref: CallExpr@22..27
                 on: PathExpr {
-                  ref: PathExpr@0..3
+                  ref: Path@0..3
                   binding: Function {
                     nesting::main::bar
                   }
@@ -130,7 +130,7 @@ FunctionDef {
                 args: []
               }
               PathExpr {
-                ref: PathExpr@2..6
+                ref: Path@2..6
                 binding: LocalRef {
                   node: IdentPattern {
                     ref: IdentPattern@0..4
@@ -157,7 +157,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@14..36
         on: PathExpr {
-          ref: PathExpr@0..3
+          ref: Path@0..3
           binding: Function {
             nesting::main::foo
           }
@@ -172,7 +172,7 @@ FunctionDef {
       CallExpr {
         ref: CallExpr@70..97
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }

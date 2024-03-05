@@ -1,65 +1,10 @@
 // class version 52.0 (52)
 // access flags 0x11
-public final class types/main/Foo {
-
-
-  // access flags 0x19
-  public final static Ltypes/main/Foo; INSTANCE
-
-  // access flags 0x2
-  private <init>()V
-    ALOAD 0
-    INVOKESPECIAL java/lang/Object.<init> ()V
-    RETURN
-    MAXSTACK = 1
-    MAXLOCALS = 1
-
-  // access flags 0xA
-  private static <clinit>()V
-    NEW types/main/Foo
-    DUP
-    INVOKESPECIAL types/main/Foo.<init> ()V
-    PUTSTATIC types/main/Foo.INSTANCE : Ltypes/main/Foo;
-    RETURN
-    MAXSTACK = 2
-    MAXLOCALS = 0
-}
-
-// class version 52.0 (52)
-// access flags 0x11
-public final class types/main/Bar {
-
-
-  // access flags 0x12
-  private final Ljava/lang/String; name
-
-  // access flags 0x1
-  public <init>(Ljava/lang/String;)V
-    ALOAD 0
-    INVOKESPECIAL java/lang/Object.<init> ()V
-    ALOAD 0
-    ALOAD 1
-    PUTFIELD types/main/Bar.name : Ljava/lang/String;
-    RETURN
-    MAXSTACK = 3
-    MAXLOCALS = 2
-
-  // access flags 0x11
-  public final getName()Ljava/lang/String;
-    ALOAD 0
-    GETFIELD types/main/Bar.name : Ljava/lang/String;
-    ARETURN
-    MAXSTACK = 1
-    MAXLOCALS = 1
-}
-
-// class version 52.0 (52)
-// access flags 0x11
 public final class types/mainBt {
 
 
   // access flags 0x9
-  public static foo(Ltypes/main/Foo;)V
+  public static foo(Ltypes/types/Foo;)V
     LDC "Foooooooooo"
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
     RETURN
@@ -67,9 +12,9 @@ public final class types/mainBt {
     MAXLOCALS = 1
 
   // access flags 0x9
-  public static printBar(Ltypes/main/Bar;)V
+  public static printBar(Ltypes/types/Bar;)V
     ALOAD 0
-    INVOKEVIRTUAL types/main/Bar.getName ()Ljava/lang/String;
+    INVOKEVIRTUAL types/types/Bar.getName ()Ljava/lang/String;
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
     RETURN
     MAXSTACK = 1
@@ -77,13 +22,13 @@ public final class types/mainBt {
 
   // access flags 0x9
   public static main()V
-    GETSTATIC types/main/Foo.INSTANCE : Ltypes/main/Foo;
-    INVOKESTATIC types/mainBt.foo (Ltypes/main/Foo;)V
-    NEW types/main/Bar
+    GETSTATIC types/types/Foo.INSTANCE : Ltypes/types/Foo;
+    INVOKESTATIC types/mainBt.foo (Ltypes/types/Foo;)V
+    NEW types/types/Bar
     DUP
     LDC "Bar"
-    INVOKESPECIAL types/main/Bar.<init> (Ljava/lang/String;)V
-    INVOKESTATIC types/mainBt.printBar (Ltypes/main/Bar;)V
+    INVOKESPECIAL types/types/Bar.<init> (Ljava/lang/String;)V
+    INVOKESTATIC types/mainBt.printBar (Ltypes/types/Bar;)V
     RETURN
     MAXSTACK = 3
     MAXLOCALS = 0

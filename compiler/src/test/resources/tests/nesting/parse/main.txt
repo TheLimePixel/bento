@@ -12,14 +12,16 @@ File
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier
-│ │ │     └─StandardIdentifier(String)
+│ │ │   └─Path
+│ │ │     └─Identifier
+│ │ │       └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Identifier
-│ │   └─StandardIdentifier(String)
+│ │ └─Path
+│ │   └─Identifier
+│ │     └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace
@@ -44,13 +46,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
 │   │   ├─CallExpr
-│   │   │ ├─PathExpr
+│   │   │ ├─Path
 │   │   │ │ └─Identifier
 │   │   │ │   └─StandardIdentifier(baz)
 │   │   │ └─ArgList
@@ -61,7 +63,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
@@ -85,8 +87,9 @@ File
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Identifier
-│ │ │     └─StandardIdentifier(String)
+│ │ │   └─Path
+│ │ │     └─Identifier
+│ │ │       └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ └─ScopeExpr
@@ -94,7 +97,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
@@ -104,7 +107,7 @@ File
 │   │   │ ├─Newline
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─CallExpr
-│   │   │ │ ├─PathExpr
+│   │   │ │ ├─Path
 │   │   │ │ │ └─Identifier
 │   │   │ │ │   └─StandardIdentifier(bar)
 │   │   │ │ └─ArgList
@@ -114,7 +117,7 @@ File
 │   │   │ ├─Whitespace(        )
 │   │   │ ├─ParenthesizedExpr
 │   │   │ │ ├─LParen
-│   │   │ │ ├─PathExpr
+│   │   │ │ ├─Path
 │   │   │ │ │ └─Identifier
 │   │   │ │ │   └─StandardIdentifier(text)
 │   │   │ │ └─RParen
@@ -140,7 +143,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(foo)
 │   │ └─ArgList
@@ -150,7 +153,7 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─PathExpr
+│   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList

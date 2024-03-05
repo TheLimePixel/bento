@@ -1,54 +1,29 @@
-======= types::main::Foo =======
-SingletonType {
-  ref: TypeDef@0..8
-}
-
-======= types::main::Bar =======
-RecordType {
-  ref: TypeDef@0..22
-  constructor: Constructor {
-    ref: Constructor@16..30
-    fields: [
-      Field {
-        ref: Field@2..14
-        ident: name
-        type: TypeRef {
-          ref: Identifier@4..10
-          type: RecordType {
-            bento::String
-          }
-        }
-      }
-    ]
-  }
-}
-
 ======= types::main::foo =======
 FunctionDef {
-  ref: FunDef@0..50
+  ref: FunDef@0..57
   params: [
     Param {
-      ref: Param@2..10
+      ref: Param@2..17
       pattern: IdentPattern {
         ref: IdentPattern@0..3
         name: foo
       }
       type: TypeRef {
-        ref: Identifier@4..7
+        ref: Path@4..14
         type: SingletonType {
-          types::main::Foo
+          types::types::Foo
         }
       }
     }
   ]
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@36..68
+    ref: ScopeExpr@50..82
     statements: [
       CallExpr {
         ref: CallExpr@14..36
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }
@@ -66,30 +41,30 @@ FunctionDef {
 
 ======= types::main::printBar =======
 FunctionDef {
-  ref: FunDef@0..50
+  ref: FunDef@0..57
   params: [
     Param {
-      ref: Param@2..10
+      ref: Param@2..17
       pattern: IdentPattern {
         ref: IdentPattern@0..3
         name: bar
       }
       type: TypeRef {
-        ref: Identifier@4..7
+        ref: Path@4..14
         type: RecordType {
-          types::main::Bar
+          types::types::Bar
         }
       }
     }
   ]
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@46..73
+    ref: ScopeExpr@60..87
     statements: [
       CallExpr {
         ref: CallExpr@14..31
         on: PathExpr {
-          ref: PathExpr@0..7
+          ref: Path@0..7
           binding: Function {
             bento::io::println
           }
@@ -98,7 +73,7 @@ FunctionDef {
           AccessExpr {
             ref: AccessExpr@2..10
             on: PathExpr {
-              ref: PathExpr@0..3
+              ref: Path@0..3
               binding: LocalRef {
                 node: IdentPattern {
                   ref: IdentPattern@0..3
@@ -116,44 +91,44 @@ FunctionDef {
 
 ======= types::main::main =======
 FunctionDef {
-  ref: FunDef@0..55
+  ref: FunDef@0..69
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..66
+    ref: ScopeExpr@22..80
     statements: [
       CallExpr {
-        ref: CallExpr@14..22
+        ref: CallExpr@14..29
         on: PathExpr {
-          ref: PathExpr@0..3
+          ref: Path@0..3
           binding: Function {
             types::main::foo
           }
         }
         args: [
           PathExpr {
-            ref: PathExpr@2..5
+            ref: Path@2..12
             binding: SingletonType {
-              types::main::Foo
+              types::types::Foo
             }
           }
         ]
       }
       CallExpr {
-        ref: CallExpr@42..62
+        ref: CallExpr@56..83
         on: PathExpr {
-          ref: PathExpr@0..8
+          ref: Path@0..8
           binding: Function {
             types::main::printBar
           }
         }
         args: [
           CallExpr {
-            ref: CallExpr@2..12
+            ref: CallExpr@2..19
             on: PathExpr {
-              ref: PathExpr@0..3
+              ref: Path@0..10
               binding: RecordType {
-                types::main::Bar
+                types::types::Bar
               }
             }
             args: [

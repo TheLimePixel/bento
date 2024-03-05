@@ -1,16 +1,14 @@
-data Foo
+import { types::types }
 
-data Bar(name: String)
-
-fun foo(foo: Foo) {
+fun foo(foo: types::Foo) {
     println("Foooooooooo")
 }
 
-fun printBar(bar: Bar) {
+fun printBar(bar: types::Bar) {
     println(bar.name)
 }
 
 fun main() {
-    foo(Foo)
-    printBar(Bar("Bar"))
+    foo(types::Foo)
+    printBar(types::Bar("Bar"))
 }
