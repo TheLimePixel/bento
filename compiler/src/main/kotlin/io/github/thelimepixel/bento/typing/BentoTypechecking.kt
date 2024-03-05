@@ -54,7 +54,7 @@ class BentoTypechecking {
                 THIRError.InvalidIdentifierUse.at(hir.ref)
         }
 
-        is LocalRef -> THIR.AccessExpr(hir.ref, typeOf(binding).accessType, binding)
+        is LocalRef -> THIR.LocalAccessExpr(hir.ref, typeOf(binding).accessType, binding)
     }
 
     private fun FC.typeExpr(hir: HIR.Expr, unit: Boolean): THIR = when (hir) {
@@ -65,6 +65,13 @@ class BentoTypechecking {
         is HIR.ScopeExpr -> typeScope(hir, unit)
         is HIR.StringExpr -> THIR.StringExpr(hir.ref, hir.content)
         is HIR.LetExpr -> typeLetExpr(hir)
+        is HIR.AccessExpr -> typeAccessExpr(hir)
+    }
+
+    private fun FC.typeAccessExpr(hir: HIR.AccessExpr): THIR {
+        val on = typeExpr(hir.on, false)
+        val member = memberOf(on.type.accessType.ref, hir.field) ?: return THIRError.UnknownMember.at(hir.ref)
+        return THIR.FieldAccessExpr(hir.ref, member, on)
     }
 
     private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR = hir.left?.let { left ->
@@ -89,23 +96,39 @@ class BentoTypechecking {
     }
 
     private fun FC.typeCall(hir: HIR.CallExpr): THIR {
-        val on = hir.on as? HIR.PathExpr
+        val binding = (hir.on as? HIR.PathExpr)?.binding
             ?: return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
 
-        val binding = on.binding
+        if (binding is ItemRef) when (binding.type) {
+            ItemType.Function -> return typeFunctionCall(binding, hir)
+            ItemType.RecordType -> return typeConstructorCall(binding, hir)
+            ItemType.SingletonType, ItemType.Setter, ItemType.Getter, ItemType.Constant -> Unit
+        }
 
-        if (binding !is ItemRef || binding.type != ItemType.Function)
-            return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
+        return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
+    }
 
-        val signature = typeOf(on.binding) as FunctionType
-        val params = signature.paramTypes
-        val args = if (hir.args.size == params.size) {
-            hir.args.zip(params) { expr, type -> expectExpr(expr, type) }
-        } else hir.args.mapIndexed { index, expr ->
-            if (index < params.size) expectExpr(expr, params[index])
+    private fun FC.typeArgs(args: List<HIR.Expr>, paramTypes: List<Type>): List<THIR> =
+        if (args.size == paramTypes.size) {
+            args.zip(paramTypes) { expr, type -> expectExpr(expr, type) }
+        } else args.mapIndexed { index, expr ->
+            if (index < paramTypes.size) expectExpr(expr, paramTypes[index])
             else THIRError.UnexpectedArgument.at(expr.ref, listOf(typeExpr(expr, false)))
         }
 
-        return THIR.CallExpr(hir.ref, signature.returnType, binding, args)
+    private fun FC.typeConstructorCall(ref: ItemRef, hir: HIR.CallExpr): THIR {
+        val typeHIR = hirOf(ref) as HIR.RecordType
+        val paramTypes = typeHIR.constructor.fields.map { it.type.toType() ?: BuiltinTypes.nothing }
+        val args = typeArgs(hir.args, paramTypes)
+
+        return THIR.ConstructorCallExpr(hir.ref, PathType(ref), args)
+    }
+
+    private fun FC.typeFunctionCall(ref: ItemRef, hir: HIR.CallExpr): THIR {
+        val signature = typeOf(ref) as FunctionType
+        val params = signature.paramTypes
+        val args = typeArgs(hir.args, params)
+
+        return THIR.CallExpr(hir.ref, signature.returnType, ref, args)
     }
 }

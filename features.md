@@ -533,8 +533,6 @@ anything after the type's name. An example of such a type is the `Unit` type.
 
 ## Product Types
 
-TODO
-
 #### Requires
 
 - [Custom Types](features.md#custom-types)

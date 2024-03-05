@@ -29,6 +29,7 @@ object BaseSets {
         SyntaxType.LetExpr,
         SyntaxType.ParenthesizedExpr,
         SyntaxType.AssignmentExpr,
+        SyntaxType.AccessExpr,
     )
     val patterns = syntaxSetOf(
         SyntaxType.IdentPattern,

@@ -38,8 +38,22 @@ class BentoBinding {
         else -> error("Unsupported definition type")
     }
 
-    private fun bindTypeDef(node: RedNode): HIR.TypeDef {
-        return HIR.SingletonType(node.ref)
+    private fun BC.bindTypeDef(node: RedNode): HIR.TypeDef {
+        val ctor = node.lastChild(ST.Constructor) ?: return HIR.SingletonType(node.ref)
+        return HIR.RecordType(node.ref, bindCtor(ctor))
+    }
+
+    private fun BC.bindCtor(node: RedNode): HIR.Constructor =
+        node.childSequence()
+            .filter { it.type == ST.Field }
+            .map { bindField(it) }
+            .toList()
+            .let { HIR.Constructor(node.ref, it) }
+
+    private fun BC.bindField(node: RedNode): HIR.Field {
+        val name = node.firstChild(ST.Identifier)?.rawContent ?: ""
+        val type = findAndBindTypeAnnotation(node)
+        return HIR.Field(node.ref, name, type)
     }
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
@@ -139,7 +153,14 @@ class BentoBinding {
         ST.LetExpr -> bindLet(node)
         ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
         ST.AssignmentExpr -> bindAssignmentExpr(node)
+        ST.AccessExpr -> bindAccessExpr(node)
         else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
+    }
+
+    private fun LC.bindAccessExpr(node: RedNode): HIR.AccessExpr {
+        val on = bindExpr(node.firstChild(BaseSets.expressions)!!)
+        val field = node.lastChild(ST.Identifier)?.rawContent ?: ""
+        return HIR.AccessExpr(node.ref, on, field)
     }
 
     private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
@@ -208,8 +229,7 @@ class BentoBinding {
                 val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.ref, null, emptyList())
                 lastPackage = lastPack.children[name]
                 val items =
-                    astInfoMap[lastPack.path]?.items?.filter { it.path == lastPack.path.subpath(name) } ?:
-                    emptyList()
+                    astInfoMap[lastPack.path]?.items?.filter { it.path == lastPack.path.subpath(name) } ?: emptyList()
                 BoundImportPathSegment(segment.ref, lastPackage, items)
             }
             .toList()

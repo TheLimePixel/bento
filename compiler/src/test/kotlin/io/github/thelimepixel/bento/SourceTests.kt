@@ -20,6 +20,7 @@ class SourceTests {
     private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
     private val parsing = BentoParsing()
     private val binding = BentoBinding()
+    private val memberCollection = BentoMemberCollection()
     private val objFormatter: Formatter<Any?> = ObjectFormatter()
     private val topBindingContext: BindingContext = PackageBindingContext(
         null,
@@ -94,7 +95,16 @@ class SourceTests {
                 bindings.asSequence()
             }.associate { (key, value) -> key to value }
 
-        val typingContext = FileTypingContext(topTypingContext, hirMap.mapValues { (ref, value) -> value.type(ref) })
+        val memberMap = hirMap.mapValues { (ref, hir) ->
+            memberCollection.collectMembers(ref, hir)
+        }
+
+        val typingContext = FileTypingContext(
+            topTypingContext,
+            hirMap.mapValues { (ref, value) -> value.type(ref) },
+            hirMap,
+            memberMap
+        )
 
         val thirMap = hirMap.mapValues { (_, node) ->
             typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
@@ -108,7 +118,7 @@ class SourceTests {
             }
         }
 
-        val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext)
+        val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext, hirMap)
 
         val classes = packageItems.mapValues { (path, fileInfo) ->
             val classes = bentoCodegen.generate(path, fileInfo.items, jvmBindingContext, hirMap, thirMap)

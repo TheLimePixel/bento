@@ -1,0 +1,170 @@
+======= types::main::Foo =======
+SingletonType {
+  ref: TypeDef@0..8
+}
+
+======= types::main::Bar =======
+RecordType {
+  ref: TypeDef@0..22
+  constructor: Constructor {
+    ref: Constructor@16..30
+    fields: [
+      Field {
+        ref: Field@2..14
+        ident: name
+        type: TypeRef {
+          ref: Identifier@4..10
+          type: RecordType {
+            bento::String
+          }
+        }
+      }
+    ]
+  }
+}
+
+======= types::main::foo =======
+FunctionDef {
+  ref: FunDef@0..50
+  params: [
+    Param {
+      ref: Param@2..10
+      pattern: IdentPattern {
+        ref: IdentPattern@0..3
+        name: foo
+      }
+      type: TypeRef {
+        ref: Identifier@4..7
+        type: SingletonType {
+          types::main::Foo
+        }
+      }
+    }
+  ]
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@36..68
+    statements: [
+      CallExpr {
+        ref: CallExpr@14..36
+        on: PathExpr {
+          ref: PathExpr@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          StringExpr {
+            ref: StringLiteral@2..15
+            content: "Foooooooooo"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+======= types::main::printBar =======
+FunctionDef {
+  ref: FunDef@0..50
+  params: [
+    Param {
+      ref: Param@2..10
+      pattern: IdentPattern {
+        ref: IdentPattern@0..3
+        name: bar
+      }
+      type: TypeRef {
+        ref: Identifier@4..7
+        type: RecordType {
+          types::main::Bar
+        }
+      }
+    }
+  ]
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@46..73
+    statements: [
+      CallExpr {
+        ref: CallExpr@14..31
+        on: PathExpr {
+          ref: PathExpr@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          AccessExpr {
+            ref: AccessExpr@2..10
+            on: PathExpr {
+              ref: PathExpr@0..3
+              binding: LocalRef {
+                node: IdentPattern {
+                  ref: IdentPattern@0..3
+                  name: bar
+                }
+              }
+            }
+            field: name
+          }
+        ]
+      }
+    ]
+  }
+}
+
+======= types::main::main =======
+FunctionDef {
+  ref: FunDef@0..55
+  params: []
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@22..66
+    statements: [
+      CallExpr {
+        ref: CallExpr@14..22
+        on: PathExpr {
+          ref: PathExpr@0..3
+          binding: Function {
+            types::main::foo
+          }
+        }
+        args: [
+          PathExpr {
+            ref: PathExpr@2..5
+            binding: SingletonType {
+              types::main::Foo
+            }
+          }
+        ]
+      }
+      CallExpr {
+        ref: CallExpr@42..62
+        on: PathExpr {
+          ref: PathExpr@0..8
+          binding: Function {
+            types::main::printBar
+          }
+        }
+        args: [
+          CallExpr {
+            ref: CallExpr@2..12
+            on: PathExpr {
+              ref: PathExpr@0..3
+              binding: RecordType {
+                types::main::Bar
+              }
+            }
+            args: [
+              StringExpr {
+                ref: StringLiteral@2..7
+                content: "Bar"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

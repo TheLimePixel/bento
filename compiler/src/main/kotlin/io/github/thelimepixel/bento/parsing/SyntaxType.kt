@@ -22,6 +22,7 @@ enum class SyntaxType(
     LBrace,
     RBrace,
     Comma,
+    Dot,
     Colon,
     Equals,
     ColonColon,
@@ -53,6 +54,7 @@ enum class SyntaxType(
     ParenthesizedExpr,
     AssignmentExpr,
     PathExpr,
+    AccessExpr,
 
     TypeAnnotation,
 
@@ -61,6 +63,9 @@ enum class SyntaxType(
     SetDef,
     LetDef,
     TypeDef,
+
+    Constructor,
+    Field,
 
     IdentPattern,
     WildcardPattern,
@@ -90,6 +95,7 @@ object BaseEdges {
     val lBrace = SyntaxType.LBrace.edge( "{")
     val rBrace = SyntaxType.RBrace.edge( "}")
     val comma = SyntaxType.Comma.edge( ",")
+    val dot = SyntaxType.Dot.edge( ".")
     val colon = SyntaxType.Colon.edge(":")
     val eq = SyntaxType.Equals.edge("=")
     val colonColon = SyntaxType.ColonColon.edge("::")

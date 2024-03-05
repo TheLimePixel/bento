@@ -1,9 +1,16 @@
 data Foo
 
+data Bar(name: String)
+
 fun foo(foo: Foo) {
     println("Foooooooooo")
 }
 
+fun printBar(bar: Bar) {
+    println(bar.name)
+}
+
 fun main() {
     foo(Foo)
+    printBar(Bar("Bar"))
 }

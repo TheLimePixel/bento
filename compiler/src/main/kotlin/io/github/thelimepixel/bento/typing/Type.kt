@@ -7,13 +7,13 @@ sealed interface Type {
     val isSingleton: Boolean
 }
 
-data class PathType(val path: ItemRef) : Type {
-    override fun toString(): String = path.toString()
+data class PathType(val ref: ItemRef) : Type {
+    override fun toString(): String = ref.toString()
     override val accessType: PathType
         get() = this
 
     override val isSingleton: Boolean
-        get() = path.type == ItemType.SingletonType
+        get() = ref.type == ItemType.SingletonType
 }
 
 data class FunctionType(val paramTypes: List<Type>, val returnType: Type) : Type {

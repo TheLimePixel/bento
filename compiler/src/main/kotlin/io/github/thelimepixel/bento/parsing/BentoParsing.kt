@@ -25,6 +25,33 @@ class BentoParsing {
     private fun P.handleTypeDef() = node(ST.TypeDef) {
         push()      // data keyword
         expectIdentifier()
+        parseConstructor()
+    }
+
+    private fun P.parseConstructor() {
+        if (!at(ST.LParen)) return
+
+        node(ST.Constructor) {
+            push()      // lParen
+            handleConstructor()
+        }
+    }
+
+    private fun P.handleConstructor() {
+        when (current) {
+            ST.EOF -> return handleError(ParseError.ExpectedClosedBrace)
+            ST.RParen -> return push()
+            ST.Comma -> push()
+            else -> expectField()
+        }
+        handleConstructor()
+    }
+
+    private fun P.expectField() {
+        node(ST.Field) {
+            expectIdentifier()
+            expectTypeAnnotation()
+        }
     }
 
     private fun P.parseImportStatement() {
@@ -242,10 +269,19 @@ class BentoParsing {
         handleArgList()
     }
 
-    private fun P.handlePostfix() = when {
-        !seenNewline && at(ST.LParen) -> handleCall()
-        at(ST.Equals) -> handleAssignment()
-        else -> Unit
+    private fun P.handleAccess() = nestLast(ST.AccessExpr) {
+        push()      // dot
+        expectIdentifier()
+    }
+
+    private tailrec fun P.handlePostfix() {
+        when {
+            !seenNewline && at(ST.LParen) -> handleCall()
+            at(ST.Equals) -> handleAssignment()
+            at(ST.Dot) -> handleAccess()
+            else -> return
+        }
+        handlePostfix()
     }
 
     private fun P.expectTerm() {

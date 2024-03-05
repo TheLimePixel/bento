@@ -6,6 +6,24 @@ File
 │   └─StandardIdentifier(Foo)
 ├─Newline
 ├─Newline
+├─TypeDef
+│ ├─DataKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
+│ │ └─StandardIdentifier(Bar)
+│ └─Constructor
+│   ├─LParen
+│   ├─Field
+│   │ ├─Identifier
+│   │ │ └─StandardIdentifier(name)
+│   │ └─TypeAnnotation
+│   │   ├─Colon
+│   │   ├─Whitespace( )
+│   │   └─Identifier
+│   │     └─StandardIdentifier(String)
+│   └─RParen
+├─Newline
+├─Newline
 ├─FunDef
 │ ├─FunKeyword
 │ ├─Whitespace( )
@@ -43,6 +61,45 @@ File
 │ ├─FunKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
+│ │ └─StandardIdentifier(printBar)
+│ ├─ParamList
+│ │ ├─LParen
+│ │ ├─Param
+│ │ │ ├─IdentPattern
+│ │ │ │ └─StandardIdentifier(bar)
+│ │ │ └─TypeAnnotation
+│ │ │   ├─Colon
+│ │ │   ├─Whitespace( )
+│ │ │   └─Identifier
+│ │ │     └─StandardIdentifier(Bar)
+│ │ └─RParen
+│ ├─Whitespace( )
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─AccessExpr
+│   │   │ ├─PathExpr
+│   │   │ │ └─Identifier
+│   │   │ │   └─StandardIdentifier(bar)
+│   │   │ ├─Dot
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(name)
+│   │   └─RParen
+│   ├─Newline
+│   └─RBrace
+├─Newline
+├─Newline
+├─FunDef
+│ ├─FunKeyword
+│ ├─Whitespace( )
+│ ├─Identifier
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
@@ -61,6 +118,23 @@ File
 │   │   ├─PathExpr
 │   │   │ └─Identifier
 │   │   │   └─StandardIdentifier(Foo)
+│   │   └─RParen
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─PathExpr
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(printBar)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─CallExpr
+│   │   │ ├─PathExpr
+│   │   │ │ └─Identifier
+│   │   │ │   └─StandardIdentifier(Bar)
+│   │   │ └─ArgList
+│   │   │   ├─LParen
+│   │   │   ├─StringLiteral("Bar")
+│   │   │   └─RParen
 │   │   └─RParen
 │   ├─Newline
 │   └─RBrace

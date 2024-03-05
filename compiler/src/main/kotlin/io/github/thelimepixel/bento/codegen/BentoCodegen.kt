@@ -1,10 +1,10 @@
 package io.github.thelimepixel.bento.codegen
 
-import io.github.thelimepixel.bento.binding.HIR
-import io.github.thelimepixel.bento.binding.ItemPath
-import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.*
+import io.github.thelimepixel.bento.typing.BuiltinTypes
 import io.github.thelimepixel.bento.typing.PathType
 import io.github.thelimepixel.bento.typing.THIR
+import io.github.thelimepixel.bento.typing.toType
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
@@ -24,15 +24,7 @@ class BentoCodegen {
 
         val writer = ClassWriter(0)
 
-        writer.visit(
-            52,
-            Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER,
-            file.toJVMPath() + "Bt",
-            null,
-            "java/lang/Object",
-            null,
-        )
-
+        createClass(writer, file.toJVMPath() + "Bt")
         writer.visitSource(file.rawName + ".bt", null)
 
         val constants = mutableListOf<ItemRef>()
@@ -47,7 +39,7 @@ class BentoCodegen {
                     constants.add(ref)
                 }
 
-                is HIR.TypeDef -> classes.add(ref.path.toClassname() to genSingletonType(ref))
+                is HIR.TypeDef -> classes.add(ref.path.toClassname() to fileContext.genType(ref, def))
             }
         }
 
@@ -57,6 +49,17 @@ class BentoCodegen {
         classes.add(file.toClassname() + "Bt" to writer.toByteArray())
 
         return classes
+    }
+
+    private fun createClass(writer: ClassWriter, name: String) {
+        writer.visit(
+            52,
+            Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
+            name,
+            null,
+            "java/lang/Object",
+            null
+        )
     }
 
     private fun refToName(ref: ItemPath?, builder: StringBuilder) {
@@ -70,24 +73,81 @@ class BentoCodegen {
         .append(this.rawName)
         .toString()
 
+    private fun JC.genType(ref: ItemRef, hir: HIR.TypeDef): ByteArray = when (hir) {
+        is HIR.SingletonType -> genSingletonType(ref)
+        is HIR.RecordType -> genRecordType(hir, ref)
+    }
+
+    private fun MethodVisitor.visitSuper() {
+        this.visitVarInsn(Opcodes.ALOAD, 0)
+        this.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+    }
+
+    private fun JC.genRecordType(hir: HIR.RecordType, ref: ItemRef): ByteArray {
+        val writer = ClassWriter(0)
+
+        val `class` = ref.path.toJVMPath()
+        val fields = hir.constructor.fields
+
+        createClass(writer, `class`)
+
+        val ctorDescriptor = hir.constructor.descriptor
+
+        val ctor = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", ctorDescriptor, null, null)
+        ctor.visitSuper()
+
+        if (fields.isNotEmpty())  {
+            ctor.visitVarInsn(Opcodes.ALOAD, 0)
+            fields.forEachIndexed { index, field ->
+                if (index != fields.lastIndex)
+                    ctor.visitInsn(Opcodes.DUP)
+
+                ctor.visitVarInsn(Opcodes.ALOAD, index + 1)
+                ctor.visitFieldInsn(
+                    Opcodes.PUTFIELD,
+                    `class`,
+                    field.ident.toJVMIdent(),
+                    jvmTypeOf(field.type.toType() ?: BuiltinTypes.nothing)
+                )
+            }
+        }
+        ctor.visitInsn(Opcodes.RETURN)
+        val ctorStackSize = max(fields.size, 2) + 1
+        ctor.visitMaxs(ctorStackSize, fields.size + 1)
+        ctor.visitEnd()
+
+        fields.forEach { field ->
+            val type = jvmTypeOf(field.type.toType() ?: BuiltinTypes.nothing)
+            val name = field.ident.toJVMIdent()
+            writer.visitField(Opcodes.ACC_FINAL + Opcodes.ACC_PRIVATE, name, type, null, null)
+            val getter = writer.visitMethod(
+                Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
+                "get${name.capitalize()}",
+                "()$type",
+                null,
+                null
+            )
+            getter.visitVarInsn(Opcodes.ALOAD,0)
+            getter.visitFieldInsn(Opcodes.GETFIELD, `class`, name, type)
+            getter.visitInsn(Opcodes.ARETURN)
+            getter.visitMaxs(1,1)
+            getter.visitEnd()
+        }
+
+        writer.visitEnd()
+        return writer.toByteArray()
+    }
+
     private fun genSingletonType(ref: ItemRef): ByteArray {
         val writer = ClassWriter(0)
 
         val `class` = ref.path.toJVMPath()
         val type = "L$`class`;"
 
-        writer.visit(
-            52,
-            Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
-            `class`,
-            null,
-            "java/lang/Object",
-            null,
-        )
+        createClass(writer, `class`)
 
         val ctor = writer.visitMethod(Opcodes.ACC_PRIVATE, "<init>", "()V", null, null)
-        ctor.visitVarInsn(Opcodes.ALOAD, 0)
-        ctor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false)
+        ctor.visitSuper()
         ctor.visitInsn(Opcodes.RETURN)
         ctor.visitMaxs(1, 1)
         ctor.visitEnd()
@@ -237,8 +297,30 @@ class BentoCodegen {
         }
     }
 
+    context(JC)
+    private val HIR.Constructor.descriptor
+        get() = fields.joinToString("", "(", ")V") { field ->
+            jvmTypeOf(field.type.toType() ?: BuiltinTypes.nothing)
+        }
+
+    private fun JC.genConstructorCallExpr(
+        node: THIR.ConstructorCallExpr,
+        methodWriter: MethodVisitor,
+        ignoreOutput: Boolean,
+    ): Boolean {
+        methodWriter.visitTypeInsn(Opcodes.NEW, jvmClassOf(node.type))
+        if (!ignoreOutput) methodWriter.visitInsn(Opcodes.DUP)
+        node.args.forEach { genExpr(it, methodWriter, false) }
+
+        val hir = hirOf(node.type.ref) as HIR.RecordType
+        val ctorDesc = hir.constructor.descriptor
+
+        methodWriter.visitMethodInsn(Opcodes.INVOKESPECIAL, jvmClassOf(node.type), "<init>", ctorDesc, false)
+        return ignoreOutput
+    }
+
     private fun JC.genAccessExpr(
-        node: THIR.AccessExpr,
+        node: THIR.LocalAccessExpr,
         methodWriter: MethodVisitor,
         ignoreOutput: Boolean,
     ): Boolean {
@@ -289,7 +371,7 @@ class BentoCodegen {
         is THIR.ScopeExpr ->
             genScopeExpr(node, methodWriter, ignoreOutput)
 
-        is THIR.AccessExpr ->
+        is THIR.LocalAccessExpr ->
             genAccessExpr(node, methodWriter, ignoreOutput)
 
         is THIR.LetExpr ->
@@ -299,5 +381,23 @@ class BentoCodegen {
             if (!ignoreOutput) genSingletonAccessExpr(node.type.accessType, methodWriter)
             ignoreOutput
         }
+
+        is THIR.FieldAccessExpr -> genFieldAccessExpr(node, methodWriter, ignoreOutput)
+
+        is THIR.ConstructorCallExpr -> genConstructorCallExpr(node, methodWriter, ignoreOutput)
+    }
+
+    private fun JC.genFieldAccessExpr(node: THIR.FieldAccessExpr, methodWriter: MethodVisitor, ignoreOutput: Boolean): Boolean {
+        genExpr(node.on, methodWriter, ignoreOutput)
+
+        if (ignoreOutput) return false
+
+        val getterName = "get${node.field.name.toJVMIdent().capitalize()}"
+        val descriptor = "()${jvmTypeOf(node.type)}"
+        methodWriter.visitMethodInsn(
+            Opcodes.INVOKEVIRTUAL, node.on.type.accessType.ref.path.toJVMPath(), getterName, descriptor, false
+        )
+
+        return true
     }
 }

@@ -12,6 +12,8 @@ interface JVMBindingContext {
     fun jvmTypeOf(ref: PathType): String = "L${jvmClassOf(ref)};"
 
     fun localId(ref: LocalRef): Int
+
+    fun hirOf(ref: ItemRef): HIR.Def
 }
 
 private fun JVMBindingContext.mapType(type: Type, returnType: Boolean): String = when (type) {
@@ -42,23 +44,29 @@ class TopLevelJVMBindingContext(
         BuiltinTypes.string -> stringJVMType
         BuiltinTypes.unit -> unitJVMType
         BuiltinTypes.nothing -> nothingJVMType
-        else -> ref.path.path.toJVMPath()
+        else -> ref.ref.path.toJVMPath()
     }
 
     override fun localId(ref: LocalRef): Int = error("Unexpected call")
+
+    override fun hirOf(ref: ItemRef): HIR.Def = error("Missing definition")
 }
 
-val ItemRef.jvmName get() = when (type) {
-    ItemType.Getter, ItemType.Constant -> "get" + rawName.capitalize()
-    ItemType.Setter -> "set" + rawName.capitalize()
-    ItemType.SingletonType, ItemType.Function, ItemType.RecordType -> rawName
-}
+val ItemRef.jvmName
+    get() = when (type) {
+        ItemType.Getter, ItemType.Constant -> "get" + rawName.capitalize()
+        ItemType.Setter -> "set" + rawName.capitalize()
+        ItemType.SingletonType, ItemType.Function, ItemType.RecordType -> rawName
+    }
 
-private fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+internal fun String.capitalize() = replaceFirstChar {
+    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+}
 
 class FileJVMBindingContext(
     private val parent: JVMBindingContext,
     private val typingContext: TypingContext,
+    private val hirMap: Map<ItemRef, HIR.Def>,
 ) : JVMBindingContext {
     override fun jvmClassOf(ref: PathType): String = parent.jvmClassOf(ref)
 
@@ -71,10 +79,13 @@ class FileJVMBindingContext(
         )
 
     override fun localId(ref: LocalRef): Int = parent.localId(ref)
+
+    override fun hirOf(ref: ItemRef): HIR.Def = hirMap[ref] ?: parent.hirOf(ref)
 }
 
 val ItemRef.fileJVMPath: String
     get() = parent.let { it.copy(name = it.rawName + "Bt") }.toJVMPath()
+
 class LocalJVMBindingContext(
     private val parent: JVMBindingContext,
     private val localMap: Map<LocalRef, Int>
@@ -84,4 +95,6 @@ class LocalJVMBindingContext(
     override fun signatureOf(ref: ItemRef): JVMSignature = parent.signatureOf(ref)
 
     override fun localId(ref: LocalRef): Int = localMap[ref]!!
+
+    override fun hirOf(ref: ItemRef): HIR.Def = parent.hirOf(ref)
 }

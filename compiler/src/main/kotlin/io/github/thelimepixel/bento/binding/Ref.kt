@@ -6,7 +6,9 @@ import io.github.thelimepixel.bento.parsing.SyntaxType
 
 sealed interface Ref
 
-data class LocalRef(val node: HIR.Pattern): Ref
+data class LocalRef(val node: HIR.Pattern) : Ref
+
+data class MemberRef(val parent: ItemRef, val name: String, val type: ItemRef?)
 
 enum class ItemType(val mutable: Boolean = false, val isType: Boolean = false) {
     Function,
@@ -50,18 +52,22 @@ fun GreenNode.collectItems(parentPath: ItemPath): PackageASTInfo {
             val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
             val list = dataMap.computeIfAbsent(name) { mutableListOf() }
             list.add(it)
-            ItemRef(parentPath.subpath(name), itemTypeFrom(it.type), list.lastIndex)
+            ItemRef(parentPath.subpath(name), itemTypeFrom(it), list.lastIndex)
         }
         .toList()
 
     return PackageASTInfo(items, dataMap, importNode)
 }
 
-fun itemTypeFrom(type: SyntaxType) = when (type) {
+fun itemTypeFrom(node: GreenNode) = when (node.type) {
     SyntaxType.GetDef -> ItemType.Getter
     SyntaxType.FunDef -> ItemType.Function
     SyntaxType.SetDef -> ItemType.Setter
     SyntaxType.LetDef -> ItemType.Constant
-    SyntaxType.TypeDef -> ItemType.SingletonType
+    SyntaxType.TypeDef -> when {
+        node.lastChild(ST.Constructor) == null -> ItemType.SingletonType
+        else -> ItemType.RecordType
+    }
+
     else -> error("Unsupported definition type")
 }

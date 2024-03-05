@@ -86,6 +86,14 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
+    data class AccessExpr(
+        override val ref: ASTRef,
+        val on: Expr,
+        val field: String,
+    ) : Expr {
+        override fun childSequence(): Sequence<HIR> = sequenceOf(on)
+    }
+
     data class TypeRef(override val ref: ASTRef, val type: ItemRef?) : HIR {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
@@ -143,5 +151,17 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     data class SingletonType(override val ref: ASTRef) : TypeDef {
         override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    data class Field(override val ref: ASTRef, val ident: String, val type: TypeRef?) : HIR {
+        override fun childSequence(): Sequence<HIR> = sequence { type?.let { yield(it) } }
+    }
+
+    data class Constructor(override val ref: ASTRef, val fields: List<Field>) : HIR {
+        override fun childSequence(): Sequence<HIR> = fields.asSequence()
+    }
+
+    data class RecordType(override val ref: ASTRef, val constructor: Constructor) : TypeDef {
+        override fun childSequence(): Sequence<HIR> = sequence { yield(constructor) }
     }
 }

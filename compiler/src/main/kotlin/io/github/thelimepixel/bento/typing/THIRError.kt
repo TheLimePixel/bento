@@ -13,6 +13,7 @@ enum class THIRError : ErrorType {
     NotEnoughArguments,
     UnexpectedArgument,
     InvalidType,
+    UnknownMember,
     ;
 
     fun at(ref: ASTRef, children: List<THIR> = emptyList(), type: Type = BuiltinTypes.nothing) =

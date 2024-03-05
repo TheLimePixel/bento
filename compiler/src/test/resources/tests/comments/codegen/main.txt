@@ -1,5 +1,5 @@
 // class version 52.0 (52)
-// access flags 0x31
+// access flags 0x11
 public final class comments/mainBt {
 
 

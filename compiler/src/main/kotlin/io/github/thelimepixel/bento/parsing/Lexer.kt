@@ -16,6 +16,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         '{' -> BaseEdges.lBrace
         '}' -> BaseEdges.rBrace
         ',' -> BaseEdges.comma
+        '.' -> BaseEdges.dot
         ':' -> getColon(index + 1)
         '=' -> BaseEdges.eq
         '\n' -> BaseEdges.nlN

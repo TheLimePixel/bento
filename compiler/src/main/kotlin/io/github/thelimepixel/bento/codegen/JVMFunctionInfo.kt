@@ -1,9 +1,7 @@
 package io.github.thelimepixel.bento.codegen
 
 import io.github.thelimepixel.bento.binding.HIR
-import io.github.thelimepixel.bento.binding.ItemType
 import io.github.thelimepixel.bento.binding.LocalRef
-import io.github.thelimepixel.bento.typing.BuiltinTypes
 import io.github.thelimepixel.bento.typing.THIR
 import kotlin.math.max
 
@@ -50,7 +48,7 @@ private class JVMInfoResolver(private val varIds: MutableMap<LocalRef, Int>) {
                 val statements = node.statements
                 if (statements.isEmpty()) return
                 statements
-                    .subList(0, node.statements.size - 1)
+                    .subList(0, node.statements.lastIndex)
                     .forEach { frame { handleRec(it, true) } }
                 return frame { handleRec(statements.last(), toIgnore) }
             }
@@ -62,8 +60,21 @@ private class JVMInfoResolver(private val varIds: MutableMap<LocalRef, Int>) {
 
             is THIR.ErrorExpr -> Unit
 
-            is THIR.AccessExpr, is THIR.StringExpr, is THIR.SingletonAccessExpr -> {
+            is THIR.LocalAccessExpr, is THIR.StringExpr, is THIR.SingletonAccessExpr -> {
                 if (!toIgnore) currentStackSize += 1
+            }
+
+            is THIR.FieldAccessExpr -> {
+                frame { handleRec(node.on, false) }
+                if (!toIgnore) currentStackSize += 1
+            }
+
+            is THIR.ConstructorCallExpr -> {
+                if (!toIgnore) currentStackSize += 1
+                frame {
+                    currentStackSize += 1
+                    node.args.forEach { handleRec(it, false) }
+                }
             }
         }
     }
