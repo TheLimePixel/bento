@@ -22,82 +22,59 @@ class BentoParsing {
         handleFile()
     }
 
-    private fun P.handleTypeDef() = node(ST.TypeDef) {
+    private fun P.handleTypeDef(): ParseResult = node(ST.TypeDef) {
         push()      // data keyword
-        expectIdentifier()
-        parseConstructor()
+        expectIdentifier().then { parseConstructor() }
     }
 
-    private fun P.parseConstructor() {
-        if (!at(ST.LParen)) return
+    private fun P.parseConstructor(): ParseResult {
+        if (!at(ST.LParen)) return ParseResult.Pass
 
-        node(ST.Constructor) {
+        return node(ST.Constructor) {
             push()      // lParen
-            handleConstructor()
+            handleParenthesizedList(BaseSets.paramListRecoverySet) { expectField() }
         }
     }
 
-    private fun P.handleConstructor() {
-        when (current) {
-            ST.EOF -> return handleError(ParseError.ExpectedClosedBrace)
-            ST.RParen -> return push()
-            ST.Comma -> push()
-            else -> expectField()
+    private fun P.expectField(): ParseResult =
+        expectIdentifier().then {
+            nestLast(ST.Field) { expectTypeAnnotation() }
         }
-        handleConstructor()
-    }
 
-    private fun P.expectField() {
-        node(ST.Field) {
-            expectIdentifier()
-            expectTypeAnnotation()
-        }
-    }
-
-    private fun P.parseImportStatement() {
+    private fun P.parseImportStatement(): ParseResult =
         if (at(ST.ImportKeyword)) node(ST.ImportStatement) {
             push()      // ImportKeyword
             expectImportBlock()
-        }
-    }
+        } else ParseResult.Pass
 
-    private fun P.expectImportBlock() {
+    private fun P.expectImportBlock(): ParseResult {
         if (!at(ST.LBrace))
             return handleError(ParseError.ExpectedImportBlock)
 
-        node(ST.ImportBlock) {
+        return node(ST.ImportBlock) {
             push()      // LBrace
-            handleImportBlock()
+            handleBracedList(BaseSets.baseRecoverySet) { expectImportPath() }
         }
     }
 
-    private tailrec fun P.handleImportBlock() {
-        when (current) {
-            ST.EOF -> return handleError(ParseError.ExpectedClosedBrace)
-            ST.RBrace -> return push()
-            ST.Comma -> push()
-            else -> expectImportPath()
-        }
-        handleImportBlock()
-    }
-
-    private fun P.expectImportPath() {
-        node(ST.ImportPath) {
-            expectIdentifier()
-            while (consume(ST.ColonColon)) {
-                expectIdentifier()
+    private fun P.expectImportPath(): ParseResult =
+        expectIdentifier().then {
+            nestLast(ST.ImportPath) {
+                while (consume(ST.ColonColon)) {
+                    expectIdentifier().ifNotPassing { return@nestLast it }
+                }
+                ParseResult.Success
             }
         }
-    }
+    private fun P.handleError(type: ParseError): ParseResult =
+        if (current in BaseSets.baseRecoverySet) {
+            pushError(type)
+            ParseResult.Recover
+        } else {
+            errorNode(type) { push() }
+            ParseResult.Failure
+        }
 
-    private fun P.canRecover() = when (current) {
-        ST.FunKeyword, ST.EOF, ST.RBrace, ST.LBrace -> true
-        else -> false
-    }
-
-    private fun P.handleError(type: ParseError) =
-        if (canRecover()) pushError(type)
-        else errorNode(type) { push() }
 
     private fun P.handleFunctionLike(type: ST) = node(type) {
         push()  // keyword
@@ -107,190 +84,180 @@ class BentoParsing {
         expectScopeExpr()
     }
 
-    private fun P.parseTypeAnnotation(): Boolean {
-        val canParse = at(SyntaxType.Colon)
-        if (canParse) node(SyntaxType.TypeAnnotation) {
+    private fun P.parseTypeAnnotation(): ParseResult =
+        if (at(SyntaxType.Colon)) node(SyntaxType.TypeAnnotation) {
             push()  // colon
             expectPath()
-        }
-        return canParse
-    }
+        } else ParseResult.Pass
 
-    private fun P.expectTypeAnnotation() {
-        if (!parseTypeAnnotation()) pushError(ParseError.ExpectedTypeAnnotation)
-    }
+    private fun P.expectTypeAnnotation(): ParseResult =
+        if (parseTypeAnnotation() == ParseResult.Success) ParseResult.Success
+        else handleError(ParseError.ExpectedTypeAnnotation)
 
-    private fun P.expectIdentifier() {
+    private fun P.expectIdentifier(): ParseResult =
         if (at(BaseSets.identifiers)) pushWrapped(ST.Identifier)
         else handleError(ParseError.ExpectedIdentifier)
-    }
 
-    private fun P.expectParamList() {
-        if (!at(ST.LParen))
-            return handleError(ParseError.ExpectedParameterList)
-
-        node(ST.ParamList) {
+    private fun P.expectParamList(): ParseResult =
+        if (at(ST.LParen)) node(ST.ParamList) {
             push()  // (
-            handleParamList()
+            handleParenthesizedList(BaseSets.paramListRecoverySet) { expectParam() }
+        } else handleError(ParseError.ExpectedParameterList)
+
+    private fun P.expectPattern(): ParseResult = when (current) {
+        ST.Wildcard -> pushWrapped(ST.WildcardPattern)
+        in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
+        else -> handleError(ParseError.ExpectedPattern)
+    }
+
+    private fun P.expectParam(): ParseResult =
+        expectPattern().then {
+            nestLast(SyntaxType.Param) {
+                expectTypeAnnotation()
+            }
         }
-    }
 
-    private fun P.consumePattern(): Boolean {
-        when (current) {
-            ST.Wildcard -> pushWrapped(ST.WildcardPattern)
-            in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
-            else -> return false
-        }
-        return true
-    }
-
-    private fun P.expectParam() {
-        if (!consumePattern())
-            return handleError(ParseError.ExpectedPattern)
-
-        nestLast(SyntaxType.Param) {
-            expectTypeAnnotation()
-        }
-    }
-
-    private tailrec fun P.handleParamList() {
-        if (handleParamListEnd()) return
-        expectParam()
-        if (handleParamListEnd()) return
-        expectConsume(ST.Comma, ParseError.ExpectedCommaOrClosedParen)
-        handleParamList()
-    }
-
-    private fun P.parseScopeExpr() = node(ST.ScopeExpr) {
+    private fun P.handleScopeExpr(): ParseResult = node(ST.ScopeExpr) {
         push()  // {
-        handleExpressionScope()
+        handleBracedList(BaseSets.scopeRecoverySet) { expectScopeTerm() }
     }
 
-    private fun P.expectScopeExpr() {
-        if (!at(ST.LBrace))
-            return handleError(ParseError.ExpectedScope)
+    private fun P.expectScopeExpr(): ParseResult =
+        if (at(ST.LBrace)) handleScopeExpr()
+        else handleError(ParseError.ExpectedScope)
 
-        parseScopeExpr()
-    }
 
-    private fun P.expectEqExpression() {
-        if (!consume(ST.Equals))
-            return pushError(ParseError.ExpectedEquals)
+    private fun P.expectEqExpression(): ParseResult =
+        if (consume(ST.Equals)) expectTerm()
+        else handleError(ParseError.ExpectedEquals)
 
-        expectTerm()
-    }
-
-    private fun P.handleLetExpr() = node(ST.LetExpr) {
+    private fun P.handleLetExpr(): ParseResult = node(ST.LetExpr) {
         push()  // let keyword
-        if (!consumePattern()) pushError(ParseError.ExpectedPattern)
-        parseTypeAnnotation()
-        expectEqExpression()
+        expectPattern()
+            .then { parseTypeAnnotation() }
+            .then { expectEqExpression() }
     }
 
-    private fun P.handleTopLevelLet() = node(ST.LetDef) {
+    private fun P.handleTopLevelLet(): ParseResult = node(ST.LetDef) {
         push()  // let keyword
         expectIdentifier()
-        parseTypeAnnotation()
-        expectEqExpression()
+            .then { parseTypeAnnotation() }
+            .then { expectEqExpression() }
     }
 
-    private tailrec fun P.handleExpressionScope() {
-        when (current) {
-            ST.EOF -> return handleError(ParseError.ExpectedClosedBrace)
-            ST.RBrace -> return push()
-            ST.Comma -> push()
-            ST.LetKeyword -> handleLetExpr()
-            else -> expectTerm()
-        }
-        handleExpressionScope()
+    private fun P.expectScopeTerm(): ParseResult = when (current) {
+        ST.LetKeyword -> handleLetExpr()
+        else -> expectTerm()
     }
 
-    private fun P.handleParenthesized() = node(ST.ParenthesizedExpr) {
+    private fun P.handleParenthesized(): ParseResult = node(ST.ParenthesizedExpr) {
         push()  // (
-        expectTerm()
-        if (!consume(SyntaxType.RParen)) pushError(ParseError.ExpectedClosedParen)
-    }
-
-    private fun P.expectBaseTerm() = when (current) {
-        ST.StringLiteral -> push()
-        ST.LBrace -> parseScopeExpr()
-        ST.LParen -> handleParenthesized()
-        in BaseSets.identifiers -> handlePath()
-        ST.EOF -> {}
-        else -> handleError(ParseError.ExpectedExpression)
-    }
-
-    private fun P.expectPath() {
-        if (!at(BaseSets.identifiers)) return handleError(ParseError.ExpectedIdentifier)
-        handlePath()
-    }
-
-    private fun P.handlePath() = node(ST.Path) {
-        pushWrapped(ST.Identifier)
-        while (consume(ST.ColonColon)) {
-            expectIdentifier()
+        expectTerm().then {
+            if (consume(SyntaxType.RParen)) ParseResult.Success
+            else handleError(ParseError.ExpectedClosedParen)
         }
     }
 
-    private fun P.handleCall() = nestLast(ST.CallExpr) {
+    private fun P.expectBaseTerm(): ParseResult =
+        when (current) {
+            ST.StringLiteral -> {
+                push()
+                ParseResult.Success
+            }
+
+            ST.LBrace -> handleScopeExpr()
+            ST.LParen -> handleParenthesized()
+            in BaseSets.identifiers -> {
+                pushWrapped(ST.Identifier)
+                handlePath()
+            }
+
+            else -> handleError(ParseError.ExpectedExpression)
+        }
+
+    private fun P.expectPath(): ParseResult =
+        expectIdentifier().then { handlePath() }
+
+    private fun P.handlePath(): ParseResult = nestLast(ST.Path) {
+        while (consume(ST.ColonColon)) {
+            expectIdentifier().ifNotPassing { return@nestLast it }
+        }
+        ParseResult.Success
+    }
+
+    private fun P.handleCall(): ParseResult = nestLast(ST.CallExpr) {
         node(ST.ArgList) {
             push()  // (
-            handleArgList()
+            handleParenthesizedList(BaseSets.argListRecoverySet) { expectTerm() }
         }
     }
 
-    private fun P.handleAssignment() = nestLast(ST.AssignmentExpr) {
+    private fun P.handleAssignment(): ParseResult = nestLast(ST.AssignmentExpr) {
         push() // equals
         expectTerm()
     }
 
-    private fun P.handleParamListEnd(): Boolean {
-        when (current) {
-            ST.EOF, ST.RBrace, ST.LBrace -> pushError(ParseError.ExpectedCommaOrClosedParen)
-            ST.RParen -> push()
-            else -> return false
+    private fun P.handleParenthesizedListEnd(recoverySet: SyntaxSet): ParseResult = when (current) {
+        ST.RParen -> {
+            push()
+            ParseResult.Success
         }
-        return true
-    }
 
-    private fun P.handleArgListEnd(): Boolean {
-        when (current) {
-            ST.EOF, ST.RBrace -> pushError(ParseError.ExpectedCommaOrClosedParen)
-            ST.RParen -> push()
-            else -> return false
+        in recoverySet -> {
+            pushError(ParseError.ExpectedCommaOrClosedParen)
+            ParseResult.Recover
         }
-        return true
+
+        else -> ParseResult.Pass
     }
 
-    private fun P.expectConsume(type: SyntaxType, error: ParseError) {
-        if (!consume(type)) handleError(error)
+    private fun P.handleBracedListEnd(recoverySet: SyntaxSet): ParseResult = when (current) {
+        ST.RBrace -> {
+            push()
+            ParseResult.Success
+        }
+
+        in recoverySet -> {
+            pushError(ParseError.ExpectedCommaOrClosedBrace)
+            ParseResult.Recover
+        }
+
+        else -> ParseResult.Pass
     }
 
-    private tailrec fun P.handleArgList() {
-        if (handleArgListEnd()) return
-        expectTerm()
-        if (handleArgListEnd()) return
-        expectConsume(ST.Comma, ParseError.ExpectedCommaOrClosedParen)
-        handleArgList()
+    private inline fun P.handleParenthesizedList(recoverySet: SyntaxSet, expectFn: P.() -> ParseResult): ParseResult {
+        while (true) {
+            handleParenthesizedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
+            expectFn().ifIs(ParseResult.Recover) { return it }
+            handleParenthesizedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
+            if (!consume(ST.Comma) && !seenNewline) pushError(ParseError.ExpectedCommaOrClosedParen)
+        }
     }
 
-    private fun P.handleAccess() = nestLast(ST.AccessExpr) {
+    private inline fun P.handleBracedList(recoverySet: SyntaxSet, expectFn: P.() -> ParseResult): ParseResult {
+        while (true) {
+            handleBracedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
+            expectFn().ifIs(ParseResult.Recover) { return it }
+            handleBracedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
+            if (!consume(ST.Comma) && !seenNewline) pushError(ParseError.ExpectedCommaOrClosedBrace)
+        }
+    }
+
+    private fun P.handleAccess(): ParseResult = nestLast(ST.AccessExpr) {
         push()      // dot
         expectIdentifier()
     }
 
-    private tailrec fun P.handlePostfix() {
-        when {
+    private tailrec fun P.handlePostfix(): ParseResult {
+        val res = when {
             !seenNewline && at(ST.LParen) -> handleCall()
             at(ST.Equals) -> handleAssignment()
             at(ST.Dot) -> handleAccess()
-            else -> return
+            else -> return ParseResult.Pass
         }
-        handlePostfix()
+        return if (res.passing) handlePostfix() else res
     }
 
-    private fun P.expectTerm() {
-        expectBaseTerm()
-        handlePostfix()
-    }
+    private fun P.expectTerm(): ParseResult =
+        expectBaseTerm().then { handlePostfix() }
 }

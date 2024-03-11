@@ -40,15 +40,16 @@ class Parser internal constructor(private val lexer: Lexer) {
         nodeStack.last().push(GreenError(type, 0, emptyList()))
     }
 
-    inline fun node(type: SyntaxType, build: () -> Unit) {
+    inline fun node(type: SyntaxType, crossinline build: () -> ParseResult): ParseResult {
         pushIgnorables()
         nodeStack.add(NodeBuilder())
-        build()
+        val res = build()
         val node = nodeStack.removeLast().build { length, children -> GreenBranch(type, length, children) }
         nodeStack.last().push(node)
+        return res
     }
 
-    inline fun errorNode(error: ParseError, build: () -> Unit) {
+    inline fun errorNode(error: ParseError, crossinline build: () -> Unit) {
         pushIgnorables()
         nodeStack.add(NodeBuilder())
         build()
@@ -56,16 +57,20 @@ class Parser internal constructor(private val lexer: Lexer) {
         nodeStack.last().push(node)
     }
 
-    inline fun nestLast(type: SyntaxType, build: () -> Unit = {}) {
+    inline fun nestLast(type: SyntaxType, crossinline build: () -> ParseResult = { ParseResult.Success }): ParseResult {
         val last = nodeStack.last().pop()
         nodeStack.add(NodeBuilder())
         nodeStack.last().push(last)
-        build()
+        val res = build()
         val node = nodeStack.removeLast().build { length, children -> GreenBranch(type, length, children) }
         nodeStack.last().push(node)
+        return res
     }
 
-    fun pushWrapped(type: SyntaxType) = node(type) { push() }
+    fun pushWrapped(type: SyntaxType) = node(type) {
+        push()
+        ParseResult.Success
+    }
 
     fun at(type: SyntaxType): Boolean = lexer.current.type == type
 

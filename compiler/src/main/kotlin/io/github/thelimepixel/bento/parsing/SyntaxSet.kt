@@ -43,6 +43,27 @@ object BaseSets {
         SyntaxType.TypeDef,
     )
     val typeBodies = syntaxSetOf(
-        SyntaxType.Constructor
+        SyntaxType.Constructor,
+    )
+    val baseRecoverySet = syntaxSetOf(
+        SyntaxType.FunKeyword,
+        SyntaxType.LetKeyword,
+        SyntaxType.RBrace,
+        SyntaxType.EOF,
+    )
+    val paramListRecoverySet = syntaxSetOf(
+        SyntaxType.FunKeyword,
+        SyntaxType.EOF,
+        SyntaxType.LBrace,
+        SyntaxType.RBrace,
+    )
+    val argListRecoverySet = syntaxSetOf(
+        SyntaxType.FunKeyword,
+        SyntaxType.EOF,
+        SyntaxType.RBrace,
+    )
+    val scopeRecoverySet = syntaxSetOf(
+        SyntaxType.FunKeyword,
+        SyntaxType.EOF,
     )
 }
