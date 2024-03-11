@@ -1,14 +1,19 @@
 package io.github.thelimepixel.bento.binding
 
-import io.github.thelimepixel.bento.parsing.*
+import io.github.thelimepixel.bento.ast.*
 
 private typealias BC = BindingContext
 typealias ST = SyntaxType
 private typealias LC = LocalBindingContext
 private typealias RC = RootBindingContext
 
-class BentoBinding {
-    fun bind(
+interface Binding {
+    fun bind(parentRef: ParentRef, importData: BoundImportData, parentContext: BindingContext): Map<ItemRef, HIR.Def>
+    fun bindImport(node: GreenNode?, context: RC): BoundImportData
+}
+
+class BentoBinding : Binding {
+    override fun bind(
         parentRef: ParentRef,
         importData: BoundImportData,
         parentContext: BindingContext,
@@ -194,7 +199,7 @@ class BentoBinding {
         return HIR.ScopeExpr(node.ref, statements)
     }
 
-    fun bindImport(node: GreenNode?, context: RC): BoundImportData {
+    override fun bindImport(node: GreenNode?, context: RC): BoundImportData {
         val block = node?.toRedRoot()?.firstChild(ST.ImportBlock) ?: return emptyImportData
         val importedMutableItems = mutableMapOf<String, ItemRef>()
         val importedImmutableItems = mutableMapOf<String, ItemRef>()

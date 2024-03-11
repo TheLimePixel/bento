@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.binding
 
 import io.github.thelimepixel.bento.errors.ErrorType
-import io.github.thelimepixel.bento.parsing.ASTRef
+import io.github.thelimepixel.bento.ast.ASTRef
 
 enum class HIRError : ErrorType {
     Propagation {

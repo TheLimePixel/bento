@@ -1,5 +1,6 @@
-package io.github.thelimepixel.bento.parsing
+package io.github.thelimepixel.bento.ast
 
+import io.github.thelimepixel.bento.parsing.ParseError
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptyIterator
 
@@ -7,16 +8,11 @@ sealed interface GreenNode : CodeTree<GreenChild, ParseError> {
     val type: SyntaxType
     val length: Int
     val content: String
-    val childCount: Int
     override val error: ParseError?
     fun childIterator(): Iterator<GreenChild>
     fun revChildIterator(): Iterator<GreenChild>
     override fun childSequence(): Sequence<GreenChild> = childIterator().asSequence()
     fun revChildSequence(): Sequence<GreenChild> = revChildIterator().asSequence()
-    fun child(index: Int): GreenChild
-    fun childOrNull(index: Int): GreenChild? =
-        if (index in 0..<childCount) child(index)
-        else null
 
     fun firstChild(type: SyntaxType): GreenChild? =
         childSequence().firstOrNull { it.type == type }
@@ -40,14 +36,9 @@ data class GreenEdge(override val type: SyntaxType, override val content: String
     override val length: Int
         get() = content.length
 
-    override val childCount: Int
-        get() = 0
-
     override fun childIterator(): Iterator<GreenChild> = EmptyIterator
 
     override fun revChildIterator(): Iterator<GreenChild> = EmptyIterator
-
-    override fun child(index: Int): GreenChild = error("Tried to access child of edge node")
 }
 
 data class GreenChild(val offset: Int, val node: GreenNode) {
@@ -66,14 +57,9 @@ data class GreenBranch(
     override val content: String
         get() = children.joinToString("") { it.node.content }
 
-    override val childCount: Int
-        get() = children.size
-
     override fun childIterator(): Iterator<GreenChild> = children.iterator()
 
     override fun revChildIterator(): Iterator<GreenChild> = children.asReversed().iterator()
-
-    override fun child(index: Int): GreenChild = children[index]
 }
 
 data class GreenError(
@@ -87,12 +73,7 @@ data class GreenError(
     override val content: String
         get() = children.joinToString { it.node.content }
 
-    override val childCount: Int
-        get() = children.size
-
     override fun childIterator(): Iterator<GreenChild> = children.iterator()
 
     override fun revChildIterator(): Iterator<GreenChild> = children.asReversed().iterator()
-
-    override fun child(index: Int): GreenChild = children[index]
 }

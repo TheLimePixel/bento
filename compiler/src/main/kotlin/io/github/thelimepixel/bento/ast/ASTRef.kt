@@ -1,4 +1,4 @@
-package io.github.thelimepixel.bento.parsing
+package io.github.thelimepixel.bento.ast
 
 import io.github.thelimepixel.bento.utils.Spanned
 

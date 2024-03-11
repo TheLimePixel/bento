@@ -12,8 +12,18 @@ import kotlin.math.max
 
 private typealias JC = JVMBindingContext
 
-class BentoCodegen {
+interface Codegen {
     fun generate(
+        file: SubpackageRef,
+        items: List<ItemRef>,
+        fileContext: JC,
+        hirMap: Map<ItemRef, HIR.Def>,
+        thirMap: Map<ItemRef, THIR>
+    ): List<Pair<String, ByteArray>>
+}
+
+class BentoCodegen : Codegen {
+    override fun generate(
         file: SubpackageRef,
         items: List<ItemRef>,
         fileContext: JC,

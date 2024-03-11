@@ -1,8 +1,8 @@
 package io.github.thelimepixel.bento.binding
 
-import io.github.thelimepixel.bento.parsing.BaseSets
-import io.github.thelimepixel.bento.parsing.GreenNode
-import io.github.thelimepixel.bento.parsing.SyntaxType
+import io.github.thelimepixel.bento.ast.BaseSets
+import io.github.thelimepixel.bento.ast.GreenNode
+import io.github.thelimepixel.bento.ast.SyntaxType
 
 sealed interface Ref
 
@@ -89,27 +89,26 @@ data class SubpackageRef(val parent: PackageRef, val name: String) : PackageRef 
         get() = name.toJVMIdent()
 }
 
-fun String.toJVMIdent(): String {
-    val builder = StringBuilder()
-    for (c in this) {
+fun String.toJVMIdent(): String =
+    this.asSequence().joinToString(separator = "") { c ->
         when (c) {
-            '`' -> Unit
-            '\\' -> builder.append("\\\\")
-            '.' -> builder.append("\\d")
-            ';' -> builder.append("\\s")
-            '[' -> builder.append("\\b")
-            '/' -> builder.append("\\f")
-            '<' -> builder.append("\\l")
-            else -> builder.append(c)
+            '`' -> ""
+            '\\' -> "\\\\"
+            '.' -> "\\d"
+            ';' -> "\\s"
+            '[' -> "\\b"
+            '/' -> "\\f"
+            '<' -> "\\l"
+            else -> c.toString()
         }
     }
-    return builder.toString()
-}
+
 
 fun PackageRef.subpackage(name: String) = SubpackageRef(this, name)
 
 private tailrec fun pathOf(parent: PackageRef, path: Array<out String>, index: Int): PackageRef =
-    if (index == path.size) parent else pathOf(SubpackageRef(parent, path[index]), path, index + 1)
+    if (index == path.size) parent
+    else pathOf(SubpackageRef(parent, path[index]), path, index + 1)
 
 
 fun pathOf(vararg path: String): PackageRef = pathOf(RootRef, path, 0)

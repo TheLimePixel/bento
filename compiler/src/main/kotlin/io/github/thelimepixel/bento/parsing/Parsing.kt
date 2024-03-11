@@ -1,10 +1,19 @@
 package io.github.thelimepixel.bento.parsing
 
+import io.github.thelimepixel.bento.ast.BaseSets
+import io.github.thelimepixel.bento.ast.GreenNode
+import io.github.thelimepixel.bento.ast.SyntaxSet
+import io.github.thelimepixel.bento.ast.SyntaxType
+
 private typealias P = Parser
 private typealias ST = SyntaxType
 
-class BentoParsing {
-    fun parseFIle(code: String) = parser(Lexer(code), ST.File) {
+interface Parsing {
+    fun parseFile(code: String): GreenNode
+}
+
+class BentoParsing : Parsing {
+    override fun parseFile(code: String): GreenNode = parser(Lexer(code), ST.File) {
         parseImportStatement()
         handleFile()
     }

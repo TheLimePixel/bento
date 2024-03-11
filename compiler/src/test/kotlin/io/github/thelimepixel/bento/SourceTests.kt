@@ -1,7 +1,9 @@
 package io.github.thelimepixel.bento
 
+import io.github.thelimepixel.bento.ast.*
 import io.github.thelimepixel.bento.binding.*
 import io.github.thelimepixel.bento.codegen.*
+import io.github.thelimepixel.bento.driver.CompilationInstance
 import io.github.thelimepixel.bento.errors.ErrorType
 import io.github.thelimepixel.bento.errors.collectErrors
 import io.github.thelimepixel.bento.parsing.*
@@ -17,32 +19,39 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class SourceTests {
-    private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
-    private val parsing = BentoParsing()
-    private val binding = BentoBinding()
-    private val objFormatter: Formatter<Any?> = ObjectFormatter()
-    private val topBindingContext: BindingContext = ParentBindingContext(
-        null,
-        RootRef,
-        BuiltinRefs.map,
-        emptyMap(),
-        emptyMap(),
-        emptySet()
-    )
-    private val topTypingContext: TypingContext = TopLevelTypingContext()
-    private val topJVMBindingContext: JVMBindingContext = TopLevelJVMBindingContext(
-        printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
-        printlnName = "fakePrintln",
-        stringJVMType = "java/lang/String",
-        unitJVMType = "kotlin/Unit",
-        nothingJVMType = "kotlin/Nothing",
-        topTypingContext
-    )
-    private val typing = BentoTypechecking()
-    private val bentoCodegen = BentoCodegen()
+    private val objFormatter: Formatter<Any> = ObjectFormatter()
     private val bytecodeFormatter: Formatter<ByteArray> = BytecodeFormatter()
+    private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
     private val classLoader = TestClassLoader(this::class.java.classLoader)
     private val itemPadding = "======="
+
+    private fun createInstance(): CompilationInstance {
+        val typingContext = TopLevelTypingContext()
+        return CompilationInstance(
+            PackageTree(),
+            parsing = BentoParsing(),
+            binding = BentoBinding(),
+            topBindingContext = ParentBindingContext(
+                null,
+                RootRef,
+                BuiltinRefs.map,
+                emptyMap(),
+                emptyMap(),
+                emptySet()
+            ),
+            topTypingContext = typingContext,
+            topJVMBindingContext = TopLevelJVMBindingContext(
+                printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
+                printlnName = "fakePrintln",
+                stringJVMType = "java/lang/String",
+                unitJVMType = "kotlin/Unit",
+                nothingJVMType = "kotlin/Nothing",
+                typingContext
+            ),
+            typing = BentoTypechecking(),
+            bentoCodegen = BentoCodegen(),
+        )
+    }
 
     @TestFactory
     fun generate(): Iterator<DynamicTest> = iterator {
@@ -66,24 +75,23 @@ class SourceTests {
         }
     }
 
-    private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File) {
-        val hierarchy = PackageTree()
+    private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File): Unit = with (createInstance()) {
         val sources = mutableMapOf<SubpackageRef, String>()
         val rootPath = SubpackageRef(RootRef, dir.name)
 
         File(dir, "src").listFiles()?.forEach {
-            traversePackageFiles(SubpackageRef(rootPath, it.nameWithoutExtension), it, hierarchy, sources)
+            traversePackageFiles(SubpackageRef(rootPath, it.nameWithoutExtension), it, packageTree, sources)
         } ?: return
 
         val astMap: InfoMap = buildMap {
             sources.forEach { (path, code) ->
-                val node = parsing.parseFIle(code)
+                val node = parsing.parseFile(code)
                 test(dir, "Parse", path) { formatAST(node) }
                 collectItems(node, path, this)
             }
         }
 
-        val rootContext = RootBindingContext(topBindingContext, hierarchy.root, astMap)
+        val rootContext = RootBindingContext(topBindingContext, packageTree.root, astMap)
 
         val hirMap = sources.keys.flatMap { pack ->
             val fileInfo = astMap[pack] ?: return@flatMap emptySequence()
@@ -93,7 +101,7 @@ class SourceTests {
             val bindings = binding.bind(pack, imports, rootContext)
             test(dir, "Bind", pack) { formatItemTrees(bindings) }
 
-            bindings.asSequence() + fileInfo.items.asSequence().flatMap childMap@ { ref ->
+            bindings.asSequence() + fileInfo.items.asSequence().flatMap childMap@{ ref ->
                 binding.bind(ref, imports, rootContext).asSequence()
             }
         }.associate { (key, value) -> key to value }

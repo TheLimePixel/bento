@@ -8,8 +8,12 @@ import io.github.thelimepixel.bento.binding.LocalRef
 typealias TC = TypingContext
 typealias FC = FunctionTypingContext
 
-class BentoTypechecking {
-    fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
+interface Typechecking {
+    fun type(hir: HIR.Def, context: TC): THIR?
+}
+
+class BentoTypechecking : Typechecking {
+    override fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
         is HIR.FunctionLikeDef -> context.typeFunctionLikeDef(hir)
         is HIR.ConstantDef -> context.typeConstantDef(hir)
         is HIR.TypeDef, is HIR.Field -> null

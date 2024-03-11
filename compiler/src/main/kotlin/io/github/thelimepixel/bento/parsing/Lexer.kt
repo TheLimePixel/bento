@@ -1,5 +1,10 @@
 package io.github.thelimepixel.bento.parsing
 
+import io.github.thelimepixel.bento.ast.BaseEdges
+import io.github.thelimepixel.bento.ast.GreenEdge
+import io.github.thelimepixel.bento.ast.SyntaxType
+import io.github.thelimepixel.bento.ast.edge
+
 private const val eofChar = Char.MAX_VALUE
 
 class Lexer(private val code: String, private var pos: Int = 0) {

@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.errors.ErrorType
-import io.github.thelimepixel.bento.parsing.ASTRef
+import io.github.thelimepixel.bento.ast.ASTRef
 
 enum class THIRError : ErrorType {
     Propagation {
@@ -10,7 +10,6 @@ enum class THIRError : ErrorType {
     },
     InvalidIdentifierUse,
     CallOnNonFunction,
-    NotEnoughArguments,
     UnexpectedArgument,
     InvalidType,
     UnknownMember,

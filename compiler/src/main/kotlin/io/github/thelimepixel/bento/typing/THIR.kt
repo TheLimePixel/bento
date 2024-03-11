@@ -1,9 +1,8 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.ItemType
 import io.github.thelimepixel.bento.binding.LocalRef
-import io.github.thelimepixel.bento.parsing.ASTRef
+import io.github.thelimepixel.bento.ast.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
 import io.github.thelimepixel.bento.utils.Spanned

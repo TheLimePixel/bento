@@ -1,5 +1,7 @@
 package io.github.thelimepixel.bento.parsing
 
+import io.github.thelimepixel.bento.ast.*
+
 class Parser internal constructor(private val lexer: Lexer) {
     @PublishedApi
     internal val nodeStack: MutableList<NodeBuilder> = mutableListOf(NodeBuilder())

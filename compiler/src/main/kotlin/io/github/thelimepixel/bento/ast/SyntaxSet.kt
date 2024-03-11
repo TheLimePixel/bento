@@ -1,4 +1,4 @@
-package io.github.thelimepixel.bento.parsing
+package io.github.thelimepixel.bento.ast
 
 import java.util.*
 
