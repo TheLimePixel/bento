@@ -177,18 +177,14 @@ allows the use of whitespace and various symbols inside the identifier.
 #### Requires
 
 - [Identifiers](features.md#identifiers)
-- [Scopes](features.md#scopes)
 
 A basic function in Bento, which takes no parameters and returns `Unit` can be declared using the
-`fun` keyword, its name, two parentheses and an expression scope which is executed when it is
-called.
+`def` keyword, its name, two parentheses and an expression following an equals sign.
 
 For example:
 
 ```kotlin
-fun foo() {
-    // Code here
-}
+def foo() = // Code here
 ```
 
 ## Basic Function Calls
@@ -223,9 +219,7 @@ parameter consists of a pattern and a type annotation corresponding to the value
 For example:
 
 ```kotlin
-fun process(a: I32, b: I32, c: I32) {
-    // Code here
-}
+def process(a: I32, b: I32, c: I32) = // Code here
 ```
 
 ## Function Return Values
@@ -243,9 +237,7 @@ body.
 For example:
 
 ```kotlin
-fun five(): I32 {
-    5
-}
+def five(): I32 = 5
 ```
 
 ## Passing Arguments By Name
@@ -263,9 +255,7 @@ start passing them out of order, you must stick to passing them by name.
 For example:
 
 ```kotlin
-fun foo(a: I32, b: I32, c: I32) {
-    ...
-}
+def foo(a: I32, b: I32, c: I32) = ...
 
 // in a scope
 foo(1, 2, 3)
@@ -291,13 +281,11 @@ application of scopes. Note that the scope must still be on the same line as the
 For example:
 
 ```kotlin
-fun foo(a: I32, b: I32) {
-    ...
-}
+def foo(a: I32, b: I32) = ...
 
-fun bar(s: String) {
-    ...
-}
+
+def bar(s: String) = ...
+
 
 // in a scope
 foo(0) {
@@ -327,9 +315,8 @@ are left out.
 For example:
 
 ```kotlin
-fun foo(a: I32 = 0, b: I32 = 1, c: I32 = 2) {
-    ...
-}
+def foo(a: I32 = 0, b: I32 = 1, c: I32 = 2) = ...
+
 
 // in a scope
 foo()               // all default values
@@ -358,6 +345,27 @@ let a = 10
 let squared: I32 = a * a
 ```
 
+## Mut Pattern
+
+#### Requires
+
+- [Basic Patterns](features.md#basic-patterns)
+
+The `mut` keyword can be used in front of a pattern to make all bindings mutable. A value can be 
+to a variable using the equals operator. 
+
+For example:
+```
+def main() = {
+  let mut a = "Hello, World!"
+  let b = a
+  println(a)          // Hello, World!
+  a = "Bye, World!"
+  println(a)          // Bye, World!
+  println(b)          // Hello, World!
+}
+```
+
 ## Top Level Let
 
 #### Requires
@@ -374,7 +382,7 @@ bindings to values which are only created once; when the file is being initializ
 - [Top Level Let](features.md#let-statement)
 
 In declaration scopes, rather than having constants, there are properties. A property is an identifier which is
-associated to some value, though said value may not be constant or even stored in memory. Each property consists of
+associated to some value, which may be a stored in memory or recomputed every time. Each property consists of
 a getter and a setter. The first one is called when using the identifier and the latter when following it with an
 equals sign and a value. Top-level `let` statements essentially store a value in memory and create a getter which is
 used to access it.
@@ -391,9 +399,9 @@ functioning as constants which are re-computed every time.
 For example:
 
 ```kotlin
-get ten(): I32 {
-    println("Called ten")
-    10
+def ten: I32 = {
+  println("Called ten")
+  10
 }
 
 // In a scope
@@ -407,14 +415,14 @@ ten + ten           // this prints "Called ten" twice
 - [Properties](features.md#properties)
 
 Setters are functions which are called when their bound identifier is used preceding an equals
-sign. Their return type must be `Unit`. They may also be referenced by appending `_=` to their path.
+sign. Their return type must be `Unit`.
 
 For example:
 
 ```kotlin
-set foo(s: String) {
-    println("Tried to set foo to:")
-    println(s)
+def foo_=(s: String) = {
+  println("Tried to set foo to:")
+  println(s)
 }
 ```
 
@@ -442,18 +450,18 @@ Every item has a visibility which determines where it can be used and accessed. 
 - module-private (`mod`): the item can only be accessed from within the same module
 - public (`pub`): the item can be accessed from every module
 
-The visibility of an item or subitem (item, field, case) can be set using the
-aforementioned keywords before their declarations. By default, all top-level items are
-module-private.
+By default, all top-level items are module-private and all subitems have the same visibility as their parent items. 
+Subitems cannot have a higher visibility than their parent items and types cannot be used in definitions which have 
+a higher visibility.
 
 For example:
 
 In `foo.bt`:
 
 ```kotlin
-data Foo(               // module-private record 
-    a: I32,              // module-private field, inheriting viibility
-    pack b : I32         // package-private field
+data Foo(          // module-private type
+  a: I32,          // module-private field, inheriting viibility
+  pack b: I32      // package-private field
 )
 ```
 
@@ -462,15 +470,10 @@ In `bar.bt`:
 ```kotlin
 import { foo::Foo }
 
-// package-private binding 
-// Note: if `pub` was used here, there would be an error because the visibility of Foo is lower
-
-pack fun bar(foo: Foo) {// package-private function
-    // Note: If `pub` was used there would be an error because a type cannot
-    // be used in a declarationw= with a higher visibility
-    foo.a               // Note: Were this foo.b it would be an error since it is not accessible 
-    // within this package
-}
+// package-private function
+// Note: If `pub` was used there would be an error because a type cannot be used in a declaration with a higher visibility
+// Note: If this called foo.b instead of foo.a it would be an error since it is not accessible within this package
+pack def bar(foo: Foo) = foo.a  
 ```
 
 ## Scope Operator
@@ -497,6 +500,8 @@ to be imported.
 
 ## Exports
 
+TODO
+
 #### Requires
 
 - [Basic Imports](features.md#basic-imports)
@@ -515,18 +520,24 @@ TODO
 
 - [Identifiers](features.md#identifiers)
 
-In Bento custom types can be declared using the `data` keyword followed by the identifier the
-type is bound to. Then, depending on what follows the identifier, there are 3 forms of types:
+Every object (value) in Bento has a type. There are two flavours of types:
 
-- Singleton types
-- Product Types
-- Sum Types
+- data types
+- codata types
+
+## Data Types
+
+Data types store a predefined set of named values which are stored in the object. There are 3 kinds of data types:
+
+- singleton types
+- product types
+- sum types
 
 ## Singleton Types
 
 #### Requires
 
-- [Custom Types](features.md#custom-types)
+- [Data Types](features.md#data-types)
 
 Singleton types are types with a single global instance. They are created by simply not putting
 anything after the type's name. An example of such a type is the `Unit` type.
@@ -535,18 +546,17 @@ anything after the type's name. An example of such a type is the `Unit` type.
 
 #### Requires
 
-- [Custom Types](features.md#custom-types)
+- [Custom Types](features.md#data-types)
 - [Properties](features.md#properties)
 
 Product types are custom types whose values contain values of other types. Thus, to define one, the type's name
-must be followed by a comma-separated list of fields in parentheses. A field is a property on values of the type,
-the mutability of which depends on the mutability of the value. Fields are declared with an identifier
-followed by type annotation.
+must be followed by a comma-separated list of fields in parentheses. A field is a property on values of the type. 
+Fields are declared with an identifier followed by type annotation.
 
 To create a new object of a product type, you call its constructor. The constructor is just a
 function with the type's name which assigns a value to each field. Thus, the parameters and
 their order are identical to the fields and their order. Note however that the visibility of the
-constructor is the maximum between the visibility of the type and the visibilities of all their
+constructor is the maximum between the visibility of the type and the visibilities of all its
 fields.
 
 For example:
@@ -562,48 +572,24 @@ pub data User(
 let testUser = User("John Doe", 0, 100)
 ```
 
-## Sum Types
-
-TODO
+## Member Access
 
 #### Requires
 
 - [Custom Types](features.md#custom-types)
 
-Sum types define a set of subtypes that their values can be of. That is done by putting all the
-subtypes in curly braces after the type's name.
-
-To find the exact subtype of a value of a product type, the `if` operator needs to be used. It
-can be used on an expression either with a dot, or without a dot, as an infix operator. The
-keyword is followed by braces where each line contains a colon-separated pair of a type-check
-and a value. A type-check consists of the `is` keyword followed by a subtype and then optionally
-a pattern. In an `if`-match every subtype must be covered. If after having specified some of
-them, the rest of them should yield the same result, an `else` can be used in the place of a
-type-check.
-
-Unless otherwise specified, values of subtypes will be inferred to be of the base type and not
-of their subtypes.
+Object members can be accessed using the dot operator on an expression of corresponding type. 
 
 For example:
+```
+data Foo(name: String)
 
-```kotlin
-data Colour {
-    Red
-    Green
-    Blue
-    Custom(red: U8, green: U8, blue: U8)
-}
-
-fun redComponent(color: Colour): U8 {
-    color if {
-        is Red: 255
-        is Custom c : c . red
-        else: 0
-    }
+def printFoo(foo: Foo) {
+  println(foo.name)
 }
 ```
 
-## Type Mutability
+## Mutable Fields
 
 TODO
 
@@ -611,251 +597,84 @@ TODO
 
 - [Product Types](features.md#product-types)
 
-In Bento, variables, parameters and fields merely store references to values, meaning a change to
-a field using one of them changes the field across all of them. However, to prevent bugs and
-keep code predictable it is generally a good idea to limit mutation as much as possible.
+Product types can have mutable fields. A field can be declared to be mutable using the `mut` keyword before its name.
 
-To achieve that, in Bento there is a difference between a mutable and immutable reference. The type
-names by themselves correspond to immutable references. For mutable references, the `mut` keyword
-needs to be put before the type.
-
-Mutable references are considered subtypes of immutable references of the same type, meaning you can
-pass a mutable reference where an immutable one is required, but not the other way around. A
-consequence of this is that when a type parameter is still being inferred based on a given set
-of values, regardless of how many of them are mutable, if one is immutable then it is inferred
-to be immutable.
-
-## Impl Blocks
+## Destructuring Pattern
 
 TODO
 
 #### Requires
 
-- [Scope Operator](features.md#scope-operator)
+- [Basic Patterns](features.md#basic-patterns)
+- [Product Types](features.md#product-types)
 
-Types themselves can be used as namespaces. Once you've created a type you are able to add
-members to its namespace using an `impl` block.
+A pattern that can be used for objects of product types and sum type variants whose constructor is visible within the 
+scope is the destructuring pattern. In this pattern the type or variant's name is followed by a list of patterns
+corresponding to each field in the constructor.
 
 For example:
 
 ```kotlin
-mod data User(
-    pack id: I32,
-    name: String
-)
+data Foo(a: String, b: String)
 
-mod data UserCounter(
-    pack count: I32
-)
+data Bar(a: Bar, b: Bar)
 
-impl User {
-    mod let testUser = User(0, "John Doe")
-
-    mod fun new(counter: mut UserCounter, name: String): mut User {
-        counter.count += 1
-        User(count, name)
-    }
-}
+def printFirst(Bar(Foo(x, _), _): Bar) = println(x)
 ```
 
-## This Parameters
+## Named Destructuring Pattern
 
 TODO
 
 #### Requires
 
-- [Impl Blocks](features.md#impl-blocks)
+- [Destructuring Pattern](features.md#destructuring-pattern)
 
-Within an `impl` block functions, getters and setters can have a `this` parameter, which is
-implicitly of the given type. For the mutable variant you may specify the type or put `mut`
-before this (so, it is `mut this`).
+Instead of destructuring fields solely by position, they may also be destructured by name such that the 
+corresponding pattern is placed after a colon. Any irrelevant fields can be left out by using a `...` at the end of the list.
 
-## This Type
+For example:
 
-TODO
+```
+data User(id: I32, name: String, surname: String)
 
-#### Requires
+def printFullName(User(name: name, surname: surname): User) = println(name + surname)
+```
 
-- [Impl Blocks](features.md#impl-blocks)
-
-Within an `impl` block, the type that it corresponds to can be referenced by just using the
-`This` keyword.
-
-## Member Access
+## Sum Types
 
 TODO
 
 #### Requires
 
-- [This Parameters](features.md#this-parameters)
+- [Basic Patterns](features.md#basic-patterns)
+- [Data Types](features.md#data-types)
 
-Type members which have a `this` parameter can be called directly on a value using the dot
-operator, such that the value that it is being called on is passed as the `this` argument.
+Sum types define a set of variants that their objects can be of. That is done by putting all the
+variants in curly braces after the type's name. Variants are declared just like data types, except they cannot be 
+used as their own types.
 
-## Basic Type Parameters
-
-TODO
-
-Most item types (everything but let statements) can take type parameters, allowing the same item
-to be used for many different types of values. In all items types these type parameters are defined
-between angled brackets after the item's name, aside for implementation blocks, where they are
-defined directly after the `impl` keyword.
+The check the exact variant of an object and obtain its fields, the `if` operator needs to be used. It
+can be used on an expression either with a dot, or without a dot as an infix operator. The
+keyword is followed by braces where each line contains a colon-separated pair of patterns and their 
+resulting expressions.
 
 For example:
 
 ```kotlin
-data Stack<T>(pack backing : mut List<T>)
+data Colour {
+  Red
+  Green
+  Blue
+  Custom(red: U8, green: U8, blue: U8)
+}
 
-impl<T> Stack<T> {
-    fun isEmpty(this): Bool {
-        this.backing.isEmpty()
-    }
-
-    fun top(this): T {
-        this.backing.last()
-    }
-
-    fun pop(this): T {
-        let result = this.top()
-        this.backing.removeLast()
-        result
-    }
+def redComponent(color: Colour): U8 = color if {
+  Red: 255
+  Custom(red, _, _): red
+  _: 0
 }
 ```
-
-## Traits
-
-TODO
-
-#### Requires
-
-- [Basic Type Parameters](features.md#basic-type-parameters)
-
-A trait defines a set of items which a type implements. All the items within a trait must share
-the same visibility as the trait itself. The declared items within a trait are meant to be
-implemented per type, so their bodies are to be left out.
-
-A trait may be implemented for a type using the `impl Trait for Type` syntax. Implementations
-are always public and as a result at least the trait, the type the trait is being implemented on or
-one of the type arguments passed to it must be declared in the module the implementation is in.
-There may not be more than a single implementation of a trait for a type. That said, traits may have
-default implementations, which can be overridden.
-
-If a trait is imported, its members may be called on values without needing to be imported
-separately. However, in the case there are multiple traits which a type implements with the same
-function names, the functions cannot be called with the dot operator. In the case that there is
-a member defined on the type with the same name, then it takes priority and is the one
-being called.
-
-Where traits shine however is that they can be used as constraints on type parameters, allowing
-you to use the same item for every set of types which implement the given traits. When doing so,
-traits members may be used on values of the type parameters that have them as constraints. To
-give a type multiple trait constraints, you can join them together using the `&` operator.
-
-For example:
-
-```kotlin
-trait Printer<Of> {
-    fun print(this, o: Of)
-}
-
-trait Printable<Type> {
-    fun print<P : Printer<Type>>(this, printer: P)
-}
-
-impl Foo <String> for I32 {
-    fun print<P: Printer<String>>(this, printer: P) {
-        p.print(this.toString())
-    }
-}
-```
-
-## Associated Type Parameters
-
-TODO
-
-#### Requires
-
-- [Traits](features.md#traits)
-
-Oftentimes it can be useful to have one or more trait type arguments inferred from just some of
-them. Such type parameters, which are fixed by the rest, are called associated and can be
-marked as such using the `assoc` keyword.
-
-A great example from the standard library is `Iterable`:
-
-```scala
-trait Iterable<assoc Element, assoc Iter: Iterator<Element>> {
-  get iterator(this): mut Iter
-}
-
-fun sumZeroes(list: List<I32>): I32 {
-  list.iterator.filter (I32::isZero).count()
-}
-```
-
-## Infix Functions
-
-TODO
-
-#### Requires
-
-- [This Parameters](features.md#this-parameters)
-
-Instead of using a dot with an argument in parentheses, functions that take `this` and a single
-other argument can also be called as infix operators. To do so they first need to be defined as
-operators.
-
-Every operator has a precedence group. Precedence groups define how operators interact with each
-other. A precedence group can have 3 fields specified:
-
-- `higherThan: Group` - operators of this group take priority over operators of `Group` and
-  those of lower groups
-- `lowerThan: Group` - operators of `Group` and groups above it take priority over operators of
-  this group
-- `associativity` - defines whether a sequence of such operators should be grouped left-to-right
-  (`left`), right-to-left (`right`) or if such an expression should be an error (`none`)
-
-When declaring an operator the precedence group can be specified after a colon. If it is omitted,
-it gets the `DefaultGroup`.
-
-For example:
-
-```kotlin
-group MinmaxGroup {
-    higherThan: ComparisonGroup
-    lowerThan: AdditiveGroup
-    associativity: left
-}
-
-binop max : MinmaxGroup
-binop min : MinmaxGroup
-
-pub data Rectange(x1: I32, y1: I32, x2: I32, y2: I32)
-
-impl Rectange {
-    fun intersects(this, other: Reactangle) {
-        this.x1 max other.x1 < this.x2 min other.x2 &&
-                this.y1 max other.y1 < this.y2 min other.y2
-    }
-}
-```
-
-## Operators
-
-TODO
-
-#### Requires
-
-- [Backticked Identifiers](features.md#backticked-identifiers)
-- [Infix Functions](features.md#infix-functions)
-
-Aside for infix function, sequences of special characters may be used as operators. A given
-symbolic operator `op` may be used as a prefix operator, in which case it will be mapped to ``
-`_op` ``, a postfix operator, in which case it maps to `` `op_` `` or as a binary operator (in
-which case it needs to be defined as one) which maps to `` `_op_` ``. It should be noted that
-while some default operators can be shadowed, the special operators `$`, `=`, `&`, `|`, `&&`, `<`, `>`,
-`||` and `:` cannot be used.
 
 ## If Expressions
 
@@ -883,58 +702,128 @@ executed. These 3 constructs are:
 For example:
 
 ```kotlin
-fun foo(a: I32) {
-    if {
-        a < 0: println(if (x == 1) "1!" else ":(")
-        a > 0: if (a == 3) println("3!")
-        else: println("0!")
-    }
+def foo(a: I32) = if {
+  a < 0: println(if (x == 1) "1!" else ":(")
+  a > 0: if (a == 3) println("3!")
+  else: println("0!")
 }
 ```
 
-## Escaped Expressions
+## Codata Types
 
 TODO
 
 #### Requires
 
-- [Basic String Literals](features.md#basic-string-literals)
-- [Escaped Characters](features.md#escaped-characters)
-- [Traits](features.md#traits)
+- [Custom Types](features.md#custom-types)
 
-Aside for escaped characters, you are also able to insert stringified values into strings by putting them in
-curly braces after a backslash. For this to work, the type of the expressions must implement the `Display` trait.
+Codata types define a set of members which need to separately be implemented by all objects. A codata type can be 
+defined using the `codata` keyword, an identifier which it is bound to and the aforementioned set of members. 
+Therein, `let` and `let mut` may be used as aliases for immutable and mutable properties. 
+
+Objects of codata types are created using the `new` keyword followed by the type name and the implementations for 
+all the items inside curly braces. The type may be left out if it can be inferred. All local constants and variables 
+which are used inside the implementation will be captured and stored inside the object, retaining their mutability.
 
 For example:
+```
+codata Iterator<T> {
+  def next(): Option<T>
+}
 
-```kotlin
-fun printSum(a: I32, b: I32) {
-    println("\{a} + \{b} = \{a + b}")
+def constantIterator<T>(value: T): Iterator<T> = new {
+  def next(): Option<T> = Option::Some(value)
 }
 ```
 
-## Destructuring Pattern
+## This Keyword
 
 TODO
 
 #### Requires
 
-- [Basic Patterns](features.md#basic-patterns)
-- [Product Types](features.md#product-types)
+- [Codata Types](features.md#codata-types)
 
-A pattern that can be used for product types whose constructor is visible within the scope is
-the destructuring pattern. In this pattern a list of patterns are put in parentheses
-corresponding to each field in the constructor.
+When declaring a member function or computed property, the `this` keyword can be used inside its body to reference the
+object that it is being called on.
+
+## Implementation Members
+
+TODO
+
+#### Requires
+
+- [Codata Types](features.md#codata-types)
+
+When creating an object of a codata type, extra members may be added to aid in the implementation. Such members need 
+to be declared as implementation members using the `impl` keyword.
+
+For example:
+```
+codata ByteBuffer {
+  def length: I8
+  def get(index: I8): I8
+  def add(value: I8)
+}
+
+let buffer: Buffer = new {
+  let length: I8 = 0i8
+  impl let backing: I8Array = I8Array::ofSize(10)
+  def get(index: I8): I8 = backing[index]
+  def add(value: I8) = {
+    if (backing.size == length)
+      backing = I8Array::clone(backing, length * 2)
+    backing[length] = value
+    length += 1
+  }
+}
+```
+
+## Impl Blocks
+
+TODO
+
+#### Requires
+
+- [Custom Types](features.md#custom-types)
+
+When declaring a custom type, you declare all the object members which differ from object to object. Using `impl` 
+blocks, you are able to define members which have the same implementation between all objects of the same type, 
+which or may not use the members that differ. As such, since the data stored within objects is already defined, 
+stored properties are not permitted inside `impl` blocks.`impl` blocks can only be used for types defined in the 
+same module and their visibility merely sets the default and top boundary for all the members defined within.
 
 For example:
 
 ```kotlin
-data Foo (a: String, b: String)
+data User(
+  name: String,
+  surname: String
+)
 
-data Bar (a: Bar, b: Bar)
+impl User {
+  def fullName: String = name + surname
+}
+```
 
-fun printFirst(((x, _), _): Bar) {
-    println(x)
+## Type Members
+
+TODO
+
+#### Requires
+
+- [Impl Blocks](features.md#impl-blocks)
+- [Scope Operator](features.md#scope-operator)
+
+Aside for object members, `impl` blocks also allow you to define members of the type's namespace which don't have a 
+`this` reference and as such aren't called directly on objects. Instead, they are accessed using the scope operator 
+on the type. Such a member can be declared using the `type` keyword before the declaration. Here stored properties 
+are supported
+
+For example, building upon the previous one:
+```
+impl User {
+  type let placeholder: User = User("John", "Doe")
 }
 ```
 
@@ -957,17 +846,11 @@ Values of function types can be called as regular functions.
 For example:
 
 ```kotlin
-fun of2(fn: (I32) -> I32): I32 {
-    fn(2)
-}
+def of2(fn: (I32) -> I32): I32 = fn(2)
 
-fun add3(value: I32): I32 {
-    value + 3
-}
+def add3(value: I32): I32 = value + 3
 
-fun main() {
-    println(of2(add3))
-}
+def main() = println(of2(add3))
 ```
 
 ## Anonymous Functions
@@ -986,7 +869,79 @@ get captured. If the expression is just a scope, the whole function may be taken
 For example:
 
 ```kotlin
-list.iter().filter(| x |(x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
+list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
+```
+
+## Infix Functions
+
+TODO
+
+#### Requires
+
+- [Member Access](features.md#member-access)
+
+Instead of using a dot with an argument in parentheses, object member functions can also be called as infix operators.
+To do so they first need to be defined as operators.
+
+Every operator has a precedence group. Precedence groups define how operators interact with each
+other. A precedence group can have 3 fields specified:
+
+- `higherThan: Group` - operators of this group take priority over operators of `Group` and
+  those of lower groups
+- `lowerThan: Group` - operators of `Group` and groups above it take priority over operators of
+  this group
+- `associativity` - defines whether a sequence of such operators should be grouped left-to-right
+  (`left`), right-to-left (`right`) or if such an expression should be an error (`none`)
+
+When declaring an operator the precedence group can be specified after a colon. If it is omitted,
+it gets the `DefaultGroup`.
+
+For example:
+
+```kotlin
+group MinmaxGroup {
+  higherThan: ComparisonGroup
+  lowerThan: AdditiveGroup
+  associativity: left
+}
+
+binop max: MinmaxGroup
+binop min: MinmaxGroup
+
+data Rectange(x1: I32, y1: I32, x2: I32, y2: I32)
+
+impl Rectange {
+  def intersects(other: Reactangle) =
+    this.x1 max other.x1 < this.x2 min other.x2 &&
+      this.y1 max other.y1 < this.y2 min other.y2
+}
+```
+
+## Type Parameters
+
+TODO
+
+Most item types (everything but let statements) can take type parameters, allowing the same item
+to be used for many different types of values. In all items types these type parameters are defined
+between angled brackets after the item's name, aside for implementation blocks, where they are
+defined directly after the `impl` keyword.
+
+For example:
+
+```kotlin
+data Stack<T>(pack backing: MutableList<T>)
+
+impl<T> Stack<T> {
+  def isEmpty(): Bool = backing.isEmpty()
+
+  def top(): T = backing.last()
+
+  def pop(): T = {
+    let result = top()
+    backing.removeLast()
+    result
+  }
+}
 ```
 
 ## As Operator
@@ -1009,7 +964,7 @@ TODO
 
 #### Requires
 
-- [Basic Type Parameters](features.md#basic-type-parameters)
+- [Type Parameters](features.md#type-parameters)
 
 To avoid having to rewrite long type names with many type arguments, type aliases can be used. Type aliases are
 declared using the `type` keyword followed by its name, an optional list of type arguments, an equals sign and the
@@ -1027,7 +982,7 @@ TODO
 
 #### Requires
 
-- [Basic Type Parameters](features.md#basic-type-parameters)
+- [Type Parameters](features.md#type-parameters)
 
 The type arguments of an item can be explicitly passed by putting them in angled brackets following the scope
 operator.
@@ -1035,102 +990,53 @@ operator.
 For example:
 
 ```kotlin
-fun foo<T>(a: T, b: T) {
-    ...
+def foo<T>(a: T, b: T) {
+  ...
 }
 
 // in a scope
 foo::<I32>(default(), default())
 ```
 
-## Default Trait Member Implementations
+## Partial Types
 
 TODO
 
 #### Requires
 
-- [Traits](features.md#traits)
+- [Type Parameters](features.md#type-parameters)
 
-Trait members may take default implementations which will be used if not specified.
-
-For example:
+Using a wildcard instead of a type makes the compiler infer the that specific type. For example:
 
 ```kotlin
-trait Foo {
-    fun foo(this) {
-        println("foo!")
-    }
+def foo(range: Range<I32>) = {
+  let list: List <_> = range.iter().map|x| { x * 2 }.collect()
+  ...
 }
-
-impl Foo for I32
 ```
 
-## Trait Inheritance
+## Generalized Sum Types
 
 TODO
 
 #### Requires
 
-- [Traits](features.md#traits)
+- [Sum Types](features.md#sum-types)
+- [Type Parameters](features.md#type-parameters)
 
-A trait can have a bound set on `This`, requiring `This` to implement another trait (or multiple traits joined with
-`&`). That can be done by putting said trait after a colon before the start of that trait's body.
-
-For example:
-
-```kotlin
-trait Foo {
-    fun foo(this)
-}
-
-trait Bar : Foo {
-    fun bar(this) {
-        this.foo()
-    }
-}
-
-impl Foo for I32 {
-    fun foo(this) {
-        println("\{this}")
-    }
-}
-
-impl Bar for I32 { }
-
-// impl Bar for Bool { } - error: Bar does not implement Foo
-```
-
-## Implementation Disambiguation
-
-TODO
-
-#### Requires
-
-- [Traits](features.md#traits)
-- [As Operator](features.md#as-operator)
-
-When there are multiple traits present with members that share a name, it is ambiguous which one is being called.
-For values this can be fixed by just using the `as` operator. To call the function directly on the type, however, it
-needs to be put in angled brackets and have the trait specified using the `as` operator.
+By default, subtypes of product types have no power over the constraints of the type arguments or over the values of
+the type arguments that they do not use generically in their definition. To allow this, a colon can be used after
+the type name (aside for product subtypes where it goes after the list of fields), in which case the subtype will be
+able to define its own type arguments after its name, as well as the resulting supertype after the colon.
 
 For example:
 
-```kotlin
-trait Foo {
-    fun print()
-}
-
-trait Bar {
-    fun print()
-}
-
-impl Foo for I32 { ... }
-impl Bar for I32 { ... }
-
-fun doPrinting() {
-    // I32::print() - error: ambiguous call
-    <I32 as Foo>::print()
-    <I32 as Bar>::print()
+```haskell
+data Expr<T> {
+  Value(val: I32) : Expr<I32>
+  Plus(a: Expr<I32>, b: Expr<I32>) : Expr<I32>
+  If(cond: Expr<Bool>, thenExpr: Expr<T>, elseExpr: Expr<T>)
+  And(a: Expr<Bool>, b: Expr<Bool>) : Expr<Bool>
 }
 ```
 
@@ -1151,48 +1057,199 @@ function.
 For example:
 
 ```kotlin
-fun toFunction(list: List<I32>): (I32) -> List<I32> {
-    $list.iter().map$${ $0 + $$0 }.collect()
-}
+def toFunction(list: List<I32>): (I32) -> List<I32> =
+  $list.iter().map$${ $0 + $$0 }.collect()
 ```
 
-## Partial Types
+## Contextual Parameters
 
 TODO
 
 #### Requires
 
-- [Basic Type Parameters](features.md#basic-type-parameters)
+- [Basic Functions](features.md#basic-functions)
 
-Using a wildcard instead of a type makes the compiler infer the that specific type. For example:
+All items aside for stored properties can take contextual parameters. These are parameters which are implicitly in 
+scope and are implicitly passed in. Such parameters can be defined inside square brackets before the regular 
+parameter list (in functions) or type annotation (in getters). Unlike regular parameters, for contextual parameters 
+you only specify their types. To explicitly access them you can use a function such as `summon` and to explicitly 
+pass them in you need to use the scope operator on the item and put them in square brackets.
 
-```kotlin
-fun foo(range: Range<I32>) {
-    let list: List <_> = range.iter().map|x| { x * 2 }.collect()
+For example:
+```
+def printContext[String]() = println(summon::<String>())
+
+def printContextTrice[String]() {
+  printContext()
+  printContext()
+  printContext()
 }
+
+// In scope
+printContextTrice::["Hello"]()
 ```
 
-## Generalized Sum Types
+## Contextual Function Types
 
 TODO
 
 #### Requires
 
-- [Sum Types](features.md#sum-types)
+- [Contextual Parameters](features.md#contextual-parameters)
+- [As Operator](features.md#as-operator)
+- [Functions as Values](features.md#functions-as-values)
 
-By default, subtypes of product types have no power over the constraints of the type arguments or over the values of
-the type arguments that they do not use generically in their definition. To allow this, a colon can be used after
-the type name (aside for product subtypes where it goes after the list of fields), in which case the subtype will be
-able to define its own type arguments after its name, as well as the resulting supertype after the colon.
+The types of contextual functions are the same as those of regular functions, with the contextual parameters added 
+up front in square brackets. You may convert a contextual function into a non-contextual one with the same number of 
+arguments or vice versa using the `as` keyword.
+
+For example:
+```
+def build(buildFn: [Builder]() -> Unit): Result =
+  Builder().apply(buildFn as (Builder) -> Unit).build()
+```
+
+## Traits
+
+TODO
+
+#### Requires
+
+- [Contextual Parameters](features.md#contextual-parameters)
+- [Type Members](features.md#type-members)
+- [Type Parameters](features.md#type-parameters)
+
+Traits are a special form of codata where instead of defining members for objects of the type, they define members 
+for objects of another type, which is the first type parameter in the declaration. Additionally, for a given set of 
+parameters traits have only one global implementation object.
+
+Importing a trait allows you to use all its members on objects of types which implement it, such that all members 
+defined within the trait have a trait object as a contextual parameter. Any function with a trait object as a 
+contextual parameter implicitly has the global implementation passed in.
+
+Traits may also define type members which can be called directly using the scope operator on the type, or, if there 
+is a conflict, on the trait.
+
+Traits are created using the `trait` keyword, and they are implemented using regular `impl` blocks. Just like codata 
+objects, they may define `impl` items.
 
 For example:
 
-```haskell
-data Expr<T> {
-    Value(val: I32) : Expr<I32>
-    Plus(a: Expr<I32>, b: Expr<I32>) : Expr<I32>
-    If(cond: Expr<Bool>, thenExpr: Expr<T>, elseExpr: Expr<T>)
-    And(a: Expr<Bool>, b: Expr<Bool>) : Expr<Bool>
+```kotlin
+trait Printer<This, Of> {
+  def print(o: Of)
+}
+
+trait Printable<This, Type> {
+  def print<P: Printer<Type>>(printer: P)
+}
+
+impl Foo<I32, String> {
+  def print<P: Printer<String>>(printer: P) =
+    p.print(this.toString())
+}
+```
+
+## Associated Type Parameters
+
+TODO
+
+#### Requires
+
+- [Traits](features.md#traits)
+
+Oftentimes it can be useful to have one or more trait type arguments inferred from just some of
+them. Such type parameters, which are fixed by the rest, are called associated and can be
+marked as such using the `assoc` keyword.
+
+A great example from the standard library is `Iterable`:
+
+```scala
+trait Iterable<This, assoc Element> {
+  def iterator: Iterator<Element>
+}
+
+def sumZeroes(list: List<I32>): I32 =
+  list.iterator.filter(I32::isZero).count()
+```
+
+## Default Trait Member Implementations
+
+TODO
+
+#### Requires
+
+- [Traits](features.md#traits)
+
+Trait members may take default implementations which will be used if not specified.
+
+For example:
+
+```kotlin
+trait Foo<This> {
+  def foo() = println("foo!")
+}
+
+impl Foo<I32>
+```
+
+## Trait Dependencies
+
+TODO
+
+#### Requires
+
+- [Traits](features.md#traits)
+
+A trait may require that its type parameters have implementations of other traits. This can be done by putting a 
+list of contextual parameters after the type parameter list.
+
+If a function takes an instance of a type `T`, which has an implementation of a trait `Bar<T>` which depends on a
+`Foo<T>`, then whenever a function that requires a `Foo<T>` implementation is called, it will automatically be 
+gotten from the implementation of `Bar<T>`.
+
+For example:
+
+```kotlin
+trait Foo<This> {
+  def foo()
+}
+
+trait Bar<This>[Foo<This>] {
+  def bar() = this.foo()
+}
+
+impl Foo<I32> {
+  def foo() = println("\{this}")
+}
+
+impl Bar<I32>
+// impl Bar<Bool> - error: Bar does not implement Foo
+
+def fooBar<T>[Bar<T>](val: T) {
+  val.bar()
+  val.foo()
+}
+```
+
+## Escaped Expressions
+
+TODO
+
+#### Requires
+
+- [Basic String Literals](features.md#basic-string-literals)
+- [Escaped Characters](features.md#escaped-characters)
+- [Traits](features.md#traits)
+
+Aside for escaped characters, you are also able to insert stringified values into strings by putting them in
+curly braces after a backslash. For this to work, the type of the expressions must implement the `Display` trait.
+
+For example:
+
+```kotlin
+def printSum(a: I32, b: I32) {
+  println("\{a} + \{b} = \{a + b}")
 }
 ```
 
@@ -1211,14 +1268,12 @@ lower than its visibility using the `sealed` keyword. This also allows the trait
 For example:
 
 ```scala
-sealed pub
-
-trait Foo { // Foo can be access anywhere, but only implemented in this module
-  fun foo (this) { // foo can be accessed anywhere
+sealed pub trait Foo<This> { // Foo can be access anywhere, but only implemented in this module
+  def foo() {     // foo can be accessed anywhere
 
   }
 
-  mod fun bar(this) { // bar can only be accessed in this module
+  mod def bar() { // bar can only be accessed in this module
 
   }
 }
