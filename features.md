@@ -928,15 +928,15 @@ TODO
 
 #### Requires
 
+- [Codata Types](features.md#codata-types)
 - [Invocation Operator](features.md#invocation-operator)
 
 Functions themselves can be passed around as objects. To achieve this, there are function types which are represented 
-in the format `(Type1, Type2, ... TypeN) -> Result`.
+in the format `(Type1, Type2, ... TypeN) -> Result`. These functions types are merely codata types with a single 
+`invoke` function with the corresponding signature.
 
 Functions and properties can be passed around by just using their paths. Functions can also have the `this` parameter
 captured by using the access operator and not using parentheses.
-
-Values of function types can be called as regular functions.
 
 For example:
 
@@ -948,7 +948,7 @@ def add3(value: I32): I32 = value + 3
 def main() = println(of2(add3))
 ```
 
-## Anonymous Functions
+## Lambdas
 
 TODO
 
@@ -956,15 +956,40 @@ TODO
 
 - [Functions As Values](features.md#functions-as-values)
 
-Anonymous functions may be created by putting the parameters between pipes, optionally a type preceded by an arrow
-(`->`) and then the expression it evaluates. Depending on if the type can be inferred or not, the parameters may
-have their types left out. Note that this functions as a sort of prefix operator, meaning binary operators do not
-get captured. If the expression is just a scope, the whole function may be taken out of the list of arguments.
+Objects of codata types which have only one unimplemented member can be created using lambda notation. In this 
+notation, the member's parameters are placed between pipes, followed by the term which needs to be evaluated. 
+If said term is in curly braces and is the last parameter, the lambda can be moved outside the function body. If that's 
+the only argument, the parentheses may be left out. Optionally, the returns type may be specified after the list of 
+parameters, separated by an arrow.
+
+The type of the parameters may be left out if it can be inferred. Additionally, if no type is expected, then the 
+lambda expression is assigned the function type corresponding to its parameters and return type.
 
 For example:
 
 ```kotlin
 list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
+```
+
+## Partial Application
+
+TODO
+
+#### Requires
+
+- [Lambdas](features.md#lambdas)
+
+The prefix partial application operator `$` turns the expression it's applied to into a lambda with implicit
+parameters of the form `$n` where `n` is an integer. To use it, the type of the expression must be known beforehand.
+This can be nested, however for each level of nesting an additional `$` must be added to avoid confusion.
+Additionally, just like regular scopes, if an expression this is being used on is a scope, it may be put after the
+function.
+
+For example:
+
+```kotlin
+def toFunction(list: List<I32>): (I32) -> List<I32> =
+  $list.iter().map$${ $0 + $$0 }.collect()
 ```
 
 ## Infix Functions
@@ -1133,27 +1158,6 @@ data Expr<T> {
   If(cond: Expr<Bool>, thenExpr: Expr<T>, elseExpr: Expr<T>)
   And(a: Expr<Bool>, b: Expr<Bool>) : Expr<Bool>
 }
-```
-
-## Partial Application
-
-TODO
-
-#### Requires
-
-- [Functions As Values](features.md#functions-as-values)
-
-The prefix partial application operator `$` turns the expression it's applied to into a function with implicit
-parameters of the form `$n` where `n` is an integer. To use it, the type of the expression must be known beforehand.
-This can be nested, however for each level of nesting an additional `$` must be added to avoid confusion.
-Additionally, just like regular scopes, if an expression this is being used on is a scope, it may be put after the
-function.
-
-For example:
-
-```kotlin
-def toFunction(list: List<I32>): (I32) -> List<I32> =
-  $list.iter().map$${ $0 + $$0 }.collect()
 ```
 
 ## Contextual Parameters
