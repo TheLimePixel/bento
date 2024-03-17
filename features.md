@@ -765,6 +765,57 @@ let baseFoo: Foo = new {
 }
 ```
 
+## Default Codata Members Implementations
+
+TODO
+
+#### Requires
+
+- [Codata Types](features.md#codata-types)
+
+Codata types may specify default implementations for their members, which will be used if they are left out in the 
+object construction.
+
+For example:
+
+```kotlin
+codata Foo {
+  def foo() = {
+    println("Foo")
+    bar()
+  }
+  def bar()
+}
+
+let foo: Foo = new {
+  def bar() = println("Bar")
+}
+```
+
+## Sealed Codata Types
+
+TODO
+
+#### Requires
+
+- [Codata Types](features.md#codata-types)
+- [Visibility Modifiers](features.md#visibility-modifiers)
+
+By default, an object of a codata type may be constructed wherever said type is visible. Using the `sealed` keyword, 
+this can be reduced to the next lower visibility layer. This can come in handy if you want to be the only one 
+providing the implementations, yet the number of implementations may change over time, so using a sum type would be 
+a burden rather than a commodity. This additionally allows you to have members with said lower visibility.
+
+For example:
+
+```scala
+// publicly accessible, but can only be implemented in this module
+pub sealed codata Foo {
+  def foo()       // can be accessed anywhere
+  mod def bar()   // can only be accessed within this module
+}
+```
+
 ## Implementation Members
 
 TODO
@@ -839,6 +890,7 @@ on the type. Such a member can be declared using the `type` keyword before the d
 are supported
 
 For example, building upon the previous one:
+
 ```
 impl User {
   type let placeholder: User = User("John", "Doe")
@@ -853,10 +905,10 @@ TODO
 
 - [Basic Functions](features.md#basic-functions)
 
-Functions themselves can be passed around. To achieve this, there are function types which are represented in the
-format `(Type1, Type2, ... TypeN) -> Result`.
+Functions themselves can be passed around as objects. To achieve this, there are function types which are represented 
+in the format `(Type1, Type2, ... TypeN) -> Result`.
 
-Functions, getters and setters can be passed in by just using their path. Functions can also have the `this` parameter
+Functions and properties can be passed around by just using their paths. Functions can also have the `this` parameter
 captured by using the access operator and not using parentheses.
 
 Values of function types can be called as regular functions.
