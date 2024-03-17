@@ -744,8 +744,26 @@ TODO
 
 - [Codata Types](features.md#codata-types)
 
-When declaring a member function or computed property, the `this` keyword can be used inside its body to reference the
-object that it is being called on.
+When declaring an object member function or computed property, the `this` keyword can be used inside its body to 
+reference the object that it is being called on. This reference can just be used implicitly however, so the keyword 
+is mostly useful if you need to pass in a reference to the object.
+
+For example:
+```
+codata Foo {
+  def foo()
+}
+
+def printFoo(foo: Foo) = ...
+
+let baseFoo: Foo = new {
+  def foo() = {
+    ...
+    printFoo(this)
+    ...
+  }
+}
+```
 
 ## Implementation Members
 
@@ -755,8 +773,8 @@ TODO
 
 - [Codata Types](features.md#codata-types)
 
-When creating an object of a codata type, extra members may be added to aid in the implementation. Such members need 
-to be declared as implementation members using the `impl` keyword.
+When creating an object of a codata type or when inside an `impl` block, extra members may be added to aid in the 
+implementation. Such members need to be declared as implementation members using the `impl` keyword.
 
 For example:
 ```
