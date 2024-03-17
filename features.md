@@ -897,13 +897,38 @@ impl User {
 }
 ```
 
+## Invocation Operator
+
+TODO
+
+#### Requires
+
+- [Type Members](features.md#type-members)
+
+By simply putting a set of parameters in parentheses after an object reference, you can call its `invoke` function.
+
+For example:
+
+```
+codata Expr {
+  def invoke(params: List<Int>): Int
+}
+
+def calculate(): Int {
+  let expr: Expr = ...
+  let params: List<Int> = ...
+  
+  expr(params)
+}
+```
+
 ## Functions As Values
 
 TODO
 
 #### Requires
 
-- [Basic Functions](features.md#basic-functions)
+- [Invocation Operator](features.md#invocation-operator)
 
 Functions themselves can be passed around as objects. To achieve this, there are function types which are represented 
 in the format `(Type1, Type2, ... TypeN) -> Result`.
@@ -1286,7 +1311,7 @@ trait Foo<This> {
 }
 
 trait Bar<This>[Foo<This>] {
-  def bar() = this.foo()
+  def bar() = foo()
 }
 
 impl Foo<I32> {
@@ -1296,30 +1321,9 @@ impl Foo<I32> {
 impl Bar<I32>
 // impl Bar<Bool> - error: Bar does not implement Foo
 
-def fooBar<T>[Bar<T>](val: T) {
+def fooBar<T>[Bar<T>](val: T) = {
   val.bar()
   val.foo()
-}
-```
-
-## Escaped Expressions
-
-TODO
-
-#### Requires
-
-- [Basic String Literals](features.md#basic-string-literals)
-- [Escaped Characters](features.md#escaped-characters)
-- [Traits](features.md#traits)
-
-Aside for escaped characters, you are also able to insert stringified values into strings by putting them in
-curly braces after a backslash. For this to work, the type of the expressions must implement the `Display` trait.
-
-For example:
-
-```kotlin
-def printSum(a: I32, b: I32) {
-  println("\{a} + \{b} = \{a + b}")
 }
 ```
 
@@ -1339,12 +1343,65 @@ For example:
 
 ```scala
 sealed pub trait Foo<This> { // Foo can be access anywhere, but only implemented in this module
-  def foo() {     // foo can be accessed anywhere
-
-  }
-
-  mod def bar() { // bar can only be accessed in this module
-
-  }
+  def foo()     // foo can be accessed anywhere
+  mod def bar() // bar can only be accessed in this module
 }
+```
+
+## Operator Traits
+
+TODO
+
+#### Requires
+- [Associated Type Parameters](features.md#associated-type-parameters)
+
+The operators in the language can be implemented for any type by implementing the corresponding traits. Namely:
+
+- `Pplus` for `+a`
+- `Minus` for `-a`
+- `Not` for `!a`
+- `Add` for `a + b`
+- `Sub` for `a - b`
+- `Mul` for `a * b`
+- `Div` for `a / b`
+- `AddAssign` for `a += b`
+- `SubAssign` for `a -= b`
+- `MulAssign` for `a *= b`
+- `DivAssign` for `a /= b`
+- `PartialEq` for `a == b` and `a != b`
+- `PartialOrd` for `a < b`, `a <= b`, `a >= b` and `a > b`
+- `Index` for `a[b]`
+- `SetIndex` for `a[b] = c`
+
+For example:
+
+```
+data Vec2(x: Int, y: Int)
+
+impl Add<Vec2, Vec2, Vec2> {
+  def add(other: Vec2): Vec2 = Vec2(x + other.x, y + other.y)
+}
+
+let a = Vec2(1, 0)
+let b = Vec2(0, 1)
+let c = a + b
+```
+
+## Escaped Expressions
+
+TODO
+
+#### Requires
+
+- [Basic String Literals](features.md#basic-string-literals)
+- [Escaped Characters](features.md#escaped-characters)
+- [Traits](features.md#traits)
+
+Aside for escaped characters, you are also able to insert stringified values into strings by putting them in
+curly braces after a backslash. For this to work, the type of the expressions must implement the `Display` trait.
+
+For example:
+
+```kotlin
+def printSum(a: I32, b: I32) = println("\{a} + \{b} = \{a + b}")
 ```
