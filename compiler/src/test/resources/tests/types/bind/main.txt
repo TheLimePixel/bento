@@ -1,6 +1,6 @@
 ======= Function(types::main::foo) =======
 FunctionDef {
-  ref: FunDef@0..57
+  ref: FunDef@0..49
   params: [
     Param {
       ref: Param@2..17
@@ -17,23 +17,18 @@ FunctionDef {
     }
   ]
   returnType: null
-  body: ScopeExpr {
-    ref: ScopeExpr@50..82
-    statements: [
-      CallExpr {
-        ref: CallExpr@14..36
-        on: PathExpr {
-          ref: Path@0..7
-          binding: Function {
-            bento::io::println
-          }
-        }
-        args: [
-          StringExpr {
-            ref: StringLiteral@2..15
-            content: "Foooooooooo"
-          }
-        ]
+  body: CallExpr {
+    ref: CallExpr@54..76
+    on: PathExpr {
+      ref: Path@0..7
+      binding: Function {
+        bento::io::println
+      }
+    }
+    args: [
+      StringExpr {
+        ref: StringLiteral@2..15
+        content: "Foooooooooo"
       }
     ]
   }
@@ -41,7 +36,7 @@ FunctionDef {
 
 ======= Function(types::main::printBar) =======
 FunctionDef {
-  ref: FunDef@0..57
+  ref: FunDef@0..49
   params: [
     Param {
       ref: Param@2..17
@@ -58,32 +53,27 @@ FunctionDef {
     }
   ]
   returnType: null
-  body: ScopeExpr {
-    ref: ScopeExpr@60..87
-    statements: [
-      CallExpr {
-        ref: CallExpr@14..31
+  body: CallExpr {
+    ref: CallExpr@64..81
+    on: PathExpr {
+      ref: Path@0..7
+      binding: Function {
+        bento::io::println
+      }
+    }
+    args: [
+      AccessExpr {
+        ref: AccessExpr@2..10
         on: PathExpr {
-          ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          ref: Path@0..3
+          binding: LocalRef {
+            node: IdentPattern {
+              ref: IdentPattern@0..3
+              name: bar
+            }
           }
         }
-        args: [
-          AccessExpr {
-            ref: AccessExpr@2..10
-            on: PathExpr {
-              ref: Path@0..3
-              binding: LocalRef {
-                node: IdentPattern {
-                  ref: IdentPattern@0..3
-                  name: bar
-                }
-              }
-            }
-            field: name
-          }
-        ]
+        field: name
       }
     ]
   }
@@ -91,11 +81,11 @@ FunctionDef {
 
 ======= Function(types::main::main) =======
 FunctionDef {
-  ref: FunDef@0..69
+  ref: FunDef@0..71
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..80
+    ref: ScopeExpr@26..84
     statements: [
       CallExpr {
         ref: CallExpr@14..29

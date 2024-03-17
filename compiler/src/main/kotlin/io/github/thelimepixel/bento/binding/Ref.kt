@@ -3,6 +3,7 @@ package io.github.thelimepixel.bento.binding
 import io.github.thelimepixel.bento.ast.BaseSets
 import io.github.thelimepixel.bento.ast.GreenNode
 import io.github.thelimepixel.bento.ast.SyntaxType
+import io.github.thelimepixel.bento.codegen.capitalize
 
 sealed interface Ref
 
@@ -10,17 +11,14 @@ sealed interface ParentRef
 
 data class LocalRef(val node: HIR.Pattern) : Ref
 
-enum class ItemType(val mutable: Boolean = false, val isType: Boolean = false) {
+enum class ItemType(val isType: Boolean = false) {
     Function,
     SingletonType(isType = true),
     RecordType(isType = true),
     Getter,
-    Setter(mutable = true),
     Constant,
     Field,
 }
-
-val ItemType.immutable: Boolean get() = !mutable
 
 data class ItemRef(val parent: ParentRef, val name: String, val type: ItemType, val index: Int) : Ref, ParentRef {
     val rawName: String
@@ -101,6 +99,9 @@ fun String.toJVMIdent(): String =
             '<' -> "\\l"
             else -> c.toString()
         }
+    }.let {
+        if (it.endsWith("_=")) "set" + it.dropLast(2).capitalize()
+        else it
     }
 
 
@@ -114,10 +115,13 @@ private tailrec fun pathOf(parent: PackageRef, path: Array<out String>, index: I
 fun pathOf(vararg path: String): PackageRef = pathOf(RootRef, path, 0)
 
 fun itemTypeFrom(node: GreenNode) = when (node.type) {
-    SyntaxType.GetDef -> ItemType.Getter
-    SyntaxType.FunDef -> ItemType.Function
-    SyntaxType.SetDef -> ItemType.Setter
-    SyntaxType.LetDef -> ItemType.Constant
+    SyntaxType.FunDef ->
+        if (node.lastChild(SyntaxType.ParamList) == null) ItemType.Getter
+        else ItemType.Function
+
+    SyntaxType.LetDef ->
+        ItemType.Constant
+
     SyntaxType.TypeDef -> when (val bodyType = node.lastChild(BaseSets.typeBodies)?.type) {
         null -> ItemType.SingletonType
         ST.Constructor -> ItemType.RecordType

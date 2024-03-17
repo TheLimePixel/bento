@@ -1,6 +1,5 @@
 BoundImportData {
-  mutableItems: {}
-  immutableItems: {
+  items: {
     foo: Function {
       packages::foo::foo
     }

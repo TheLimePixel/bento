@@ -28,7 +28,7 @@ data class FunctionType(val paramTypes: List<Type>, val returnType: Type) : Type
 fun HIR.Def.type(defRef: ItemRef): Type = when (this) {
     is HIR.TypeDef -> PathType(defRef)
     is HIR.FunctionLikeDef -> FunctionType(
-        paramTypes = params.map { it.type.toType() ?: BuiltinTypes.nothing },
+        paramTypes = params?.map { it.type.toType() ?: BuiltinTypes.nothing } ?: emptyList(),
         returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)
     )
     is HIR.ConstantDef -> FunctionType(emptyList(),  PathType(this.type?.type ?: BuiltinRefs.unit))

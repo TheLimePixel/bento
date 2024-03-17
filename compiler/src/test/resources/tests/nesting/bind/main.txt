@@ -1,6 +1,6 @@
 ======= Function(nesting::main::baz) =======
 FunctionDef {
-  ref: FunDef@0..54
+  ref: FunDef@0..46
   params: [
     Param {
       ref: Param@2..11
@@ -21,24 +21,19 @@ FunctionDef {
       bento::String
     }
   }
-  body: ScopeExpr {
-    ref: ScopeExpr@54..81
-    statements: [
-      StringExpr {
-        ref: StringLiteral@14..31
-        content: "Hello from Baz!"
-      }
-    ]
+  body: StringExpr {
+    ref: StringLiteral@58..75
+    content: "Hello from Baz!"
   }
 }
 
 ======= Function(nesting::main::bar) =======
 FunctionDef {
-  ref: FunDef@0..76
+  ref: FunDef@0..78
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@20..86
+    ref: ScopeExpr@24..90
     statements: [
       CallExpr {
         ref: CallExpr@14..38
@@ -87,7 +82,7 @@ FunctionDef {
 
 ======= Function(nesting::main::foo) =======
 FunctionDef {
-  ref: FunDef@0..80
+  ref: FunDef@0..77
   params: [
     Param {
       ref: Param@2..14
@@ -104,41 +99,36 @@ FunctionDef {
     }
   ]
   returnType: null
-  body: ScopeExpr {
-    ref: ScopeExpr@44..102
-    statements: [
-      CallExpr {
-        ref: CallExpr@14..62
-        on: PathExpr {
-          ref: Path@0..7
-          binding: Function {
-            bento::io::println
+  body: CallExpr {
+    ref: CallExpr@58..106
+    on: PathExpr {
+      ref: Path@0..7
+      binding: Function {
+        bento::io::println
+      }
+    }
+    args: [
+      ScopeExpr {
+        ref: ScopeExpr@2..41
+        statements: [
+          CallExpr {
+            ref: CallExpr@22..27
+            on: PathExpr {
+              ref: Path@0..3
+              binding: Function {
+                nesting::main::bar
+              }
+            }
+            args: []
           }
-        }
-        args: [
-          ScopeExpr {
-            ref: ScopeExpr@2..41
-            statements: [
-              CallExpr {
-                ref: CallExpr@22..27
-                on: PathExpr {
-                  ref: Path@0..3
-                  binding: Function {
-                    nesting::main::bar
-                  }
-                }
-                args: []
+          PathExpr {
+            ref: Path@2..6
+            binding: LocalRef {
+              node: IdentPattern {
+                ref: IdentPattern@0..4
+                name: text
               }
-              PathExpr {
-                ref: Path@2..6
-                binding: LocalRef {
-                  node: IdentPattern {
-                    ref: IdentPattern@0..4
-                    name: text
-                  }
-                }
-              }
-            ]
+            }
           }
         ]
       }
@@ -148,11 +138,11 @@ FunctionDef {
 
 ======= Function(nesting::main::main) =======
 FunctionDef {
-  ref: FunDef@0..76
+  ref: FunDef@0..78
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@22..87
+    ref: ScopeExpr@26..91
     statements: [
       CallExpr {
         ref: CallExpr@14..36

@@ -36,7 +36,6 @@ class SourceTests {
                 RootRef,
                 BuiltinRefs.map,
                 emptyMap(),
-                emptyMap(),
                 emptySet()
             ),
             topTypingContext = typingContext,

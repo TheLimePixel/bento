@@ -24,10 +24,10 @@ class BentoTypechecking : Typechecking {
         val expect = hir.returnType.toType() ?: BuiltinTypes.unit
         val childContext = FunctionTypingContext(
             this,
-            hir.params.mapNotNull {
+            hir.params?.mapNotNull {
                 val pat = it.pattern as? HIR.IdentPattern ?: return@mapNotNull null
                 LocalRef(pat) to (it.type.toType() ?: BuiltinTypes.nothing)
-            }.toMap()
+            }?.toMap() ?: emptyMap()
         )
 
         return childContext.expectExpr(node, expect)
@@ -54,7 +54,7 @@ class BentoTypechecking : Typechecking {
             ItemType.SingletonType ->
                 THIR.SingletonAccessExpr(hir.ref, PathType(binding))
 
-            ItemType.RecordType, ItemType.Setter, ItemType.Function, ItemType.Field ->
+            ItemType.RecordType, ItemType.Function, ItemType.Field ->
                 THIRError.InvalidIdentifierUse.at(hir.ref)
         }
 
@@ -106,7 +106,7 @@ class BentoTypechecking : Typechecking {
         if (binding is ItemRef) when (binding.type) {
             ItemType.Function -> return typeFunctionCall(binding, hir)
             ItemType.RecordType -> return typeConstructorCall(binding, hir)
-            ItemType.SingletonType, ItemType.Setter, ItemType.Getter, ItemType.Constant, ItemType.Field -> Unit
+            ItemType.SingletonType, ItemType.Getter, ItemType.Constant, ItemType.Field -> Unit
         }
 
         return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })

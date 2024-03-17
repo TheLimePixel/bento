@@ -2,13 +2,15 @@ File
 ├─LineComment(// This is a comment)
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
+│ ├─Whitespace( )
+│ ├─Equals
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace

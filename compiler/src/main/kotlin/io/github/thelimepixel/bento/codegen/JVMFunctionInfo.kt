@@ -9,8 +9,9 @@ data class JVMFunctionInfo(val varIds: Map<LocalRef, Int>, val maxStackSize: Int
 
 fun jvmFunctionInfoOf(hir: HIR.FunctionLikeDef, thir: THIR?): JVMFunctionInfo {
     val paramIds = hir.params
-        .withIndex()
-        .associateByTo(mutableMapOf(), { LocalRef(it.value.pattern) }, { it.index })
+        ?.withIndex()
+        ?.associateByTo(mutableMapOf(), { LocalRef(it.value.pattern) }, { it.index })
+        ?: mutableMapOf()
 
     return if (thir == null) JVMFunctionInfo(paramIds, 0)
     else JVMInfoResolver(paramIds).apply { handle(thir) }.toInfo()

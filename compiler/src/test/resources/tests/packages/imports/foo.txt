@@ -1,6 +1,5 @@
 BoundImportData {
-  mutableItems: {}
-  immutableItems: {}
+  items: {}
   packages: {
     bar: packages::bar: {}
   }

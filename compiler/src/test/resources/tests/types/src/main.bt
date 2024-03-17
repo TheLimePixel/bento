@@ -1,14 +1,10 @@
 import { types::types }
 
-fun foo(foo: types::Foo) {
-    println("Foooooooooo")
-}
+def foo(foo: types::Foo) = println("Foooooooooo")
 
-fun printBar(bar: types::Bar) {
-    println(bar.name)
-}
+def printBar(bar: types::Bar) = println(bar.name)
 
-fun main() {
+def main() = {
     foo(types::Foo)
     printBar(types::Bar("Bar"))
 }

@@ -23,8 +23,7 @@ class BentoBinding : Binding {
         val context = ParentBindingContext(
             parentContext,
             parentRef,
-            info.items.asSequence().filter { it.type.immutable }.associateBy { it.name } + importData.immutableItems,
-            info.items.asSequence().filter { it.type.mutable }.associateBy { it.name } + importData.mutableItems,
+            info.items.associateBy { it.name } + importData.items,
             importData.packages,
             initialized,
         )
@@ -35,9 +34,7 @@ class BentoBinding : Binding {
     }
 
     private fun BC.bindDefinition(ref: ParentRef, node: RedNode): HIR.Def = when (node.type) {
-        ST.FunDef -> bindFunctionLike(node, HIR::FunctionDef)
-        ST.GetDef -> bindFunctionLike(node, HIR::GetterDef)
-        ST.SetDef -> bindFunctionLike(node, HIR::SetterDef)
+        ST.FunDef -> bindFunctionLike(node)
         ST.LetDef -> bindLet(node)
         ST.TypeDef -> bindTypeDef(ref, node)
         ST.Field -> bindField(node)
@@ -74,7 +71,7 @@ class BentoBinding : Binding {
         }
     } ?: HIRError.Propagation.at(node.ref)
 
-    private fun BC.bindParamList(node: RedNode): List<HIR.Param> = node.firstChild(SyntaxType.ParamList)
+    private fun BC.bindParamList(node: RedNode): List<HIR.Param>? = node.firstChild(SyntaxType.ParamList)
         ?.childSequence()
         ?.filter { it.type == SyntaxType.Param }
         ?.map {
@@ -83,28 +80,26 @@ class BentoBinding : Binding {
             HIR.Param(it.ref, name, type)
         }
         ?.toList()
-        ?: emptyList()
 
-    private inline fun BC.bindFunctionLike(
-        node: RedNode, ctor: (
-            ref: ASTRef, params: List<HIR.Param>, returnType: HIR.TypeRef?, body: HIR.ScopeExpr?
-        ) -> HIR.FunctionLikeDef
-    ): HIR.FunctionLikeDef {
+    private fun BC.bindFunctionLike(node: RedNode): HIR.FunctionLikeDef {
         val params = bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
-        val context = FunctionBindingContext(
-            this, params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
-                .associateBy({ it.name }, { LocalRef((it)) })
-        )
-        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
+        val context = if (params == null) this else {
+            val paramsMap = params.asSequence()
+                .mapNotNull { it.pattern as? HIR.IdentPattern }
+                .associateBy({ it.name }) { LocalRef((it)) }
 
-        return ctor(node.ref, params, returnType, body)
+            FunctionBindingContext(this, paramsMap)
+        }
+        val body = node.lastChild(BaseSets.expressions)?.let { context.bindResultingExpression(it) }
+
+        return if (params == null) HIR.GetterDef(node.ref, returnType, body)
+        else HIR.FunctionDef(node.ref, params, returnType, body)
     }
 
     private fun BC.bindLet(node: RedNode): HIR.ConstantDef {
         val type = findAndBindTypeAnnotation(node)
-        val context = LocalBindingContext(this)
-        val body = node.lastChild(BaseSets.expressions)?.let { context.bindExpr(it) }
+        val body = node.lastChild(BaseSets.expressions)?.let { bindResultingExpression(it) }
             ?: HIRError.Propagation.at(node.ref)
         return HIR.ConstantDef(node.ref, type, body)
     }
@@ -133,16 +128,16 @@ class BentoBinding : Binding {
 
         if (segments.size == 1) {
             val name = segments[0].rawContent
-            return if (mutable) refForMutable(name) else refForImmutable(name)
+            return if (mutable) refFor(name + "_=") else refFor(name)
         }
 
         var packNode = packageNodeFor(segments.first().rawContent) ?: return null
         segments.subList(1, segments.lastIndex).forEach {
             packNode = packNode.children[it.rawContent] ?: return null
         }
+        val lastName = segments.last().rawContent + if (mutable) "_=" else ""
         return (astInfoOf(packNode.path) ?: return null)
-            .items.filter { it.name == segments.last().rawContent }
-            .lastOrNull { it.type.mutable == mutable }
+            .items.lastOrNull { it.name == lastName }
     }
 
     private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
@@ -188,6 +183,9 @@ class BentoBinding : Binding {
         return HIR.LetExpr(node.ref, pattern, type, expr)
     }
 
+    private fun BC.bindResultingExpression(node: RedNode): HIR.Expr =
+        LocalBindingContext(this).bindExpr(node)
+
     private fun BC.bindScope(node: RedNode): HIR.ScopeExpr {
         val context = LocalBindingContext(this)
         val statements = node
@@ -201,23 +199,21 @@ class BentoBinding : Binding {
 
     override fun bindImport(node: GreenNode?, context: RC): BoundImportData {
         val block = node?.toRedRoot()?.firstChild(ST.ImportBlock) ?: return emptyImportData
-        val importedMutableItems = mutableMapOf<String, ItemRef>()
-        val importedImmutableItems = mutableMapOf<String, ItemRef>()
+        val importedItems = mutableMapOf<String, ItemRef>()
         val importedPackages = mutableMapOf<String, PackageTreeNode>()
         val paths = block.childSequence()
             .filter { it.type == ST.ImportPath }
             .map {
-                context.bindImportPath(it, importedMutableItems, importedImmutableItems, importedPackages)
+                context.bindImportPath(it, importedItems, importedPackages)
             }
             .toList()
 
-        return BoundImportData(importedMutableItems, importedImmutableItems, importedPackages, paths)
+        return BoundImportData(importedItems, importedPackages, paths)
     }
 
     private fun RC.bindImportPath(
         node: RedNode,
-        importedMutableItems: MutableMap<String, ItemRef>,
-        importedImmutableItems: MutableMap<String, ItemRef>,
+        importedItems: MutableMap<String, ItemRef>,
         importedPackages: MutableMap<String, PackageTreeNode>,
     ): BoundImportPath {
         var lastPackage: PackageTreeNode? = root
@@ -237,7 +233,7 @@ class BentoBinding : Binding {
         segments.lastOrNull()?.let { lastSeg ->
             lastSeg.node?.let { importedPackages[name] = it }
             lastSeg.items.forEach {
-                (if (it.type.mutable) importedMutableItems else importedImmutableItems)[name] = it
+                importedItems[name] = it
             }
         }
 

@@ -17,8 +17,6 @@ object BaseSets {
     val identifiers = syntaxSetOf(
         SyntaxType.StandardIdentifier,
         SyntaxType.BacktickedIdentifier,
-        SyntaxType.GetKeyword,
-        SyntaxType.SetKeyword,
     )
     val expressions = syntaxSetOf(
         SyntaxType.StringLiteral,
@@ -37,8 +35,6 @@ object BaseSets {
     )
     val definitions = syntaxSetOf(
         SyntaxType.FunDef,
-        SyntaxType.GetDef,
-        SyntaxType.SetDef,
         SyntaxType.LetDef,
         SyntaxType.TypeDef,
     )
@@ -46,24 +42,24 @@ object BaseSets {
         SyntaxType.Constructor,
     )
     val baseRecoverySet = syntaxSetOf(
-        SyntaxType.FunKeyword,
+        SyntaxType.DefKeyword,
         SyntaxType.LetKeyword,
         SyntaxType.RBrace,
         SyntaxType.EOF,
     )
     val paramListRecoverySet = syntaxSetOf(
-        SyntaxType.FunKeyword,
+        SyntaxType.DefKeyword,
         SyntaxType.EOF,
         SyntaxType.LBrace,
         SyntaxType.RBrace,
     )
     val argListRecoverySet = syntaxSetOf(
-        SyntaxType.FunKeyword,
+        SyntaxType.DefKeyword,
         SyntaxType.EOF,
         SyntaxType.RBrace,
     )
     val scopeRecoverySet = syntaxSetOf(
-        SyntaxType.FunKeyword,
+        SyntaxType.DefKeyword,
         SyntaxType.EOF,
     )
 }

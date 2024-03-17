@@ -21,9 +21,7 @@ class BentoParsing : Parsing {
     private fun P.handleFile() {
         when (current) {
             ST.EOF -> return
-            ST.FunKeyword -> handleFunctionLike(ST.FunDef)
-            ST.GetKeyword -> handleFunctionLike(ST.GetDef)
-            ST.SetKeyword -> handleFunctionLike(ST.SetDef)
+            ST.DefKeyword -> handleFunctionLike()
             ST.LetKeyword -> handleTopLevelLet()
             ST.DataKeyword -> handleTypeDef()
             else -> errorNode(ParseError.ExpectedDeclaration) { push() }
@@ -75,6 +73,7 @@ class BentoParsing : Parsing {
                 ParseResult.Success
             }
         }
+
     private fun P.handleError(type: ParseError): ParseResult =
         if (current in BaseSets.baseRecoverySet) {
             pushError(type)
@@ -85,12 +84,12 @@ class BentoParsing : Parsing {
         }
 
 
-    private fun P.handleFunctionLike(type: ST) = node(type) {
-        push()  // keyword
+    private fun P.handleFunctionLike() = node(ST.FunDef) {
+        push()  // def keyword
         expectIdentifier()
-        expectParamList()
+        parseParamList()
         parseTypeAnnotation()
-        expectScopeExpr()
+        expectEqExpression()
     }
 
     private fun P.parseTypeAnnotation(): ParseResult =
@@ -107,11 +106,11 @@ class BentoParsing : Parsing {
         if (at(BaseSets.identifiers)) pushWrapped(ST.Identifier)
         else handleError(ParseError.ExpectedIdentifier)
 
-    private fun P.expectParamList(): ParseResult =
+    private fun P.parseParamList(): ParseResult =
         if (at(ST.LParen)) node(ST.ParamList) {
             push()  // (
             handleParenthesizedList(BaseSets.paramListRecoverySet) { expectParam() }
-        } else handleError(ParseError.ExpectedParameterList)
+        } else ParseResult.Pass
 
     private fun P.expectPattern(): ParseResult = when (current) {
         ST.Wildcard -> pushWrapped(ST.WildcardPattern)
@@ -130,10 +129,6 @@ class BentoParsing : Parsing {
         push()  // {
         handleBracedList(BaseSets.scopeRecoverySet) { expectScopeTerm() }
     }
-
-    private fun P.expectScopeExpr(): ParseResult =
-        if (at(ST.LBrace)) handleScopeExpr()
-        else handleError(ParseError.ExpectedScope)
 
 
     private fun P.expectEqExpression(): ParseResult =

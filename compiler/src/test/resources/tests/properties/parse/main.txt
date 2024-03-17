@@ -1,12 +1,9 @@
 File
-├─GetDef
-│ ├─GetKeyword
+├─FunDef
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(hello)
-│ ├─ParamList
-│ │ ├─LParen
-│ │ └─RParen
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
@@ -14,20 +11,16 @@ File
 │ │   └─Identifier
 │ │     └─StandardIdentifier(String)
 │ ├─Whitespace( )
-│ └─ScopeExpr
-│   ├─LBrace
-│   ├─Newline
-│   ├─Whitespace(  )
-│   ├─StringLiteral("Hello, World!")
-│   ├─Newline
-│   └─RBrace
+│ ├─Equals
+│ ├─Whitespace( )
+│ └─StringLiteral("Hello, World!")
 ├─Newline
 ├─Newline
-├─SetDef
-│ ├─SetKeyword
+├─FunDef
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
-│ │ └─StandardIdentifier(hello)
+│ │ └─StandardIdentifier(hello_=)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
@@ -41,22 +34,18 @@ File
 │ │ │       └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
-│ └─ScopeExpr
-│   ├─LBrace
-│   ├─Newline
-│   ├─Whitespace(  )
-│   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
-│   │ │   └─StandardIdentifier(println)
-│   │ └─ArgList
-│   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
-│   │   │   └─StandardIdentifier(new)
-│   │   └─RParen
-│   ├─Newline
-│   └─RBrace
+│ ├─Equals
+│ ├─Whitespace( )
+│ └─CallExpr
+│   ├─Path
+│   │ └─Identifier
+│   │   └─StandardIdentifier(println)
+│   └─ArgList
+│     ├─LParen
+│     ├─Path
+│     │ └─Identifier
+│     │   └─StandardIdentifier(new)
+│     └─RParen
 ├─Newline
 ├─Newline
 ├─LetDef
@@ -77,13 +66,15 @@ File
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
+│ ├─Whitespace( )
+│ ├─Equals
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace

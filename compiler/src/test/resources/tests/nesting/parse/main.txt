@@ -1,6 +1,6 @@
 File
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(baz)
@@ -23,23 +23,21 @@ File
 │ │   └─Identifier
 │ │     └─StandardIdentifier(String)
 │ ├─Whitespace( )
-│ └─ScopeExpr
-│   ├─LBrace
-│   ├─Newline
-│   ├─Whitespace(    )
-│   ├─StringLiteral("Hello from Baz!")
-│   ├─Newline
-│   └─RBrace
+│ ├─Equals
+│ ├─Whitespace( )
+│ └─StringLiteral("Hello from Baz!")
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(bar)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
+│ ├─Whitespace( )
+│ ├─Equals
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace
@@ -75,7 +73,7 @@ File
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(foo)
@@ -92,51 +90,50 @@ File
 │ │ │       └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
-│ └─ScopeExpr
-│   ├─LBrace
-│   ├─Newline
-│   ├─Whitespace(    )
-│   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
-│   │ │   └─StandardIdentifier(println)
-│   │ └─ArgList
-│   │   ├─LParen
-│   │   ├─ScopeExpr
-│   │   │ ├─LBrace
-│   │   │ ├─Newline
-│   │   │ ├─Whitespace(        )
-│   │   │ ├─CallExpr
-│   │   │ │ ├─Path
-│   │   │ │ │ └─Identifier
-│   │   │ │ │   └─StandardIdentifier(bar)
-│   │   │ │ └─ArgList
-│   │   │ │   ├─LParen
-│   │   │ │   └─RParen
-│   │   │ ├─Newline
-│   │   │ ├─Whitespace(        )
-│   │   │ ├─ParenthesizedExpr
-│   │   │ │ ├─LParen
-│   │   │ │ ├─Path
-│   │   │ │ │ └─Identifier
-│   │   │ │ │   └─StandardIdentifier(text)
-│   │   │ │ └─RParen
-│   │   │ ├─Newline
-│   │   │ ├─Whitespace(    )
-│   │   │ └─RBrace
-│   │   └─RParen
-│   ├─Newline
-│   └─RBrace
+│ ├─Equals
+│ ├─Newline
+│ ├─Whitespace(    )
+│ └─CallExpr
+│   ├─Path
+│   │ └─Identifier
+│   │   └─StandardIdentifier(println)
+│   └─ArgList
+│     ├─LParen
+│     ├─ScopeExpr
+│     │ ├─LBrace
+│     │ ├─Newline
+│     │ ├─Whitespace(        )
+│     │ ├─CallExpr
+│     │ │ ├─Path
+│     │ │ │ └─Identifier
+│     │ │ │   └─StandardIdentifier(bar)
+│     │ │ └─ArgList
+│     │ │   ├─LParen
+│     │ │   └─RParen
+│     │ ├─Newline
+│     │ ├─Whitespace(        )
+│     │ ├─ParenthesizedExpr
+│     │ │ ├─LParen
+│     │ │ ├─Path
+│     │ │ │ └─Identifier
+│     │ │ │   └─StandardIdentifier(text)
+│     │ │ └─RParen
+│     │ ├─Newline
+│     │ ├─Whitespace(    )
+│     │ └─RBrace
+│     └─RParen
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
+│ ├─Whitespace( )
+│ ├─Equals
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace

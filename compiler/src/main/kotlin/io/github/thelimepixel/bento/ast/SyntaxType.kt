@@ -33,13 +33,10 @@ enum class SyntaxType(
     BacktickedIdentifier(dynamic = true),
     StringLiteral(dynamic = true),
 
-    FunKeyword,
+    DefKeyword,
     LetKeyword,
     ImportKeyword,
     DataKeyword,
-
-    GetKeyword,
-    SetKeyword,
 
     Wildcard,
 
@@ -61,8 +58,6 @@ enum class SyntaxType(
     TypeAnnotation,
 
     FunDef,
-    GetDef,
-    SetDef,
     LetDef,
     TypeDef,
 
@@ -101,10 +96,8 @@ object BaseEdges {
     val colon = SyntaxType.Colon.edge(":")
     val eq = SyntaxType.Equals.edge("=")
     val colonColon = SyntaxType.ColonColon.edge("::")
-    val funKeyword = SyntaxType.FunKeyword.edge( "fun")
+    val defKeyword = SyntaxType.DefKeyword.edge( "def")
     val letKeyword = SyntaxType.LetKeyword.edge( "let")
-    val getKeyword = SyntaxType.GetKeyword.edge( "get")
-    val setKeyword = SyntaxType.SetKeyword.edge( "set")
     val importKeyword = SyntaxType.ImportKeyword.edge( "import")
     val dataKeyword = SyntaxType.DataKeyword.edge( "data")
     val loneSlash = SyntaxType.Unknown.edge( "/")

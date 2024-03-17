@@ -55,7 +55,6 @@ class TopLevelJVMBindingContext(
 val ItemRef.jvmName
     get() = when (type) {
         ItemType.Getter, ItemType.Constant -> "get" + rawName.capitalize()
-        ItemType.Setter -> "set" + rawName.capitalize()
         ItemType.SingletonType, ItemType.Function, ItemType.RecordType, ItemType.Field -> rawName
     }
 

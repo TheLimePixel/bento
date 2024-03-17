@@ -105,11 +105,12 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
     sealed interface Def : HIR
 
     sealed interface FunctionLikeDef : Def {
-        val params: List<Param>
+        val params: List<Param>?
         val returnType: TypeRef?
-        val body: ScopeExpr?
+        val body: Expr?
 
         override fun childSequence(): Sequence<HIR> = sequence {
+            params?.let { yieldAll(it) }
             returnType?.let { yield(it) }
             body?.let { yield(it) }
         }
@@ -119,22 +120,17 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override val ref: ASTRef,
         override val params: List<Param>,
         override val returnType: TypeRef?,
-        override val body: ScopeExpr?
+        override val body: Expr?
     ) : FunctionLikeDef
 
     data class GetterDef(
         override val ref: ASTRef,
-        override val params: List<Param>,
         override val returnType: TypeRef?,
-        override val body: ScopeExpr?
-    ) : FunctionLikeDef
-
-    data class SetterDef(
-        override val ref: ASTRef,
-        override val params: List<Param>,
-        override val returnType: TypeRef?,
-        override val body: ScopeExpr?
-    ) : FunctionLikeDef
+        override val body: Expr?
+    ) : FunctionLikeDef {
+        override val params: List<Param>?
+            get() = null
+    }
 
     data class ConstantDef(
         override val ref: ASTRef,
