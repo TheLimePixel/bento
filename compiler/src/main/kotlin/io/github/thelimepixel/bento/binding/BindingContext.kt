@@ -37,21 +37,24 @@ class ParentBindingContext(
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent?.astInfoOf(ref)
 }
 
-class FunctionBindingContext(
-    private val parent: BindingContext,
-    private val paramMap: Map<String, LocalRef>,
-) : BindingContext {
-    override fun refFor(name: String): Ref? = paramMap[name] ?: parent.refFor(name)
-    override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
-    override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
-    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
+interface LocalBindingContext : BindingContext {
+    fun addLocal(name: String, mutable: Boolean): LocalId
+    fun addLocalTo(name: String, mutable: Boolean, map: MutableMap<String, AccessorRef>): LocalId
 }
 
-class LocalBindingContext(private val parent: BindingContext) : BindingContext {
-    private val localsMap = mutableMapOf<String, LocalRef>()
+class LocalItemBindingContext(private val parent: BindingContext) : LocalBindingContext {
+    private val localsMap = mutableMapOf<String, AccessorRef>()
+    private var localCounter = 0
 
-    fun addLocal(name: String, node: HIR.Pattern) {
-        localsMap[name] = LocalRef(node)
+    override fun addLocal(name: String, mutable: Boolean): LocalId =
+        addLocalTo(name, mutable, localsMap)
+
+    override fun addLocalTo(name: String, mutable: Boolean, map: MutableMap<String, AccessorRef>): LocalId {
+        val ref = LocalId(localCounter)
+        localCounter += 1
+        map[name] = AccessorRef(ref, AccessorType.Getter)
+        if (mutable) map[name + "_="] = AccessorRef(ref, AccessorType.Setter)
+        return ref
     }
 
     override fun refFor(name: String): Ref? =
@@ -62,4 +65,22 @@ class LocalBindingContext(private val parent: BindingContext) : BindingContext {
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
 
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
+}
+
+class ScopeBindingContext(private val parent: LocalBindingContext): LocalBindingContext {
+    private val localsMap = mutableMapOf<String, AccessorRef>()
+
+    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
+
+    override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
+
+    override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
+
+    override fun refFor(name: String): Ref? = localsMap[name] ?: parent.refFor(name)
+
+    override fun addLocal(name: String, mutable: Boolean): LocalId =
+        parent.addLocalTo(name, mutable, localsMap)
+
+    override fun addLocalTo(name: String, mutable: Boolean, map: MutableMap<String, AccessorRef>): LocalId =
+        parent.addLocalTo(name, mutable, map)
 }

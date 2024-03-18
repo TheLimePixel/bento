@@ -146,6 +146,7 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         "let" -> BaseEdges.letKeyword
         "import" -> BaseEdges.importKeyword
         "data" -> BaseEdges.dataKeyword
+        "mut" -> BaseEdges.mutKeyword
         else -> SyntaxType.StandardIdentifier.edge(this)
     }
 

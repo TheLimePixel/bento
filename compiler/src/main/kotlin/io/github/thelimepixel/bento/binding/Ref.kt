@@ -9,7 +9,10 @@ sealed interface Ref
 
 sealed interface ParentRef
 
-data class LocalRef(val node: HIR.Pattern) : Ref
+@JvmInline
+value class LocalId(internal val index: Int) {
+    override fun toString(): String = "\$$index"
+}
 
 enum class ItemType(val isType: Boolean = false) {
     Function,
@@ -19,6 +22,13 @@ enum class ItemType(val isType: Boolean = false) {
     Constant,
     Field,
 }
+
+enum class AccessorType {
+    Getter,
+    Setter;
+}
+
+data class AccessorRef(val of: LocalId, val type: AccessorType) : Ref
 
 data class ItemRef(val parent: ParentRef, val name: String, val type: ItemType, val index: Int) : Ref, ParentRef {
     val rawName: String

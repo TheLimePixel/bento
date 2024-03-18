@@ -35,6 +35,7 @@ enum class SyntaxType(
 
     DefKeyword,
     LetKeyword,
+    MutKeyword,
     ImportKeyword,
     DataKeyword,
 
@@ -66,6 +67,7 @@ enum class SyntaxType(
 
     IdentPattern,
     WildcardPattern,
+    MutPattern,
 
     ImportBlock,
     ImportPath,
@@ -100,5 +102,6 @@ object BaseEdges {
     val letKeyword = SyntaxType.LetKeyword.edge( "let")
     val importKeyword = SyntaxType.ImportKeyword.edge( "import")
     val dataKeyword = SyntaxType.DataKeyword.edge( "data")
+    val mutKeyword = SyntaxType.MutKeyword.edge( "mut")
     val loneSlash = SyntaxType.Unknown.edge( "/")
 }

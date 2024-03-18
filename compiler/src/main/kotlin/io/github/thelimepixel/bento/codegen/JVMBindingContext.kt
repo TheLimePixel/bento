@@ -11,7 +11,7 @@ interface JVMBindingContext {
 
     fun jvmTypeOf(ref: PathType): String = "L${jvmClassOf(ref)};"
 
-    fun localId(ref: LocalRef): Int
+    fun localId(ref: LocalId): Int
 
     fun hirOf(ref: ItemRef): HIR.Def
 }
@@ -47,7 +47,7 @@ class TopLevelJVMBindingContext(
         else -> ref.ref.toJVMPath()
     }
 
-    override fun localId(ref: LocalRef): Int = error("Unexpected call")
+    override fun localId(ref: LocalId): Int = error("Unexpected call")
 
     override fun hirOf(ref: ItemRef): HIR.Def = error("Missing definition")
 }
@@ -77,7 +77,7 @@ class FileJVMBindingContext(
             descriptor = mapType(typingContext.typeOf(ref), false)
         )
 
-    override fun localId(ref: LocalRef): Int = parent.localId(ref)
+    override fun localId(ref: LocalId): Int = parent.localId(ref)
 
     override fun hirOf(ref: ItemRef): HIR.Def = hirMap[ref] ?: parent.hirOf(ref)
 }
@@ -87,13 +87,13 @@ val ItemRef.fileJVMPath: String
 
 class LocalJVMBindingContext(
     private val parent: JVMBindingContext,
-    private val localMap: Map<LocalRef, Int>
-) : JVMBindingContext {
+    private val localMap: Map<LocalId, Int>
+): JVMBindingContext {
     override fun jvmClassOf(ref: PathType): String = parent.jvmClassOf(ref)
 
     override fun signatureOf(ref: ItemRef): JVMSignature = parent.signatureOf(ref)
 
-    override fun localId(ref: LocalRef): Int = localMap[ref]!!
+    override fun localId(ref: LocalId): Int = localMap[ref]!!
 
     override fun hirOf(ref: ItemRef): HIR.Def = parent.hirOf(ref)
 }

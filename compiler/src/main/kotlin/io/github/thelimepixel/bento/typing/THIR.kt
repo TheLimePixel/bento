@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.LocalRef
+import io.github.thelimepixel.bento.binding.LocalId
 import io.github.thelimepixel.bento.ast.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
@@ -26,7 +26,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class LetExpr(
         override val ref: ASTRef,
-        val local: LocalRef,
+        val local: LocalId?,
         val expr: THIR
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = sequenceOf(expr)
@@ -76,9 +76,19 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class LocalAccessExpr(
         override val ref: ASTRef,
         override val type: Type,
-        val binding: LocalRef,
+        val binding: LocalId,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence
+    }
+
+    data class LocalAssignmentExpr(
+        override val ref: ASTRef,
+        val binding: LocalId,
+        val value: THIR,
+    ) : THIR {
+        override val type: Type
+            get() = BuiltinTypes.unit
+        override fun childSequence(): Sequence<THIR> = sequenceOf(value)
     }
 
     data class FieldAccessExpr(

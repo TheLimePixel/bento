@@ -199,7 +199,7 @@ class BentoCodegen : Codegen {
             val info = jvmFunctionInfoOf(thir)
             maxStack = max(maxStack, info.maxStackSize)
             val localContext = LocalJVMBindingContext(fileContext, info.varIds.mapValues { it.value + locals })
-            locals += info.varIds.size
+            locals += info.maxLocals
             localContext.genExpr(thir, staticInitWriter, isVoid)
             if (!isVoid)
                 staticInitWriter.visitFieldInsn(Opcodes.PUTSTATIC, ref.fileJVMPath, ref.rawName, type)
@@ -229,7 +229,7 @@ class BentoCodegen : Codegen {
         val isVoid = sig.descriptor.endsWith("V")
         methodContext.genExpr(thirMap[ref]!!, methodVisitor, isVoid)
         methodVisitor.visitInsn(if (isVoid) Opcodes.RETURN else Opcodes.ARETURN)
-        methodVisitor.visitMaxs(info.maxStackSize, info.varIds.size)
+        methodVisitor.visitMaxs(info.maxStackSize, info.maxLocals)
         methodVisitor.visitEnd()
     }
 
@@ -334,9 +334,9 @@ class BentoCodegen : Codegen {
     }
 
     private fun JC.genLetExpr(node: THIR.LetExpr, methodWriter: MethodVisitor): Boolean {
-        val id = localId(node.local)
-        genExpr(node.expr, methodWriter, false)
-        methodWriter.visitVarInsn(Opcodes.ASTORE, id)
+        val local = node.local
+        genExpr(node.expr, methodWriter, local == null)
+        if (local != null) methodWriter.visitVarInsn(Opcodes.ASTORE, localId(local))
         return false
     }
 
@@ -385,9 +385,17 @@ class BentoCodegen : Codegen {
             ignoreOutput
         }
 
+        is THIR.LocalAssignmentExpr -> genLocalAssignmentExpr(node, methodWriter)
+
         is THIR.FieldAccessExpr -> genFieldAccessExpr(node, methodWriter, ignoreOutput)
 
         is THIR.ConstructorCallExpr -> genConstructorCallExpr(node, methodWriter, ignoreOutput)
+    }
+
+    private fun JC.genLocalAssignmentExpr(node: THIR.LocalAssignmentExpr, writer: MethodVisitor): Boolean {
+        genExpr(node.value, writer, false)
+        writer.visitVarInsn(Opcodes.ASTORE, localId(node.binding))
+        return false
     }
 
     private fun JC.genFieldAccessExpr(

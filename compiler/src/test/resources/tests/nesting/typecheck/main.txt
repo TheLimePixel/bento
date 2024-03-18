@@ -86,12 +86,7 @@ CallExpr {
           type: RecordType {
             bento::String
           }
-          binding: LocalRef {
-            node: IdentPattern {
-              ref: IdentPattern@0..4
-              name: text
-            }
-          }
+          binding: $0
         }
       ]
     }

@@ -37,15 +37,14 @@ class FileTypingContext(
     override fun hirOf(type: ItemRef): HIR.Def = hirMap[type] ?: parent.hirOf(type)
 }
 
-class FunctionTypingContext(
+class LocalTypingContext(
     private val parent: TypingContext,
-    private val map: Map<LocalRef, Type>
 ) : TypingContext {
-    private val locals = mutableMapOf<LocalRef, Type>()
+    private val locals = mutableMapOf<Ref, Type>()
     override fun typeOf(ref: Ref): Type =
-        locals[ref] ?: map[ref] ?: parent.typeOf(ref)
+        locals[ref] ?: parent.typeOf(ref)
 
-    operator fun set(ref: LocalRef, type: Type) {
+    operator fun set(ref: Ref, type: Type) {
         locals[ref] = type
     }
 

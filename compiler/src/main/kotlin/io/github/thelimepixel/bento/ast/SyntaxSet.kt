@@ -32,6 +32,7 @@ object BaseSets {
     val patterns = syntaxSetOf(
         SyntaxType.IdentPattern,
         SyntaxType.WildcardPattern,
+        SyntaxType.MutPattern,
     )
     val definitions = syntaxSetOf(
         SyntaxType.FunDef,

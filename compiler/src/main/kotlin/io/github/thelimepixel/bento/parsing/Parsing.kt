@@ -114,6 +114,10 @@ class BentoParsing : Parsing {
 
     private fun P.expectPattern(): ParseResult = when (current) {
         ST.Wildcard -> pushWrapped(ST.WildcardPattern)
+        ST.MutKeyword -> node(ST.MutPattern) {
+            push()      // mut keyword
+            expectPattern()
+        }
         in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
         else -> handleError(ParseError.ExpectedPattern)
     }
@@ -144,9 +148,11 @@ class BentoParsing : Parsing {
 
     private fun P.handleTopLevelLet(): ParseResult = node(ST.LetDef) {
         push()  // let keyword
-        expectIdentifier()
-            .then { parseTypeAnnotation() }
-            .then { expectEqExpression() }
+        consume(ST.MutKeyword)
+        expectIdentifier().then {
+            parseTypeAnnotation()
+            expectEqExpression()
+        }
     }
 
     private fun P.expectScopeTerm(): ParseResult = when (current) {

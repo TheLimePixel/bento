@@ -1,0 +1,14 @@
+def main() = {
+    let a = "a"
+    let mut b = a
+    println(a)
+    println(b)
+    {
+        let a = "A"
+        b = "b"
+        println(a)
+        println(b)
+    }
+    println(a)
+    println(b)
+}

@@ -88,7 +88,7 @@ FunctionDef {
       ref: Param@2..14
       pattern: IdentPattern {
         ref: IdentPattern@0..4
-        name: text
+        local: $0
       }
       type: TypeRef {
         ref: Path@4..10
@@ -123,11 +123,9 @@ FunctionDef {
           }
           PathExpr {
             ref: Path@2..6
-            binding: LocalRef {
-              node: IdentPattern {
-                ref: IdentPattern@0..4
-                name: text
-              }
+            binding: AccessorRef {
+              of: $0
+              type: Getter
             }
           }
         ]

@@ -1,0 +1,177 @@
+======= Function(variables::main::main) =======
+FunctionDef {
+  ref: FunDef@0..209
+  params: []
+  returnType: null
+  body: ScopeExpr {
+    ref: ScopeExpr@26..222
+    statements: [
+      LetExpr {
+        ref: LetExpr@14..25
+        pattern: IdentPattern {
+          ref: IdentPattern@8..9
+          local: $0
+        }
+        type: null
+        expr: StringExpr {
+          ref: StringLiteral@16..19
+          content: "a"
+        }
+      }
+      LetExpr {
+        ref: LetExpr@48..61
+        pattern: MutablePattern {
+          ref: MutPattern@8..13
+          nested: IdentPattern {
+            ref: IdentPattern@8..9
+            local: $1
+          }
+        }
+        type: null
+        expr: PathExpr {
+          ref: Path@24..25
+          binding: AccessorRef {
+            of: $0
+            type: Getter
+          }
+        }
+      }
+      CallExpr {
+        ref: CallExpr@86..96
+        on: PathExpr {
+          ref: Path@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          PathExpr {
+            ref: Path@2..3
+            binding: AccessorRef {
+              of: $0
+              type: Getter
+            }
+          }
+        ]
+      }
+      CallExpr {
+        ref: CallExpr@118..128
+        on: PathExpr {
+          ref: Path@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          PathExpr {
+            ref: Path@2..3
+            binding: AccessorRef {
+              of: $1
+              type: Getter
+            }
+          }
+        ]
+      }
+      ScopeExpr {
+        ref: ScopeExpr@150..236
+        statements: [
+          LetExpr {
+            ref: LetExpr@22..33
+            pattern: IdentPattern {
+              ref: IdentPattern@8..9
+              local: $2
+            }
+            type: null
+            expr: StringExpr {
+              ref: StringLiteral@16..19
+              content: "A"
+            }
+          }
+          AssignmentExpr {
+            ref: AssignmentExpr@64..71
+            left: AccessorRef {
+              of: $1
+              type: Setter
+            }
+            right: StringExpr {
+              ref: StringLiteral@8..11
+              content: "b"
+            }
+          }
+          CallExpr {
+            ref: CallExpr@98..108
+            on: PathExpr {
+              ref: Path@0..7
+              binding: Function {
+                bento::io::println
+              }
+            }
+            args: [
+              PathExpr {
+                ref: Path@2..3
+                binding: AccessorRef {
+                  of: $2
+                  type: Getter
+                }
+              }
+            ]
+          }
+          CallExpr {
+            ref: CallExpr@138..148
+            on: PathExpr {
+              ref: Path@0..7
+              binding: Function {
+                bento::io::println
+              }
+            }
+            args: [
+              PathExpr {
+                ref: Path@2..3
+                binding: AccessorRef {
+                  of: $1
+                  type: Getter
+                }
+              }
+            ]
+          }
+        ]
+      }
+      CallExpr {
+        ref: CallExpr@334..344
+        on: PathExpr {
+          ref: Path@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          PathExpr {
+            ref: Path@2..3
+            binding: AccessorRef {
+              of: $0
+              type: Getter
+            }
+          }
+        ]
+      }
+      CallExpr {
+        ref: CallExpr@366..376
+        on: PathExpr {
+          ref: Path@0..7
+          binding: Function {
+            bento::io::println
+          }
+        }
+        args: [
+          PathExpr {
+            ref: Path@2..3
+            binding: AccessorRef {
+              of: $1
+              type: Getter
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

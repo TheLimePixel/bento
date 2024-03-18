@@ -63,34 +63,29 @@ class BentoBinding : Binding {
             else null
         }
 
-    private fun findAndBindPattern(node: RedNode): HIR.Pattern = node.firstChild(BaseSets.patterns)?.let {
+    private fun LC.findAndBindPattern(node: RedNode, mutable: Boolean): HIR.Pattern? = node.firstChild(BaseSets.patterns)?.let {
         when (it.type) {
-            ST.IdentPattern -> HIR.IdentPattern(it.ref, it.rawContent)
+            ST.IdentPattern -> HIR.IdentPattern(it.ref, addLocal(it.rawContent, mutable))
             ST.WildcardPattern -> HIR.WildcardPattern(it.ref)
+            ST.MutPattern -> HIR.MutablePattern(it.ref, findAndBindPattern(it, true))
             else -> error("Unsupported pattern type: ${it.type}")
         }
-    } ?: HIRError.Propagation.at(node.ref)
+    }
 
-    private fun BC.bindParamList(node: RedNode): List<HIR.Param>? = node.firstChild(SyntaxType.ParamList)
+    private fun LC.bindParamList(node: RedNode): List<HIR.Param>? = node.firstChild(SyntaxType.ParamList)
         ?.childSequence()
         ?.filter { it.type == SyntaxType.Param }
         ?.map {
-            val name = findAndBindPattern(it)
+            val name = findAndBindPattern(it, false)
             val type = findAndBindTypeAnnotation(it)
             HIR.Param(it.ref, name, type)
         }
         ?.toList()
 
     private fun BC.bindFunctionLike(node: RedNode): HIR.FunctionLikeDef {
-        val params = bindParamList(node)
+        val context = LocalItemBindingContext(this)
+        val params = context.bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
-        val context = if (params == null) this else {
-            val paramsMap = params.asSequence()
-                .mapNotNull { it.pattern as? HIR.IdentPattern }
-                .associateBy({ it.name }) { LocalRef((it)) }
-
-            FunctionBindingContext(this, paramsMap)
-        }
         val body = node.lastChild(BaseSets.expressions)?.let { context.bindResultingExpression(it) }
 
         return if (params == null) HIR.GetterDef(node.ref, returnType, body)
@@ -145,7 +140,7 @@ class BentoBinding : Binding {
         ST.Path -> bindIdentifier(node)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
-        ST.LetExpr -> bindLet(node)
+        ST.LetExpr -> bindLetExpr(node)
         ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
         ST.AssignmentExpr -> bindAssignmentExpr(node)
         ST.AccessExpr -> bindAccessExpr(node)
@@ -171,23 +166,20 @@ class BentoBinding : Binding {
         node.firstChild(BaseSets.expressions)?.let { bindExpr(it) }
             ?: HIRError.Propagation.at(node.ref)
 
-    private fun LC.bindLet(node: RedNode): HIR.LetExpr {
-        val pattern = findAndBindPattern(node)
+    private fun LC.bindLetExpr(node: RedNode): HIR.LetExpr {
+        val pattern = findAndBindPattern(node, false)
         val type = findAndBindTypeAnnotation(node)
         val expr = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) }
             ?: HIRError.Propagation.at(node.ref)
-
-        if (pattern is HIR.IdentPattern)
-            addLocal(pattern.name, pattern)
 
         return HIR.LetExpr(node.ref, pattern, type, expr)
     }
 
     private fun BC.bindResultingExpression(node: RedNode): HIR.Expr =
-        LocalBindingContext(this).bindExpr(node)
+        LocalItemBindingContext(this).bindExpr(node)
 
-    private fun BC.bindScope(node: RedNode): HIR.ScopeExpr {
-        val context = LocalBindingContext(this)
+    private fun LC.bindScope(node: RedNode): HIR.ScopeExpr {
+        val context = ScopeBindingContext(this)
         val statements = node
             .childSequence()
             .filter { it.type in BaseSets.expressions }
@@ -239,4 +231,26 @@ class BentoBinding : Binding {
 
         return BoundImportPath(node.ref, segments)
     }
+}
+
+fun HIR.Pattern.getRefs(): Pair<AccessorRef?, AccessorRef?> = getRefsFor(this, false)
+
+fun HIR.Pattern.findId(): LocalId? = when (this) {
+    is HIR.IdentPattern -> this.local
+    is HIR.MutablePattern -> this.nested?.findId()
+    is HIR.WildcardPattern -> null
+}
+
+private tailrec fun getRefsFor(pattern: HIR.Pattern, mutable: Boolean): Pair<AccessorRef?, AccessorRef?> = when (pattern) {
+    is HIR.IdentPattern -> {
+        val first = AccessorRef(pattern.local, AccessorType.Getter)
+        val second = if (mutable) AccessorRef(pattern.local, AccessorType.Setter) else null
+        first to second
+    }
+
+    is HIR.MutablePattern -> {
+        val nested = pattern.nested
+        if (nested == null) null to null else getRefsFor(nested, true)
+    }
+    is HIR.WildcardPattern -> null to null
 }
