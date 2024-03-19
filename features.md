@@ -805,71 +805,6 @@ def calculate(): Int {
 }
 ```
 
-## Functions As Values
-
-TODO
-
-#### Requires
-
-- [Invocation Operator](features.md#invocation-operator)
-
-Functions themselves can be passed around as objects. To achieve this, there are function types which are represented 
-in the format `(Type1, Type2, ... TypeN) -> Result`.
-
-Functions and properties can be passed around by just using their paths. Functions can also have the `this` parameter
-captured by using the access operator and not using parentheses.
-
-For example:
-
-```kotlin
-def of2(fn: (I32) -> I32): I32 = fn(2)
-
-def add3(value: I32): I32 = value + 3
-
-def main() = println(of2(add3))
-```
-
-## Lambdas
-
-TODO
-
-#### Requires
-
-- [Functions As Values](features.md#functions-as-values)
-
-Objects of function types can also be created using lambda notation. In this notation, the function's parameters are 
-placed between pipes, followed by the term which needs to be evaluated. If said term is in curly braces and is the last
-parameter, the lambda can be moved outside the function body. If that's the only argument, the parentheses may be left out.
-Optionally, the returns type may be specified after the list of parameters, separated by an arrow. The type of the 
-parameters may also be left out if it can be inferred.
-
-For example:
-
-```kotlin
-list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
-```
-
-## Partial Application
-
-TODO
-
-#### Requires
-
-- [Lambdas](features.md#lambdas)
-
-The prefix partial application operator `$` turns the expression it's applied to into a lambda with implicit
-parameters of the form `$n` where `n` is an integer. To use it, the type of the expression must be known beforehand.
-This can be nested, however for each level of nesting an additional `$` must be added to avoid confusion.
-Additionally, just like regular scopes, if an expression this is being used on is a scope, it may be put after the
-function.
-
-For example:
-
-```kotlin
-def toFunction(list: List<I32>): (I32) -> List<I32> =
-  $list.iter().map$${ $0 + $$0 }.collect()
-```
-
 ## Infix Functions
 
 TODO
@@ -940,6 +875,72 @@ impl<T> Stack<T> {
     result
   }
 }
+```
+
+## Functions As Values
+
+TODO
+
+#### Requires
+
+- [Invocation Operator](features.md#invocation-operator)
+- [Type Parameters](features.md#type-parameters)
+
+Functions themselves can be passed around as objects. To achieve this, there are function types which are represented
+in the format `(Type1, Type2, ... TypeN) -> Result`.
+
+Functions and properties can be passed around by just using their paths. Functions can also have the `this` parameter
+captured by using the access operator and not using parentheses.
+
+For example:
+
+```kotlin
+def of2(fn: (I32) -> I32): I32 = fn(2)
+
+def add3(value: I32): I32 = value + 3
+
+def main() = println(of2(add3))
+```
+
+## Lambdas
+
+TODO
+
+#### Requires
+
+- [Functions As Values](features.md#functions-as-values)
+
+Objects of function types can also be created using lambda notation. In this notation, the function's parameters are
+placed between pipes, followed by the term which needs to be evaluated. If said term is in curly braces and is the last
+parameter, the lambda can be moved outside the function body. If that's the only argument, the parentheses may be left out.
+Optionally, the returns type may be specified after the list of parameters, separated by an arrow. The type of the
+parameters may also be left out if it can be inferred.
+
+For example:
+
+```kotlin
+list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
+```
+
+## Partial Application
+
+TODO
+
+#### Requires
+
+- [Lambdas](features.md#lambdas)
+
+The prefix partial application operator `$` turns the expression it's applied to into a lambda with implicit
+parameters of the form `$n` where `n` is an integer. To use it, the type of the expression must be known beforehand.
+This can be nested, however for each level of nesting an additional `$` must be added to avoid confusion.
+Additionally, just like regular scopes, if an expression this is being used on is a scope, it may be put after the
+function.
+
+For example:
+
+```kotlin
+def toFunction(list: List<I32>): (I32) -> List<I32> =
+  $list.iter().map$${ $0 + $$0 }.collect()
 ```
 
 ## As Operator
