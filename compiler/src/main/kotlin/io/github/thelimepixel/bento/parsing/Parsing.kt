@@ -43,10 +43,11 @@ class BentoParsing : Parsing {
         }
     }
 
-    private fun P.expectField(): ParseResult =
-        expectIdentifier().then {
-            nestLast(ST.Field) { expectTypeAnnotation() }
-        }
+    private fun P.expectField(): ParseResult = if (consume(ST.MutKeyword)) nestLast(ST.Field) {
+        expectIdentifier().then { expectTypeAnnotation() }
+    } else expectIdentifier().then {
+        nestLast(ST.Field) { expectTypeAnnotation() }
+    }
 
     private fun P.parseImportStatement(): ParseResult =
         if (at(ST.ImportKeyword)) node(ST.ImportStatement) {
@@ -118,6 +119,7 @@ class BentoParsing : Parsing {
             push()      // mut keyword
             expectPattern()
         }
+
         in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
         else -> handleError(ParseError.ExpectedPattern)
     }

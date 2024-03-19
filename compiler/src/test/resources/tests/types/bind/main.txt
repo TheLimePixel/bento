@@ -10,8 +10,14 @@ FunctionDef {
       }
       type: TypeRef {
         ref: Path@4..14
-        type: SingletonType {
-          types::types::Foo
+        type: Path {
+          ref: Path@4..14
+          binding: Accessor {
+            of: SingletonType {
+              types::types::Foo
+            }
+            type: Get
+          }
         }
       }
     }
@@ -19,7 +25,7 @@ FunctionDef {
   returnType: null
   body: CallExpr {
     ref: CallExpr@54..76
-    on: PathExpr {
+    on: Path {
       ref: Path@0..7
       binding: Accessor {
         of: Function {
@@ -49,8 +55,14 @@ FunctionDef {
       }
       type: TypeRef {
         ref: Path@4..14
-        type: RecordType {
-          types::types::Bar
+        type: Path {
+          ref: Path@4..14
+          binding: Accessor {
+            of: RecordType {
+              types::types::Bar
+            }
+            type: Get
+          }
         }
       }
     }
@@ -58,7 +70,7 @@ FunctionDef {
   returnType: null
   body: CallExpr {
     ref: CallExpr@64..81
-    on: PathExpr {
+    on: Path {
       ref: Path@0..7
       binding: Accessor {
         of: Function {
@@ -68,9 +80,9 @@ FunctionDef {
       }
     }
     args: [
-      AccessExpr {
+      MemberAccessExpr {
         ref: AccessExpr@2..10
-        on: PathExpr {
+        on: Path {
           ref: Path@0..3
           binding: Accessor {
             of: $0
@@ -85,15 +97,15 @@ FunctionDef {
 
 ======= Function(types::main::main) =======
 FunctionDef {
-  ref: FunDef@0..71
+  ref: FunDef@0..136
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@26..84
+    ref: ScopeExpr@26..149
     statements: [
       CallExpr {
         ref: CallExpr@14..29
-        on: PathExpr {
+        on: Path {
           ref: Path@0..3
           binding: Accessor {
             of: Function {
@@ -103,7 +115,7 @@ FunctionDef {
           }
         }
         args: [
-          PathExpr {
+          Path {
             ref: Path@2..12
             binding: Accessor {
               of: SingletonType {
@@ -114,9 +126,35 @@ FunctionDef {
           }
         ]
       }
+      LetExpr {
+        ref: LetExpr@56..88
+        pattern: IdentPattern {
+          ref: IdentPattern@8..11
+          local: $0
+        }
+        type: null
+        expr: CallExpr {
+          ref: CallExpr@30..47
+          on: Path {
+            ref: Path@0..10
+            binding: Accessor {
+              of: RecordType {
+                types::types::Bar
+              }
+              type: Get
+            }
+          }
+          args: [
+            StringExpr {
+              ref: StringLiteral@2..7
+              content: "Bar"
+            }
+          ]
+        }
+      }
       CallExpr {
-        ref: CallExpr@56..83
-        on: PathExpr {
+        ref: CallExpr@132..145
+        on: Path {
           ref: Path@0..8
           binding: Accessor {
             of: Function {
@@ -126,23 +164,51 @@ FunctionDef {
           }
         }
         args: [
-          CallExpr {
-            ref: CallExpr@2..19
-            on: PathExpr {
-              ref: Path@0..10
-              binding: Accessor {
-                of: RecordType {
-                  types::types::Bar
-                }
-                type: Get
-              }
+          Path {
+            ref: Path@2..5
+            binding: Accessor {
+              of: $0
+              type: Get
             }
-            args: [
-              StringExpr {
-                ref: StringLiteral@2..7
-                content: "Bar"
-              }
-            ]
+          }
+        ]
+      }
+      AssignmentExpr {
+        ref: AssignmentExpr@170..186
+        left: MemberAccessExpr {
+          ref: AccessExpr@0..8
+          on: Path {
+            ref: Path@0..3
+            binding: Accessor {
+              of: $0
+              type: Get
+            }
+          }
+          field: name
+        }
+        right: StringExpr {
+          ref: StringLiteral@22..27
+          content: "Baz"
+        }
+      }
+      CallExpr {
+        ref: CallExpr@214..227
+        on: Path {
+          ref: Path@0..8
+          binding: Accessor {
+            of: Function {
+              types::main::printBar
+            }
+            type: Get
+          }
+        }
+        args: [
+          Path {
+            ref: Path@2..5
+            binding: Accessor {
+              of: $0
+              type: Get
+            }
           }
         ]
       }

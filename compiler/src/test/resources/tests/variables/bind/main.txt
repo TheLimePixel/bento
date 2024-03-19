@@ -28,7 +28,7 @@ FunctionDef {
           }
         }
         type: null
-        expr: PathExpr {
+        expr: Path {
           ref: Path@24..25
           binding: Accessor {
             of: $0
@@ -38,7 +38,7 @@ FunctionDef {
       }
       CallExpr {
         ref: CallExpr@86..96
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {
@@ -48,7 +48,7 @@ FunctionDef {
           }
         }
         args: [
-          PathExpr {
+          Path {
             ref: Path@2..3
             binding: Accessor {
               of: $0
@@ -59,7 +59,7 @@ FunctionDef {
       }
       CallExpr {
         ref: CallExpr@118..128
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {
@@ -69,7 +69,7 @@ FunctionDef {
           }
         }
         args: [
-          PathExpr {
+          Path {
             ref: Path@2..3
             binding: Accessor {
               of: $1
@@ -95,9 +95,12 @@ FunctionDef {
           }
           AssignmentExpr {
             ref: AssignmentExpr@64..71
-            left: Accessor {
-              of: $1
-              type: Set
+            left: Path {
+              ref: Path@0..1
+              binding: Accessor {
+                of: $1
+                type: Set
+              }
             }
             right: StringExpr {
               ref: StringLiteral@8..11
@@ -106,7 +109,7 @@ FunctionDef {
           }
           CallExpr {
             ref: CallExpr@98..108
-            on: PathExpr {
+            on: Path {
               ref: Path@0..7
               binding: Accessor {
                 of: Function {
@@ -116,7 +119,7 @@ FunctionDef {
               }
             }
             args: [
-              PathExpr {
+              Path {
                 ref: Path@2..3
                 binding: Accessor {
                   of: $2
@@ -127,7 +130,7 @@ FunctionDef {
           }
           CallExpr {
             ref: CallExpr@138..148
-            on: PathExpr {
+            on: Path {
               ref: Path@0..7
               binding: Accessor {
                 of: Function {
@@ -137,7 +140,7 @@ FunctionDef {
               }
             }
             args: [
-              PathExpr {
+              Path {
                 ref: Path@2..3
                 binding: Accessor {
                   of: $1
@@ -150,7 +153,7 @@ FunctionDef {
       }
       CallExpr {
         ref: CallExpr@334..344
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {
@@ -160,7 +163,7 @@ FunctionDef {
           }
         }
         args: [
-          PathExpr {
+          Path {
             ref: Path@2..3
             binding: Accessor {
               of: $0
@@ -171,7 +174,7 @@ FunctionDef {
       }
       CallExpr {
         ref: CallExpr@366..376
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {
@@ -181,7 +184,7 @@ FunctionDef {
           }
         }
         args: [
-          PathExpr {
+          Path {
             ref: Path@2..3
             binding: Accessor {
               of: $1

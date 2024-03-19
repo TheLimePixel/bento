@@ -117,23 +117,68 @@ File
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
+│   ├─LetExpr
+│   │ ├─LetKeyword
+│   │ ├─Whitespace( )
+│   │ ├─IdentPattern
+│   │ │ └─StandardIdentifier(bar)
+│   │ ├─TypeAnnotation
+│   │ │ ├─Colon
+│   │ │ ├─Whitespace( )
+│   │ │ └─Path
+│   │ │   └─Identifier
+│   │ │     └─StandardIdentifier(Bar)
+│   │ ├─Whitespace( )
+│   │ ├─Equals
+│   │ ├─Whitespace( )
+│   │ └─CallExpr
+│   │   ├─Path
+│   │   │ ├─Identifier
+│   │   │ │ └─StandardIdentifier(types)
+│   │   │ ├─ColonColon
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(Bar)
+│   │   └─ArgList
+│   │     ├─LParen
+│   │     ├─StringLiteral("Bar")
+│   │     └─RParen
+│   ├─Newline
+│   ├─Whitespace(    )
 │   ├─CallExpr
 │   │ ├─Path
 │   │ │ └─Identifier
 │   │ │   └─StandardIdentifier(printBar)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─CallExpr
-│   │   │ ├─Path
-│   │   │ │ ├─Identifier
-│   │   │ │ │ └─StandardIdentifier(types)
-│   │   │ │ ├─ColonColon
-│   │   │ │ └─Identifier
-│   │   │ │   └─StandardIdentifier(Bar)
-│   │   │ └─ArgList
-│   │   │   ├─LParen
-│   │   │   ├─StringLiteral("Bar")
-│   │   │   └─RParen
+│   │   ├─Path
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(bar)
+│   │   └─RParen
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─AssignmentExpr
+│   │ ├─AccessExpr
+│   │ │ ├─Path
+│   │ │ │ └─Identifier
+│   │ │ │   └─StandardIdentifier(bar)
+│   │ │ ├─Dot
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(name)
+│   │ ├─Whitespace( )
+│   │ ├─Equals
+│   │ ├─Whitespace( )
+│   │ └─StringLiteral("Baz")
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Path
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(printBar)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─Path
+│   │   │ └─Identifier
+│   │   │   └─StandardIdentifier(bar)
 │   │   └─RParen
 │   ├─Newline
 │   └─RBrace

@@ -82,9 +82,16 @@ private class JVMInfoResolver {
                 frame { handleRec(node.value, false) }
             }
 
-            is THIR.FieldAccessExpr -> {
+            is THIR.GetFieldExpr -> {
                 frame { handleRec(node.on, false) }
                 if (!toIgnore) currentStackSize += 1
+            }
+
+            is THIR.SetFieldExpr -> {
+                frame {
+                    handleRec(node.on, false)
+                    handleRec(node.value, false)
+                }
             }
 
             is THIR.GetStoredExpr ->

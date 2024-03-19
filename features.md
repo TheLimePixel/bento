@@ -584,8 +584,6 @@ def printFoo(foo: Foo) {
 
 ## Mutable Fields
 
-TODO
-
 #### Requires
 
 - [Product Types](features.md#product-types)

@@ -49,8 +49,10 @@ private fun collectFields(node: GreenNode, parent: ItemRef): ASTInfo {
             val name = it.node.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
             val list = dataMap.computeIfAbsent(name) { mutableListOf() }
             list.add(it.node)
-            val ref = ItemRef(parent, name,list.lastIndex, ItemType.Field, false)
+            val mutable = it.node.firstChild(ST.MutKeyword) != null
+            val ref = ItemRef(parent, name,list.lastIndex, ItemType.Field, mutable)
             accessors[name] = Accessor(ref, AccessorType.Get)
+            if (mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
             ref
         }
         .toList()

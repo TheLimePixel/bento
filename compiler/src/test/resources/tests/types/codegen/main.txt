@@ -28,8 +28,15 @@ public final class types/mainBt {
     DUP
     LDC "Bar"
     INVOKESPECIAL types/types/Bar.<init> (Ljava/lang/String;)V
+    ASTORE 0
+    ALOAD 0
+    INVOKESTATIC types/mainBt.printBar (Ltypes/types/Bar;)V
+    ALOAD 0
+    LDC "Baz"
+    INVOKEVIRTUAL types/types/Bar.setName (Ljava/lang/String;)V
+    ALOAD 0
     INVOKESTATIC types/mainBt.printBar (Ltypes/types/Bar;)V
     RETURN
     MAXSTACK = 3
-    MAXLOCALS = 0
+    MAXLOCALS = 1
 }

@@ -9,16 +9,28 @@ FunctionDef {
       }
       type: TypeRef {
         ref: Path@4..10
-        type: RecordType {
-          bento::String
+        type: Path {
+          ref: Path@4..10
+          binding: Accessor {
+            of: RecordType {
+              bento::String
+            }
+            type: Get
+          }
         }
       }
     }
   ]
   returnType: TypeRef {
     ref: Path@4..10
-    type: RecordType {
-      bento::String
+    type: Path {
+      ref: Path@4..10
+      binding: Accessor {
+        of: RecordType {
+          bento::String
+        }
+        type: Get
+      }
     }
   }
   body: StringExpr {
@@ -37,7 +49,7 @@ FunctionDef {
     statements: [
       CallExpr {
         ref: CallExpr@14..38
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {
@@ -49,7 +61,7 @@ FunctionDef {
         args: [
           CallExpr {
             ref: CallExpr@2..17
-            on: PathExpr {
+            on: Path {
               ref: Path@0..3
               binding: Accessor {
                 of: Function {
@@ -69,7 +81,7 @@ FunctionDef {
       }
       CallExpr {
         ref: CallExpr@74..100
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {
@@ -101,8 +113,14 @@ FunctionDef {
       }
       type: TypeRef {
         ref: Path@4..10
-        type: RecordType {
-          bento::String
+        type: Path {
+          ref: Path@4..10
+          binding: Accessor {
+            of: RecordType {
+              bento::String
+            }
+            type: Get
+          }
         }
       }
     }
@@ -110,7 +128,7 @@ FunctionDef {
   returnType: null
   body: CallExpr {
     ref: CallExpr@58..106
-    on: PathExpr {
+    on: Path {
       ref: Path@0..7
       binding: Accessor {
         of: Function {
@@ -125,7 +143,7 @@ FunctionDef {
         statements: [
           CallExpr {
             ref: CallExpr@22..27
-            on: PathExpr {
+            on: Path {
               ref: Path@0..3
               binding: Accessor {
                 of: Function {
@@ -136,7 +154,7 @@ FunctionDef {
             }
             args: []
           }
-          PathExpr {
+          Path {
             ref: Path@2..6
             binding: Accessor {
               of: $0
@@ -159,7 +177,7 @@ FunctionDef {
     statements: [
       CallExpr {
         ref: CallExpr@14..36
-        on: PathExpr {
+        on: Path {
           ref: Path@0..3
           binding: Accessor {
             of: Function {
@@ -177,7 +195,7 @@ FunctionDef {
       }
       CallExpr {
         ref: CallExpr@70..97
-        on: PathExpr {
+        on: Path {
           ref: Path@0..7
           binding: Accessor {
             of: Function {

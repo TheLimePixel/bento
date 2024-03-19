@@ -6,5 +6,8 @@ def printBar(bar: types::Bar) = println(bar.name)
 
 def main() = {
     foo(types::Foo)
-    printBar(types::Bar("Bar"))
+    let bar: Bar = types::Bar("Bar")
+    printBar(bar)
+    bar.name = "Baz"
+    printBar(bar)
 }

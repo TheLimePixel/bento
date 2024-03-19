@@ -34,15 +34,15 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     data class AssignmentExpr(
         override val ref: ASTRef,
-        val left: Accessor?,
+        val left: Expr,
         val right: Expr,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = sequence {
-            yield(right)
+            right?.let { yield(it) }
         }
     }
 
-    data class PathExpr(
+    data class Path(
         override val ref: ASTRef,
         val binding: Accessor,
     ) : Expr {
@@ -92,7 +92,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    data class AccessExpr(
+    data class MemberAccessExpr(
         override val ref: ASTRef,
         val on: Expr,
         val field: String,
@@ -100,8 +100,10 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = sequenceOf(on)
     }
 
-    data class TypeRef(override val ref: ASTRef, val type: ItemRef?) : HIR {
-        override fun childSequence(): Sequence<HIR> = EmptySequence
+    data class TypeRef(override val ref: ASTRef, val type: Path?) : HIR {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            type?.let { yield(it) }
+        }
     }
 
     data class Param(override val ref: ASTRef, val pattern: Pattern?, val type: TypeRef?) : HIR {

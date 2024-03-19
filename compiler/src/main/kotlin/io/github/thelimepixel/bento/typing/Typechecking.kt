@@ -1,5 +1,6 @@
 package io.github.thelimepixel.bento.typing
 
+import io.github.thelimepixel.bento.ast.ASTRef
 import io.github.thelimepixel.bento.binding.*
 
 typealias TC = TypingContext
@@ -42,7 +43,7 @@ class BentoTypechecking : Typechecking {
         return if (expr.type == type) expr else THIRError.InvalidType.at(hir.ref, listOf(expr), type)
     }
 
-    private fun TC.typeIdentExpr(hir: HIR.PathExpr): THIR {
+    private fun TC.typeIdentExpr(hir: HIR.Path): THIR {
         if (hir.binding.type != AccessorType.Get)
             return THIRError.InvalidIdentifierUse.at(hir.ref)
 
@@ -69,39 +70,54 @@ class BentoTypechecking : Typechecking {
         is HIR.CallExpr -> typeCall(hir)
         is HIR.AssignmentExpr -> typeAssignment(hir)
         is HIR.ErrorExpr -> THIRError.Propagation.at(hir.ref)
-        is HIR.PathExpr -> typeIdentExpr(hir)
+        is HIR.Path -> typeIdentExpr(hir)
         is HIR.ScopeExpr -> typeScope(hir, unit)
         is HIR.StringExpr -> THIR.StringExpr(hir.ref, hir.content)
         is HIR.LetExpr -> typeLetExpr(hir)
-        is HIR.AccessExpr -> typeAccessExpr(hir)
+        is HIR.MemberAccessExpr -> typeAccessExpr(hir)
     }
 
-    private fun FC.typeAccessExpr(hir: HIR.AccessExpr): THIR {
+    private fun FC.typeAccessExpr(hir: HIR.MemberAccessExpr): THIR {
         val on = typeExpr(hir.on, false)
         val member = memberOf(on.type.accessType.ref, hir.field) ?: return THIRError.UnknownMember.at(hir.ref)
-        return THIR.FieldAccessExpr(hir.ref, typeOf(member.of).accessType, member.of as ItemRef, on)
+        return THIR.GetFieldExpr(hir.ref, typeOf(member.of).accessType, member.of as ItemRef, on)
     }
 
-    private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR = hir.left?.let { left ->
+    private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR {
         val newValue = typeExpr(hir.right, false)
-        val type = typeOf(left)
+        return when (val left = hir.left) {
+            is HIR.Path -> typeDirectAssignment(hir.ref, left, newValue)
+            is HIR.MemberAccessExpr -> typeFieldAssignment(hir.ref, left, newValue)
+            else -> THIRError.InvalidSetter.at(hir.ref, listOf(typeExpr(left, false), newValue))
+        }
+    }
+
+    private fun FC.typeFieldAssignment(astRef: ASTRef, left: HIR.MemberAccessExpr, right: THIR): THIR {
+        val on = typeExpr(left.on, false)
+        val member = memberOf(on.type.accessType.ref, left.field + "_=") ?: return THIRError.UnknownMember.at(astRef)
+        return THIR.SetFieldExpr(astRef, member.of as ItemRef, on, right)
+    }
+
+    private fun FC.typeDirectAssignment(astRef: ASTRef, left: HIR.Path, right: THIR): THIR {
+        val type = typeOf(left.binding)
         if (type !is FunctionType)
-            return@let THIRError.CallOnNonFunction.at(hir.ref, listOf(newValue))
+            return THIRError.CallOnNonFunction.at(astRef, listOf(right))
         if (type.paramTypes.size != 1)
-            return@let THIRError.InvalidSetter.at(hir.ref, listOf(newValue))
+            return THIRError.InvalidSetter.at(astRef, listOf(right))
         val value =
-            if (type.paramTypes[0] == newValue.type) newValue
-            else THIRError.InvalidType.at(hir.ref, listOf(newValue))
-        when (val ref = left.of) {
+            if (type.paramTypes[0] == right.type) right
+            else THIRError.InvalidType.at(astRef, listOf(right))
+
+        return when (val ref = left.binding.of) {
             is ItemRef -> when (ref.type) {
-                ItemType.Function -> THIR.CallExpr(hir.ref, BuiltinTypes.unit, ref, listOf(value))
-                ItemType.StoredProperty -> THIR.SetStoredExpr(hir.ref, ref, value)
-                else -> THIRError.InvalidSetter.at(hir.ref)
+                ItemType.Function -> THIR.CallExpr(astRef, BuiltinTypes.unit, ref, listOf(value))
+                ItemType.StoredProperty -> THIR.SetStoredExpr(astRef, ref, value)
+                else -> THIRError.InvalidSetter.at(astRef)
             }
 
-            is LocalRef -> THIR.LocalAssignmentExpr(hir.ref, ref, value)
+            is LocalRef -> THIR.LocalAssignmentExpr(astRef, ref, value)
         }
-    } ?: THIRError.Propagation.at(hir.ref)
+    }
 
     private fun FC.typeLetExpr(hir: HIR.LetExpr): THIR {
         val expr = hir.type.toType()?.let { expectExpr(hir.expr, it) } ?: typeExpr(hir.expr, false)
@@ -117,7 +133,7 @@ class BentoTypechecking : Typechecking {
     }
 
     private fun FC.typeCall(hir: HIR.CallExpr): THIR {
-        val binding = (hir.on as? HIR.PathExpr)?.binding?.of
+        val binding = (hir.on as? HIR.Path)?.binding?.of
             ?: return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
 
         if (binding is ItemRef) when (binding.type) {

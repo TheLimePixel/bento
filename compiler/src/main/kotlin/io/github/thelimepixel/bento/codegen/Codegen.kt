@@ -120,25 +120,57 @@ class BentoCodegen : Codegen {
         ctor.visitEnd()
 
         fields.forEach { field ->
-            val type = typeOfField(field)
-            val name = field.name.toJVMIdent()
-            writer.visitField(Opcodes.ACC_FINAL + Opcodes.ACC_PRIVATE, name, type, null, null)
-            val getter = writer.visitMethod(
-                Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
-                "get${name.capitalize()}",
-                "()$type",
-                null,
-                null
-            )
-            getter.visitVarInsn(Opcodes.ALOAD, 0)
-            getter.visitFieldInsn(Opcodes.GETFIELD, `class`, name, type)
-            getter.visitInsn(Opcodes.ARETURN)
-            getter.visitMaxs(1, 1)
-            getter.visitEnd()
+            genRecordField(field, writer, `class`)
         }
 
         writer.visitEnd()
         return writer.toByteArray()
+    }
+
+    private fun JC.genRecordField(
+        field: ItemRef,
+        writer: ClassWriter,
+        `class`: String
+    ) {
+        val type = typeOfField(field)
+        val name = field.name.toJVMIdent()
+
+        writer.visitField(
+            Opcodes.ACC_PRIVATE + if (field.mutable) 0 else Opcodes.ACC_FINAL,
+            name,
+            type,
+            null,
+            null
+        )
+
+        val getter = writer.visitMethod(
+            Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
+            "get${name.capitalize()}",
+            "()$type",
+            null,
+            null
+        )
+        getter.visitVarInsn(Opcodes.ALOAD, 0)
+        getter.visitFieldInsn(Opcodes.GETFIELD, `class`, name, type)
+        getter.visitInsn(Opcodes.ARETURN)
+        getter.visitMaxs(1, 1)
+        getter.visitEnd()
+
+        if (field.mutable) {
+            val setter = writer.visitMethod(
+                Opcodes.ACC_FINAL + Opcodes.ACC_PUBLIC,
+                "set${name.capitalize()}",
+                "($type)V",
+                null,
+                null
+            )
+            setter.visitVarInsn(Opcodes.ALOAD, 0)
+            setter.visitVarInsn(Opcodes.ALOAD, 1)
+            setter.visitFieldInsn(Opcodes.PUTFIELD, `class`, name, type)
+            setter.visitInsn(Opcodes.RETURN)
+            setter.visitMaxs(2, 2)
+            setter.visitEnd()
+        }
     }
 
     private fun genSingletonType(ref: ItemRef): ByteArray {
@@ -421,7 +453,9 @@ class BentoCodegen : Codegen {
 
         is THIR.LocalAssignmentExpr -> genLocalAssignmentExpr(node, methodWriter)
 
-        is THIR.FieldAccessExpr -> genFieldAccessExpr(node, methodWriter, ignoreOutput)
+        is THIR.GetFieldExpr -> genGetFieldExpr(node, methodWriter, ignoreOutput)
+
+        is THIR.SetFieldExpr -> genSetFieldExpr(node, methodWriter)
 
         is THIR.ConstructorCallExpr -> genConstructorCallExpr(node, methodWriter, ignoreOutput)
     }
@@ -460,8 +494,8 @@ class BentoCodegen : Codegen {
         return false
     }
 
-    private fun JC.genFieldAccessExpr(
-        node: THIR.FieldAccessExpr,
+    private fun JC.genGetFieldExpr(
+        node: THIR.GetFieldExpr,
         methodWriter: MethodVisitor,
         ignoreOutput: Boolean
     ): Boolean {
@@ -472,9 +506,25 @@ class BentoCodegen : Codegen {
         val getterName = "get${node.field.name.toJVMIdent().capitalize()}"
         val descriptor = "()${jvmTypeOf(node.type)}"
         methodWriter.visitMethodInsn(
-            Opcodes.INVOKEVIRTUAL, node.on.type.accessType.ref.toJVMPath(), getterName, descriptor, false
+            Opcodes.INVOKEVIRTUAL, node.field.parent.toJVMPath(), getterName, descriptor, false
         )
 
         return true
+    }
+
+    private fun JC.genSetFieldExpr(
+        node: THIR.SetFieldExpr,
+        methodWriter: MethodVisitor,
+    ): Boolean {
+        genExpr(node.on, methodWriter, false)
+        genExpr(node.value, methodWriter, false)
+
+        val setterName = "set${node.field.name.toJVMIdent().capitalize()}"
+        val descriptor = "(${jvmTypeOf(node.value.type.accessType)})V"
+        methodWriter.visitMethodInsn(
+            Opcodes.INVOKEVIRTUAL, node.field.parent.toJVMPath(), setterName, descriptor, false
+        )
+
+        return false
     }
 }

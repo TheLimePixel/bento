@@ -4,8 +4,14 @@ FunctionDef {
   params: []
   returnType: TypeRef {
     ref: Path@4..10
-    type: RecordType {
-      bento::String
+    type: Path {
+      ref: Path@4..10
+      binding: Accessor {
+        of: RecordType {
+          bento::String
+        }
+        type: Get
+      }
     }
   }
   body: StringExpr {
@@ -21,7 +27,7 @@ FunctionDef {
   returnType: null
   body: CallExpr {
     ref: CallExpr@26..45
-    on: PathExpr {
+    on: Path {
       ref: Path@0..7
       binding: Accessor {
         of: Function {
@@ -33,7 +39,7 @@ FunctionDef {
     args: [
       CallExpr {
         ref: CallExpr@2..12
-        on: PathExpr {
+        on: Path {
           ref: Path@0..8
           binding: Accessor {
             of: Function {

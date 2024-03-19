@@ -29,10 +29,10 @@ fun HIR.Def.type(defRef: ItemRef): Type = when (this) {
     is HIR.TypeDef -> PathType(defRef)
     is HIR.FunctionLikeDef -> FunctionType(
         paramTypes = params?.map { it.type.toType() ?: BuiltinTypes.nothing } ?: emptyList(),
-        returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)
+        returnType = PathType(this.returnType?.type?.let { it.binding.of as ItemRef } ?: BuiltinRefs.unit)
     )
-    is HIR.LetDef -> PathType(this.type?.type ?: BuiltinRefs.nothing)
+    is HIR.LetDef -> PathType(this.type?.type?.let { it.binding.of as ItemRef } ?: BuiltinRefs.nothing)
     is HIR.Field -> this.type?.toType() ?: BuiltinTypes.nothing
 }
 
-fun HIR.TypeRef?.toType(): PathType? = this?.type?.let { PathType(it) }
+fun HIR.TypeRef?.toType(): PathType? = this?.type?.let { PathType(it.binding.of as ItemRef) }

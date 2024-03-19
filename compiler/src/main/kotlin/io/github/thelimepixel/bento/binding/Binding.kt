@@ -60,9 +60,10 @@ class BentoBinding : Binding {
         .firstChild(SyntaxType.TypeAnnotation)
         ?.firstChild(SyntaxType.Path)
         ?.let {
-            val itemRef = handlePath(it, false)?.of ?: return@let null
+            val path = bindPath(it, false) ?: return@let null
+            val itemRef = path.binding.of
             if (itemRef is ItemRef && itemRef.type.isType)
-                HIR.TypeRef(it.ref, itemRef)
+                HIR.TypeRef(it.ref, path)
             else null
         }
 
@@ -116,31 +117,31 @@ class BentoBinding : Binding {
         return HIR.CallExpr(node.ref, on, args)
     }
 
-    private fun BC.bindIdentifier(node: RedNode) = handlePath(node, mutable = false)
-        ?.let {
-            if (isInitialized(it.of)) HIR.PathExpr(node.ref, it)
-            else HIR.ErrorExpr(node.ref, HIRError.UninitializedConstant)
-        } ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
+    private fun BC.bindIdentifier(node: RedNode, mutable: Boolean): HIR.Expr =
+        bindPath(node, mutable) ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
-    private fun BC.handlePath(node: RedNode, mutable: Boolean): Accessor? {
+    private fun BC.bindPath(node: RedNode, mutable: Boolean): HIR.Path? {
         val segments = node.childSequence().filter { it.type == ST.Identifier }.toList()
 
-        if (segments.size == 1) {
+        val accessor = if (segments.size == 1) {
             val name = segments[0].rawContent
-            return if (mutable) accessorFor(name + "_=") else accessorFor(name)
+            if (mutable) accessorFor(name + "_=") else accessorFor(name)
+        } else {
+            var packNode = packageNodeFor(segments.first().rawContent) ?: return null
+            segments.subList(1, segments.lastIndex).forEach {
+                packNode = packNode.children[it.rawContent] ?: return null
+            }
+            val lastName = segments.last().rawContent + if (mutable) "_=" else ""
+            astInfoOf(packNode.path)?.accessors?.get(lastName)
         }
-
-        var packNode = packageNodeFor(segments.first().rawContent) ?: return null
-        segments.subList(1, segments.lastIndex).forEach {
-            packNode = packNode.children[it.rawContent] ?: return null
-        }
-        val lastName = segments.last().rawContent + if (mutable) "_=" else ""
-        return (astInfoOf(packNode.path) ?: return null).accessors[lastName]
+        return if (isInitialized(accessor?.of ?: return null)) {
+            HIR.Path(node.ref, accessor)
+        } else null
     }
 
-    private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
+    private fun LC.bindExpr(node: RedNode, mutable: Boolean = false): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
-        ST.Path -> bindIdentifier(node)
+        ST.Path -> bindIdentifier(node, mutable)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
         ST.LetExpr -> bindLetExpr(node)
@@ -150,17 +151,14 @@ class BentoBinding : Binding {
         else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
     }
 
-    private fun LC.bindAccessExpr(node: RedNode): HIR.AccessExpr {
+    private fun LC.bindAccessExpr(node: RedNode): HIR.MemberAccessExpr {
         val on = bindExpr(node.firstChild(BaseSets.expressions)!!)
         val field = node.lastChild(ST.Identifier)?.rawContent ?: ""
-        return HIR.AccessExpr(node.ref, on, field)
+        return HIR.MemberAccessExpr(node.ref, on, field)
     }
 
     private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
-        val leftRef = node.firstChild(BaseSets.expressions)?.let { expr ->
-            if (expr.type == ST.Path) handlePath(expr, mutable = true)
-            else null
-        }
+        val leftRef = bindExpr(node.firstChild(BaseSets.expressions)!!, true)
         val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)
         return HIR.AssignmentExpr(node.ref, leftRef, right)
     }

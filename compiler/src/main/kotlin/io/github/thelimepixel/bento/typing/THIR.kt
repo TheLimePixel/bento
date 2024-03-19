@@ -109,13 +109,24 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override fun childSequence(): Sequence<THIR> = sequenceOf(value)
     }
 
-    data class FieldAccessExpr(
+    data class GetFieldExpr(
         override val ref: ASTRef,
         override val type: PathType,
         val field: ItemRef,
         val on: THIR,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = sequenceOf(on)
+    }
+
+    data class SetFieldExpr(
+        override val ref: ASTRef,
+        val field: ItemRef,
+        val on: THIR,
+        val value: THIR,
+    ) : THIR {
+        override val type: Type
+            get() = BuiltinTypes.unit
+        override fun childSequence(): Sequence<THIR> = sequenceOf(on, value)
     }
 
     data class SingletonAccessExpr(
