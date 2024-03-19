@@ -1,20 +1,12 @@
 ======= Function(nesting::main::baz) =======
-ScopeExpr {
-  ref: ScopeExpr@54..81
-  type: RecordType {
-    bento::String
-  }
-  statements: [
-    StringExpr {
-      ref: StringLiteral@14..31
-      content: "Hello from Baz!"
-    }
-  ]
+StringExpr {
+  ref: StringLiteral@58..75
+  content: "Hello from Baz!"
 }
 
 ======= Function(nesting::main::bar) =======
 ScopeExpr {
-  ref: ScopeExpr@20..86
+  ref: ScopeExpr@24..90
   type: SingletonType {
     bento::Unit
   }
@@ -64,50 +56,37 @@ ScopeExpr {
 }
 
 ======= Function(nesting::main::foo) =======
-ScopeExpr {
-  ref: ScopeExpr@44..102
+CallExpr {
+  ref: CallExpr@58..106
   type: SingletonType {
     bento::Unit
   }
-  statements: [
-    CallExpr {
-      ref: CallExpr@14..62
-      type: SingletonType {
-        bento::Unit
+  fn: Function {
+    bento::io::println
+  }
+  args: [
+    ScopeExpr {
+      ref: ScopeExpr@2..41
+      type: RecordType {
+        bento::String
       }
-      fn: Function {
-        bento::io::println
-      }
-      args: [
-        ScopeExpr {
-          ref: ScopeExpr@2..41
+      statements: [
+        CallExpr {
+          ref: CallExpr@22..27
+          type: SingletonType {
+            bento::Unit
+          }
+          fn: Function {
+            nesting::main::bar
+          }
+          args: []
+        }
+        LocalAccessExpr {
+          ref: Path@2..6
           type: RecordType {
             bento::String
           }
-          statements: [
-            CallExpr {
-              ref: CallExpr@22..27
-              type: SingletonType {
-                bento::Unit
-              }
-              fn: Function {
-                nesting::main::bar
-              }
-              args: []
-            }
-            LocalAccessExpr {
-              ref: Path@2..6
-              type: RecordType {
-                bento::String
-              }
-              binding: LocalRef {
-                node: IdentPattern {
-                  ref: IdentPattern@0..4
-                  name: text
-                }
-              }
-            }
-          ]
+          binding: $0
         }
       ]
     }
@@ -116,7 +95,7 @@ ScopeExpr {
 
 ======= Function(nesting::main::main) =======
 ScopeExpr {
-  ref: ScopeExpr@22..87
+  ref: ScopeExpr@26..91
   type: SingletonType {
     bento::Unit
   }

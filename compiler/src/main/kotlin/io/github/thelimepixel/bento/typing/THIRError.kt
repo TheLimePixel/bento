@@ -11,6 +11,7 @@ enum class THIRError : ErrorType {
     InvalidIdentifierUse,
     CallOnNonFunction,
     UnexpectedArgument,
+    InvalidSetter,
     InvalidType,
     UnknownMember,
     ;

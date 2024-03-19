@@ -1,14 +1,14 @@
-get hello(): String {
-  "Hello, World!"
+def hello: String = "Hello, World!"
+
+def hello_=(new: String) = {
+    println(`Hey, World!`)
+    `Hey, World!` = new
 }
 
-set hello(new: String) {
-  println(new)
-}
+let mut `Hey, World!`: String = "Hey, World!"
 
-let `Hey, World!`: String = "Hey, World!"
-
-fun main() {
+def main() = {
   println(hello)
-  hello = `Hey, World!`
+  hello = "Bye, World!"
+  println(`Hey, World!`)
 }

@@ -4,7 +4,7 @@ import io.github.thelimepixel.bento.binding.*
 
 interface TypingContext {
     fun typeOf(ref: Ref): Type
-    fun memberOf(type: ItemRef, name: String): ItemRef?
+    fun memberOf(type: ItemRef, name: String): Accessor?
     fun hirOf(type: ItemRef): HIR.Def
 }
 
@@ -17,7 +17,7 @@ class TopLevelTypingContext : TypingContext {
         else -> errorSignature
     }
 
-    override fun memberOf(type: ItemRef, name: String): ItemRef? = null
+    override fun memberOf(type: ItemRef, name: String): Accessor? = null
 
     override fun hirOf(type: ItemRef): HIR.Def = error("Missing HIR for $type")
 }
@@ -31,26 +31,30 @@ class FileTypingContext(
     override fun typeOf(ref: Ref): Type =
         itemTypes[ref] ?: parent.typeOf(ref)
 
-    override fun memberOf(type: ItemRef, name: String): ItemRef? =
-        astMap[type]?.items?.lastOrNull { it.name == name } ?: parent.memberOf(type, name)
+    override fun memberOf(type: ItemRef, name: String): Accessor? =
+        astMap[type]?.accessors?.get(name) ?: parent.memberOf(type, name)
 
     override fun hirOf(type: ItemRef): HIR.Def = hirMap[type] ?: parent.hirOf(type)
 }
 
-class FunctionTypingContext(
+class LocalTypingContext(
     private val parent: TypingContext,
-    private val map: Map<LocalRef, Type>
 ) : TypingContext {
-    private val locals = mutableMapOf<LocalRef, Type>()
+    private val locals = mutableMapOf<Ref, Type>()
     override fun typeOf(ref: Ref): Type =
-        locals[ref] ?: map[ref] ?: parent.typeOf(ref)
+        locals[ref] ?: parent.typeOf(ref)
 
-    operator fun set(ref: LocalRef, type: Type) {
+    operator fun set(ref: Ref, type: Type) {
         locals[ref] = type
     }
 
-    override fun memberOf(type: ItemRef, name: String): ItemRef? =
+    override fun memberOf(type: ItemRef, name: String): Accessor? =
         parent.memberOf(type, name)
 
     override fun hirOf(type: ItemRef): HIR.Def = parent.hirOf(type)
+}
+
+fun TypingContext.typeOf(accessor: Accessor) = when (accessor.type) {
+    AccessorType.Get -> typeOf(accessor.of)
+    AccessorType.Set -> FunctionType(listOf(typeOf(accessor.of)), BuiltinTypes.unit)
 }

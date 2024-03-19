@@ -3,8 +3,8 @@
 public final class properties/mainBt {
 
 
-  // access flags 0x19
-  public final static Ljava/lang/String; Hey, World!
+  // access flags 0x9
+  public static Ljava/lang/String; Hey, World!
 
   // access flags 0x9
   public static getHello()Ljava/lang/String;
@@ -15,8 +15,10 @@ public final class properties/mainBt {
 
   // access flags 0x9
   public static setHello(Ljava/lang/String;)V
-    ALOAD 0
+    INVOKESTATIC properties/mainBt.getHey, World! ()Ljava/lang/String;
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    ALOAD 0
+    INVOKESTATIC properties/mainBt.setHey, World! (Ljava/lang/String;)V
     RETURN
     MAXSTACK = 1
     MAXLOCALS = 1
@@ -29,11 +31,21 @@ public final class properties/mainBt {
     MAXLOCALS = 0
 
   // access flags 0x9
+  public static setHey, World!(Ljava/lang/String;)V
+    ALOAD 0
+    PUTSTATIC properties/mainBt.Hey, World! : Ljava/lang/String;
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1
+
+  // access flags 0x9
   public static main()V
     INVOKESTATIC properties/mainBt.getHello ()Ljava/lang/String;
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
-    INVOKESTATIC properties/mainBt.getHey, World! ()Ljava/lang/String;
+    LDC "Bye, World!"
     INVOKESTATIC properties/mainBt.setHello (Ljava/lang/String;)V
+    INVOKESTATIC properties/mainBt.getHey, World! ()Ljava/lang/String;
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
     RETURN
     MAXSTACK = 1
     MAXLOCALS = 0

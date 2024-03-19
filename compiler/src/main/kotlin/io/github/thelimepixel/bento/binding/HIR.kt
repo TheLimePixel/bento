@@ -34,7 +34,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     data class AssignmentExpr(
         override val ref: ASTRef,
-        val left: Ref?,
+        val left: Accessor?,
         val right: Expr,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = sequence {
@@ -44,15 +44,21 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     data class PathExpr(
         override val ref: ASTRef,
-        val binding: Ref,
+        val binding: Accessor,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
     sealed interface Pattern : HIR
 
-    data class IdentPattern(override val ref: ASTRef, val name: String) : Pattern {
+    data class IdentPattern(override val ref: ASTRef, val local: LocalRef) : Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    data class MutablePattern(override val ref: ASTRef, val nested: Pattern?) : Pattern {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            nested?.let { yield(it) }
+        }
     }
 
     data class WildcardPattern(override val ref: ASTRef) : Pattern {
@@ -75,7 +81,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
     data class ErrorExpr(
         override val ref: ASTRef,
         override val error: HIRError,
-    ) : Expr, Pattern {
+    ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -98,18 +104,22 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    data class Param(override val ref: ASTRef, val pattern: Pattern, val type: TypeRef?) : HIR {
-        override fun childSequence(): Sequence<HIR> = type?.let { sequenceOf(it) } ?: EmptySequence
+    data class Param(override val ref: ASTRef, val pattern: Pattern?, val type: TypeRef?) : HIR {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            pattern?.let { yield(it) }
+            type?.let { yield(it) }
+        }
     }
 
     sealed interface Def : HIR
 
     sealed interface FunctionLikeDef : Def {
-        val params: List<Param>
+        val params: List<Param>?
         val returnType: TypeRef?
-        val body: ScopeExpr?
+        val body: Expr?
 
         override fun childSequence(): Sequence<HIR> = sequence {
+            params?.let { yieldAll(it) }
             returnType?.let { yield(it) }
             body?.let { yield(it) }
         }
@@ -119,24 +129,19 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override val ref: ASTRef,
         override val params: List<Param>,
         override val returnType: TypeRef?,
-        override val body: ScopeExpr?
+        override val body: Expr?
     ) : FunctionLikeDef
 
     data class GetterDef(
         override val ref: ASTRef,
-        override val params: List<Param>,
         override val returnType: TypeRef?,
-        override val body: ScopeExpr?
-    ) : FunctionLikeDef
+        override val body: Expr?
+    ) : FunctionLikeDef {
+        override val params: List<Param>?
+            get() = null
+    }
 
-    data class SetterDef(
-        override val ref: ASTRef,
-        override val params: List<Param>,
-        override val returnType: TypeRef?,
-        override val body: ScopeExpr?
-    ) : FunctionLikeDef
-
-    data class ConstantDef(
+    data class LetDef(
         override val ref: ASTRef,
         val type: TypeRef?,
         val expr: Expr,

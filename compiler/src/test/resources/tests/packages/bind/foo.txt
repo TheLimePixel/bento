@@ -1,6 +1,6 @@
 ======= Function(packages::foo::foo) =======
 FunctionDef {
-  ref: FunDef@0..33
+  ref: FunDef@0..25
   params: []
   returnType: TypeRef {
     ref: Path@4..10
@@ -8,45 +8,41 @@ FunctionDef {
       bento::String
     }
   }
-  body: ScopeExpr {
-    ref: ScopeExpr@36..51
-    statements: [
-      StringExpr {
-        ref: StringLiteral@14..19
-        content: "Foo"
-      }
-    ]
+  body: StringExpr {
+    ref: StringLiteral@40..45
+    content: "Foo"
   }
 }
 
 ======= Function(packages::foo::main) =======
 FunctionDef {
-  ref: FunDef@0..40
+  ref: FunDef@0..32
   params: []
   returnType: null
-  body: ScopeExpr {
-    ref: ScopeExpr@22..51
-    statements: [
+  body: CallExpr {
+    ref: CallExpr@26..45
+    on: PathExpr {
+      ref: Path@0..7
+      binding: Accessor {
+        of: Function {
+          bento::io::println
+        }
+        type: Get
+      }
+    }
+    args: [
       CallExpr {
-        ref: CallExpr@14..33
+        ref: CallExpr@2..12
         on: PathExpr {
-          ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          ref: Path@0..8
+          binding: Accessor {
+            of: Function {
+              packages::bar::bar
+            }
+            type: Get
           }
         }
-        args: [
-          CallExpr {
-            ref: CallExpr@2..12
-            on: PathExpr {
-              ref: Path@0..8
-              binding: Function {
-                packages::bar::bar
-              }
-            }
-            args: []
-          }
-        ]
+        args: []
       }
     ]
   }

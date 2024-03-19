@@ -1,8 +1,7 @@
 package io.github.thelimepixel.bento.binding
 
 interface BindingContext {
-    fun refForImmutable(name: String): Ref?
-    fun refForMutable(name: String): Ref?
+    fun accessorFor(name: String): Accessor?
     fun packageNodeFor(name: String): PackageTreeNode?
     fun isInitialized(ref: Ref): Boolean
     fun astInfoOf(ref: ParentRef): ASTInfo?
@@ -15,27 +14,22 @@ class RootBindingContext(
 ) : BindingContext {
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
-    override fun refForImmutable(name: String): Ref? = parent.refForImmutable(name)
-    override fun refForMutable(name: String): Ref? = refForMutable(name)
+    override fun accessorFor(name: String): Accessor? = parent.accessorFor(name)
     override fun astInfoOf(ref: ParentRef): ASTInfo? = astInfoMap[ref] ?: parent.astInfoOf(ref)
 }
 
 class ParentBindingContext(
     private val parent: BindingContext?,
     private val current: ParentRef,
-    private val immutables: Map<String, ItemRef>,
-    private val mutables: Map<String, ItemRef>,
+    private val accessors: Map<String, Accessor>,
     private val packages: Map<String, PackageTreeNode>,
     private val initialized: Set<ItemRef>,
 ) : BindingContext {
-    override fun refForImmutable(name: String): Ref? =
-        immutables[name] ?: parent?.refForImmutable(name)
-
-    override fun refForMutable(name: String): Ref? =
-        mutables[name] ?: parent?.refForMutable(name)
+    override fun accessorFor(name: String): Accessor? =
+        accessors[name] ?: parent?.accessorFor(name)
 
     override fun isInitialized(ref: Ref): Boolean =
-        ref !is ItemRef || ref.type != ItemType.Constant || ref in initialized || ref.parent != current
+        ref !is ItemRef || ref.type != ItemType.StoredProperty || ref in initialized || ref.parent != current
 
     override fun packageNodeFor(name: String): PackageTreeNode? =
         packages[name] ?: parent?.packageNodeFor(name)
@@ -43,33 +37,50 @@ class ParentBindingContext(
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent?.astInfoOf(ref)
 }
 
-class FunctionBindingContext(
-    private val parent: BindingContext,
-    private val paramMap: Map<String, LocalRef>,
-) : BindingContext {
-    override fun refForImmutable(name: String): Ref? = paramMap[name] ?: parent.refForImmutable(name)
-    override fun refForMutable(name: String): Ref? = parent.refForMutable(name)
+interface LocalBindingContext : BindingContext {
+    fun addLocal(name: String, mutable: Boolean): LocalRef
+    fun addLocalTo(name: String, mutable: Boolean, map: MutableMap<String, Accessor>): LocalRef
+}
+
+class LocalItemBindingContext(private val parent: BindingContext) : LocalBindingContext {
+    private val localsMap = mutableMapOf<String, Accessor>()
+    private var localCounter = 0
+
+    override fun addLocal(name: String, mutable: Boolean): LocalRef =
+        addLocalTo(name, mutable, localsMap)
+
+    override fun addLocalTo(name: String, mutable: Boolean, map: MutableMap<String, Accessor>): LocalRef {
+        val ref = LocalRef(localCounter)
+        localCounter += 1
+        map[name] = Accessor(ref, AccessorType.Get)
+        if (mutable) map[name + "_="] = Accessor(ref, AccessorType.Set)
+        return ref
+    }
+
+    override fun accessorFor(name: String): Accessor? =
+        localsMap[name] ?: parent.accessorFor(name)
+
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
+
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
+
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 }
 
-class LocalBindingContext(private val parent: BindingContext) : BindingContext {
-    private val localsMap = mutableMapOf<String, LocalRef>()
+class ScopeBindingContext(private val parent: LocalBindingContext): LocalBindingContext {
+    private val localsMap = mutableMapOf<String, Accessor>()
 
-    fun addLocal(name: String, node: HIR.Pattern) {
-        localsMap[name] = LocalRef(node)
-    }
-
-    override fun refForImmutable(name: String): Ref? =
-        localsMap[name] ?: parent.refForImmutable(name)
-
-    override fun refForMutable(name: String): Ref? =
-        parent.refForMutable(name)
+    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
 
     override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
 
-    override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
+    override fun accessorFor(name: String): Accessor? = localsMap[name] ?: parent.accessorFor(name)
+
+    override fun addLocal(name: String, mutable: Boolean): LocalRef =
+        parent.addLocalTo(name, mutable, localsMap)
+
+    override fun addLocalTo(name: String, mutable: Boolean, map: MutableMap<String, Accessor>): LocalRef =
+        parent.addLocalTo(name, mutable, map)
 }

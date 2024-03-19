@@ -1,12 +1,9 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.HIR
-import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.ItemType
-import io.github.thelimepixel.bento.binding.LocalRef
+import io.github.thelimepixel.bento.binding.*
 
 typealias TC = TypingContext
-typealias FC = FunctionTypingContext
+typealias FC = LocalTypingContext
 
 interface Typechecking {
     fun type(hir: HIR.Def, context: TC): THIR?
@@ -15,26 +12,28 @@ interface Typechecking {
 class BentoTypechecking : Typechecking {
     override fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
         is HIR.FunctionLikeDef -> context.typeFunctionLikeDef(hir)
-        is HIR.ConstantDef -> context.typeConstantDef(hir)
+        is HIR.LetDef -> context.typeConstantDef(hir)
         is HIR.TypeDef, is HIR.Field -> null
     }
 
     private fun TC.typeFunctionLikeDef(hir: HIR.FunctionLikeDef): THIR? {
         val node = hir.body ?: return null
         val expect = hir.returnType.toType() ?: BuiltinTypes.unit
-        val childContext = FunctionTypingContext(
-            this,
-            hir.params.mapNotNull {
-                val pat = it.pattern as? HIR.IdentPattern ?: return@mapNotNull null
-                LocalRef(pat) to (it.type.toType() ?: BuiltinTypes.nothing)
-            }.toMap()
-        )
-
+        val childContext = LocalTypingContext(this)
+        hir.params?.forEach {
+            childContext.setLetPattern(it.pattern, it.type.toType() ?: BuiltinTypes.nothing)
+        }
         return childContext.expectExpr(node, expect)
     }
 
-    private fun TC.typeConstantDef(hir: HIR.ConstantDef): THIR {
-        val context = FunctionTypingContext(this, emptyMap())
+    private fun FC.setLetPattern(pattern: HIR.Pattern?, type: Type) {
+        val (getter, _) = pattern?.accessors ?: return
+        if (getter == null) return
+        this[getter.of] = type
+    }
+
+    private fun TC.typeConstantDef(hir: HIR.LetDef): THIR {
+        val context = LocalTypingContext(this)
         return context.expectExpr(hir.expr, hir.type.toType() ?: BuiltinTypes.unit)
     }
 
@@ -43,22 +42,27 @@ class BentoTypechecking : Typechecking {
         return if (expr.type == type) expr else THIRError.InvalidType.at(hir.ref, listOf(expr), type)
     }
 
-    private fun TC.typeIdentExpr(hir: HIR.PathExpr): THIR = when (val binding = hir.binding) {
-        is ItemRef -> when (binding.type) {
-            ItemType.Getter ->
-                THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+    private fun TC.typeIdentExpr(hir: HIR.PathExpr): THIR {
+        if (hir.binding.type != AccessorType.Get)
+            return THIRError.InvalidIdentifierUse.at(hir.ref)
 
-            ItemType.Constant ->
-                THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+        return when (val binding = hir.binding.of) {
+            is ItemRef -> when (binding.type) {
+                ItemType.Getter ->
+                    THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
 
-            ItemType.SingletonType ->
-                THIR.SingletonAccessExpr(hir.ref, PathType(binding))
+                ItemType.StoredProperty ->
+                    THIR.GetStoredExpr(hir.ref, typeOf(binding).accessType, binding)
 
-            ItemType.RecordType, ItemType.Setter, ItemType.Function, ItemType.Field ->
-                THIRError.InvalidIdentifierUse.at(hir.ref)
+                ItemType.SingletonType ->
+                    THIR.SingletonAccessExpr(hir.ref, PathType(binding))
+
+                ItemType.RecordType, ItemType.Function, ItemType.Field ->
+                    THIRError.InvalidIdentifierUse.at(hir.ref)
+            }
+
+            is LocalRef -> THIR.LocalAccessExpr(hir.ref, typeOf(binding), binding)
         }
-
-        is LocalRef -> THIR.LocalAccessExpr(hir.ref, typeOf(binding).accessType, binding)
     }
 
     private fun FC.typeExpr(hir: HIR.Expr, unit: Boolean): THIR = when (hir) {
@@ -75,22 +79,35 @@ class BentoTypechecking : Typechecking {
     private fun FC.typeAccessExpr(hir: HIR.AccessExpr): THIR {
         val on = typeExpr(hir.on, false)
         val member = memberOf(on.type.accessType.ref, hir.field) ?: return THIRError.UnknownMember.at(hir.ref)
-        return THIR.FieldAccessExpr(hir.ref, typeOf(member).accessType, member, on)
+        return THIR.FieldAccessExpr(hir.ref, typeOf(member.of).accessType, member.of as ItemRef, on)
     }
 
     private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR = hir.left?.let { left ->
-        THIR.CallExpr(hir.ref, typeOf(left).accessType, left as ItemRef, listOf(typeExpr(hir.right, false)))
+        val newValue = typeExpr(hir.right, false)
+        val type = typeOf(left)
+        if (type !is FunctionType)
+            return@let THIRError.CallOnNonFunction.at(hir.ref, listOf(newValue))
+        if (type.paramTypes.size != 1)
+            return@let THIRError.InvalidSetter.at(hir.ref, listOf(newValue))
+        val value =
+            if (type.paramTypes[0] == newValue.type) newValue
+            else THIRError.InvalidType.at(hir.ref, listOf(newValue))
+        when (val ref = left.of) {
+            is ItemRef -> when (ref.type) {
+                ItemType.Function -> THIR.CallExpr(hir.ref, BuiltinTypes.unit, ref, listOf(value))
+                ItemType.StoredProperty -> THIR.SetStoredExpr(hir.ref, ref, value)
+                else -> THIRError.InvalidSetter.at(hir.ref)
+            }
+
+            is LocalRef -> THIR.LocalAssignmentExpr(hir.ref, ref, value)
+        }
     } ?: THIRError.Propagation.at(hir.ref)
 
     private fun FC.typeLetExpr(hir: HIR.LetExpr): THIR {
         val expr = hir.type.toType()?.let { expectExpr(hir.expr, it) } ?: typeExpr(hir.expr, false)
-        val pattern = hir.pattern
 
-        return if (pattern is HIR.IdentPattern) {
-            val ref = LocalRef(pattern)
-            set(ref, expr.type)
-            THIR.LetExpr(hir.ref, ref, expr)
-        } else expr
+        setLetPattern(hir.pattern, expr.type)
+        return THIR.LetExpr(hir.ref, hir.pattern?.findId(), expr)
     }
 
     private fun FC.typeScope(hir: HIR.ScopeExpr, unit: Boolean): THIR.ScopeExpr {
@@ -100,13 +117,13 @@ class BentoTypechecking : Typechecking {
     }
 
     private fun FC.typeCall(hir: HIR.CallExpr): THIR {
-        val binding = (hir.on as? HIR.PathExpr)?.binding
+        val binding = (hir.on as? HIR.PathExpr)?.binding?.of
             ?: return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })
 
         if (binding is ItemRef) when (binding.type) {
             ItemType.Function -> return typeFunctionCall(binding, hir)
             ItemType.RecordType -> return typeConstructorCall(binding, hir)
-            ItemType.SingletonType, ItemType.Setter, ItemType.Getter, ItemType.Constant, ItemType.Field -> Unit
+            ItemType.SingletonType, ItemType.Getter, ItemType.StoredProperty, ItemType.Field -> Unit
         }
 
         return THIRError.CallOnNonFunction.at(hir.ref, hir.args.map { typeExpr(it, false) })

@@ -3,13 +3,12 @@ package io.github.thelimepixel.bento.binding
 import io.github.thelimepixel.bento.ast.ASTRef
 
 data class BoundImportData(
-    val mutableItems: Map<String, ItemRef>,
-    val immutableItems: Map<String, ItemRef>,
+    val accessors: Map<String, Accessor>,
     val packages: Map<String, PackageTreeNode>,
     val binding: List<BoundImportPath>,
 )
 
-val emptyImportData = BoundImportData(emptyMap(), emptyMap(), emptyMap(), emptyList())
+val emptyImportData = BoundImportData(emptyMap(), emptyMap(), emptyList())
 
 data class BoundImportPath(
     val ref: ASTRef,
@@ -19,5 +18,5 @@ data class BoundImportPath(
 data class BoundImportPathSegment(
     val ref: ASTRef,
     val node: PackageTreeNode?,
-    val items: List<ItemRef>
+    val item: Accessor?,
 )

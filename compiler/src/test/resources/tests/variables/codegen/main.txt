@@ -1,0 +1,31 @@
+// class version 52.0 (52)
+// access flags 0x11
+public final class variables/mainBt {
+
+
+  // access flags 0x9
+  public static main()V
+    LDC "a"
+    ASTORE 0
+    ALOAD 0
+    ASTORE 1
+    ALOAD 0
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    ALOAD 1
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    LDC "A"
+    ASTORE 2
+    LDC "b"
+    ASTORE 1
+    ALOAD 2
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    ALOAD 1
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    ALOAD 0
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    ALOAD 1
+    INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 3
+}

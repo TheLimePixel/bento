@@ -16,7 +16,7 @@ File
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(foo)
@@ -36,24 +36,20 @@ File
 │ │ │       └─StandardIdentifier(Foo)
 │ │ └─RParen
 │ ├─Whitespace( )
-│ └─ScopeExpr
-│   ├─LBrace
-│   ├─Newline
-│   ├─Whitespace(    )
-│   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
-│   │ │   └─StandardIdentifier(println)
-│   │ └─ArgList
-│   │   ├─LParen
-│   │   ├─StringLiteral("Foooooooooo")
-│   │   └─RParen
-│   ├─Newline
-│   └─RBrace
+│ ├─Equals
+│ ├─Whitespace( )
+│ └─CallExpr
+│   ├─Path
+│   │ └─Identifier
+│   │   └─StandardIdentifier(println)
+│   └─ArgList
+│     ├─LParen
+│     ├─StringLiteral("Foooooooooo")
+│     └─RParen
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(printBar)
@@ -73,36 +69,34 @@ File
 │ │ │       └─StandardIdentifier(Bar)
 │ │ └─RParen
 │ ├─Whitespace( )
-│ └─ScopeExpr
-│   ├─LBrace
-│   ├─Newline
-│   ├─Whitespace(    )
-│   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
-│   │ │   └─StandardIdentifier(println)
-│   │ └─ArgList
-│   │   ├─LParen
-│   │   ├─AccessExpr
-│   │   │ ├─Path
-│   │   │ │ └─Identifier
-│   │   │ │   └─StandardIdentifier(bar)
-│   │   │ ├─Dot
-│   │   │ └─Identifier
-│   │   │   └─StandardIdentifier(name)
-│   │   └─RParen
-│   ├─Newline
-│   └─RBrace
+│ ├─Equals
+│ ├─Whitespace( )
+│ └─CallExpr
+│   ├─Path
+│   │ └─Identifier
+│   │   └─StandardIdentifier(println)
+│   └─ArgList
+│     ├─LParen
+│     ├─AccessExpr
+│     │ ├─Path
+│     │ │ └─Identifier
+│     │ │   └─StandardIdentifier(bar)
+│     │ ├─Dot
+│     │ └─Identifier
+│     │   └─StandardIdentifier(name)
+│     └─RParen
 ├─Newline
 ├─Newline
 ├─FunDef
-│ ├─FunKeyword
+│ ├─DefKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
 │ │ └─RParen
+│ ├─Whitespace( )
+│ ├─Equals
 │ ├─Whitespace( )
 │ └─ScopeExpr
 │   ├─LBrace

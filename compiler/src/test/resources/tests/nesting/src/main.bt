@@ -1,20 +1,17 @@
-fun baz(_: String): String {
-    "Hello from Baz!"
-}
+def baz(_: String): String = "Hello from Baz!"
 
-fun bar() {
+def bar() = {
     println(baz("Hellope!"))
     println("Hello from Bar!")
 }
 
-fun foo(text: String) {
+def foo(text: String) =
     println({
         bar()
         (text)
     })
-}
 
-fun main() {
+def main() = {
     foo("Hello from Foo!")
     println("Hello from Main!")
 }

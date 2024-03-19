@@ -1,9 +1,5 @@
 import { packages::bar }
 
-fun foo(): String {
-    "Foo"
-}
+def foo(): String = "Foo"
 
-fun main() {
-    println(bar::bar())
-}
+def main() = println(bar::bar())

@@ -36,12 +36,11 @@ class SourceTests {
                 RootRef,
                 BuiltinRefs.map,
                 emptyMap(),
-                emptyMap(),
                 emptySet()
             ),
             topTypingContext = typingContext,
             topJVMBindingContext = TopLevelJVMBindingContext(
-                printlnFilePath = pathOf("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
+                printlnFilePath = packageAt("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
                 printlnName = "fakePrintln",
                 stringJVMType = "java/lang/String",
                 unitJVMType = "kotlin/Unit",
@@ -75,7 +74,7 @@ class SourceTests {
         }
     }
 
-    private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File): Unit = with (createInstance()) {
+    private suspend fun SequenceScope<DynamicTest>.handleTestDir(dir: File): Unit = with(createInstance()) {
         val sources = mutableMapOf<SubpackageRef, String>()
         val rootPath = SubpackageRef(RootRef, dir.name)
 
@@ -129,11 +128,9 @@ class SourceTests {
 
         val classes = sources.keys.associateWith { pack ->
             val classes = bentoCodegen.generate(pack, astMap[pack]!!.items, jvmBindingContext, hirMap, thirMap)
-            test(
-                dir,
-                "Codegen",
-                pack
-            ) { classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) } }
+            test(dir, "Codegen", pack) {
+                classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) }
+            }
             classes.map { (name, clazz) -> classLoader.load(name, clazz) }.last()
         }
 
@@ -143,7 +140,11 @@ class SourceTests {
     }
 
     private fun invokeBytecode(`class`: Class<*>): String {
-        `class`.getDeclaredMethod("main").invoke(null)
+        try {
+            `class`.getDeclaredMethod("main").invoke(null)
+        } catch (e: Exception) {
+            printBuffer.append(e)
+        }
         return printBuffer.toString().also { printBuffer.clear() }
     }
 

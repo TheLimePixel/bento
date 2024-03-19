@@ -23,21 +23,21 @@ class BentoBinding : Binding {
         val context = ParentBindingContext(
             parentContext,
             parentRef,
-            info.items.asSequence().filter { it.type.immutable }.associateBy { it.name } + importData.immutableItems,
-            info.items.asSequence().filter { it.type.mutable }.associateBy { it.name } + importData.mutableItems,
+            info.accessors + importData.accessors,
             importData.packages,
             initialized,
         )
-        return info.items.associateWith { ref ->
+        val (stored, computed) = info.items.partition { it.type == ItemType.StoredProperty }
+        return stored.associateWith { ref ->
             context.bindDefinition(ref, info.dataMap[ref.name]!![ref.index].toRedRoot())
                 .also { initialized.add(ref) }
+        } + computed.associateWith { ref ->
+            context.bindDefinition(ref, info.dataMap[ref.name]!![ref.index].toRedRoot())
         }
     }
 
     private fun BC.bindDefinition(ref: ParentRef, node: RedNode): HIR.Def = when (node.type) {
-        ST.FunDef -> bindFunctionLike(node, HIR::FunctionDef)
-        ST.GetDef -> bindFunctionLike(node, HIR::GetterDef)
-        ST.SetDef -> bindFunctionLike(node, HIR::SetterDef)
+        ST.FunDef -> bindFunctionLike(node)
         ST.LetDef -> bindLet(node)
         ST.TypeDef -> bindTypeDef(ref, node)
         ST.Field -> bindField(node)
@@ -60,53 +60,47 @@ class BentoBinding : Binding {
         .firstChild(SyntaxType.TypeAnnotation)
         ?.firstChild(SyntaxType.Path)
         ?.let {
-            val itemRef = handlePath(it, false)
+            val itemRef = handlePath(it, false)?.of ?: return@let null
             if (itemRef is ItemRef && itemRef.type.isType)
                 HIR.TypeRef(it.ref, itemRef)
             else null
         }
 
-    private fun findAndBindPattern(node: RedNode): HIR.Pattern = node.firstChild(BaseSets.patterns)?.let {
-        when (it.type) {
-            ST.IdentPattern -> HIR.IdentPattern(it.ref, it.rawContent)
-            ST.WildcardPattern -> HIR.WildcardPattern(it.ref)
-            else -> error("Unsupported pattern type: ${it.type}")
+    private fun LC.findAndBindPattern(node: RedNode, mutable: Boolean): HIR.Pattern? =
+        node.firstChild(BaseSets.patterns)?.let {
+            when (it.type) {
+                ST.IdentPattern -> HIR.IdentPattern(it.ref, addLocal(it.rawContent, mutable))
+                ST.WildcardPattern -> HIR.WildcardPattern(it.ref)
+                ST.MutPattern -> HIR.MutablePattern(it.ref, findAndBindPattern(it, true))
+                else -> error("Unsupported pattern type: ${it.type}")
+            }
         }
-    } ?: HIRError.Propagation.at(node.ref)
 
-    private fun BC.bindParamList(node: RedNode): List<HIR.Param> = node.firstChild(SyntaxType.ParamList)
+    private fun LC.bindParamList(node: RedNode): List<HIR.Param>? = node.firstChild(SyntaxType.ParamList)
         ?.childSequence()
         ?.filter { it.type == SyntaxType.Param }
         ?.map {
-            val name = findAndBindPattern(it)
+            val name = findAndBindPattern(it, false)
             val type = findAndBindTypeAnnotation(it)
             HIR.Param(it.ref, name, type)
         }
         ?.toList()
-        ?: emptyList()
 
-    private inline fun BC.bindFunctionLike(
-        node: RedNode, ctor: (
-            ref: ASTRef, params: List<HIR.Param>, returnType: HIR.TypeRef?, body: HIR.ScopeExpr?
-        ) -> HIR.FunctionLikeDef
-    ): HIR.FunctionLikeDef {
-        val params = bindParamList(node)
+    private fun BC.bindFunctionLike(node: RedNode): HIR.FunctionLikeDef {
+        val context = LocalItemBindingContext(this)
+        val params = context.bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
-        val context = FunctionBindingContext(
-            this, params.asSequence().mapNotNull { it.pattern as? HIR.IdentPattern }
-                .associateBy({ it.name }, { LocalRef((it)) })
-        )
-        val body = node.lastChild(SyntaxType.ScopeExpr)?.let { context.bindScope(it) }
+        val body = node.lastChild(BaseSets.expressions)?.let { context.bindResultingExpression(it) }
 
-        return ctor(node.ref, params, returnType, body)
+        return if (params == null) HIR.GetterDef(node.ref, returnType, body)
+        else HIR.FunctionDef(node.ref, params, returnType, body)
     }
 
-    private fun BC.bindLet(node: RedNode): HIR.ConstantDef {
+    private fun BC.bindLet(node: RedNode): HIR.LetDef {
         val type = findAndBindTypeAnnotation(node)
-        val context = LocalBindingContext(this)
-        val body = node.lastChild(BaseSets.expressions)?.let { context.bindExpr(it) }
+        val body = node.lastChild(BaseSets.expressions)?.let { bindResultingExpression(it) }
             ?: HIRError.Propagation.at(node.ref)
-        return HIR.ConstantDef(node.ref, type, body)
+        return HIR.LetDef(node.ref, type, body)
     }
 
     private fun LC.bindCall(node: RedNode): HIR.CallExpr {
@@ -124,25 +118,24 @@ class BentoBinding : Binding {
 
     private fun BC.bindIdentifier(node: RedNode) = handlePath(node, mutable = false)
         ?.let {
-            if (isInitialized(it)) HIR.PathExpr(node.ref, it)
+            if (isInitialized(it.of)) HIR.PathExpr(node.ref, it)
             else HIR.ErrorExpr(node.ref, HIRError.UninitializedConstant)
         } ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
 
-    private fun BC.handlePath(node: RedNode, mutable: Boolean): Ref? {
+    private fun BC.handlePath(node: RedNode, mutable: Boolean): Accessor? {
         val segments = node.childSequence().filter { it.type == ST.Identifier }.toList()
 
         if (segments.size == 1) {
             val name = segments[0].rawContent
-            return if (mutable) refForMutable(name) else refForImmutable(name)
+            return if (mutable) accessorFor(name + "_=") else accessorFor(name)
         }
 
         var packNode = packageNodeFor(segments.first().rawContent) ?: return null
         segments.subList(1, segments.lastIndex).forEach {
             packNode = packNode.children[it.rawContent] ?: return null
         }
-        return (astInfoOf(packNode.path) ?: return null)
-            .items.filter { it.name == segments.last().rawContent }
-            .lastOrNull { it.type.mutable == mutable }
+        val lastName = segments.last().rawContent + if (mutable) "_=" else ""
+        return (astInfoOf(packNode.path) ?: return null).accessors[lastName]
     }
 
     private fun LC.bindExpr(node: RedNode): HIR.Expr = when (node.type) {
@@ -150,7 +143,7 @@ class BentoBinding : Binding {
         ST.Path -> bindIdentifier(node)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
-        ST.LetExpr -> bindLet(node)
+        ST.LetExpr -> bindLetExpr(node)
         ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
         ST.AssignmentExpr -> bindAssignmentExpr(node)
         ST.AccessExpr -> bindAccessExpr(node)
@@ -176,20 +169,20 @@ class BentoBinding : Binding {
         node.firstChild(BaseSets.expressions)?.let { bindExpr(it) }
             ?: HIRError.Propagation.at(node.ref)
 
-    private fun LC.bindLet(node: RedNode): HIR.LetExpr {
-        val pattern = findAndBindPattern(node)
+    private fun LC.bindLetExpr(node: RedNode): HIR.LetExpr {
+        val pattern = findAndBindPattern(node, false)
         val type = findAndBindTypeAnnotation(node)
         val expr = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) }
             ?: HIRError.Propagation.at(node.ref)
 
-        if (pattern is HIR.IdentPattern)
-            addLocal(pattern.name, pattern)
-
         return HIR.LetExpr(node.ref, pattern, type, expr)
     }
 
-    private fun BC.bindScope(node: RedNode): HIR.ScopeExpr {
-        val context = LocalBindingContext(this)
+    private fun BC.bindResultingExpression(node: RedNode): HIR.Expr =
+        LocalItemBindingContext(this).bindExpr(node)
+
+    private fun LC.bindScope(node: RedNode): HIR.ScopeExpr {
+        val context = ScopeBindingContext(this)
         val statements = node
             .childSequence()
             .filter { it.type in BaseSets.expressions }
@@ -201,23 +194,21 @@ class BentoBinding : Binding {
 
     override fun bindImport(node: GreenNode?, context: RC): BoundImportData {
         val block = node?.toRedRoot()?.firstChild(ST.ImportBlock) ?: return emptyImportData
-        val importedMutableItems = mutableMapOf<String, ItemRef>()
-        val importedImmutableItems = mutableMapOf<String, ItemRef>()
+        val importedItems = mutableMapOf<String, Accessor>()
         val importedPackages = mutableMapOf<String, PackageTreeNode>()
         val paths = block.childSequence()
             .filter { it.type == ST.ImportPath }
             .map {
-                context.bindImportPath(it, importedMutableItems, importedImmutableItems, importedPackages)
+                context.bindImportPath(it, importedItems, importedPackages)
             }
             .toList()
 
-        return BoundImportData(importedMutableItems, importedImmutableItems, importedPackages, paths)
+        return BoundImportData(importedItems, importedPackages, paths)
     }
 
     private fun RC.bindImportPath(
         node: RedNode,
-        importedMutableItems: MutableMap<String, ItemRef>,
-        importedImmutableItems: MutableMap<String, ItemRef>,
+        importedItems: MutableMap<String, Accessor>,
         importedPackages: MutableMap<String, PackageTreeNode>,
     ): BoundImportPath {
         var lastPackage: PackageTreeNode? = root
@@ -226,21 +217,41 @@ class BentoBinding : Binding {
             .filter { it.type == ST.Identifier }
             .map { segment ->
                 name = segment.rawContent
-                val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.ref, null, emptyList())
+                val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.ref, null, null)
                 lastPackage = lastPack.children[name]
-                val items =
-                    astInfoMap[lastPack.path]?.items?.filter { it.name == name } ?: emptyList()
-                BoundImportPathSegment(segment.ref, lastPackage, items)
+                val item = astInfoMap[lastPack.path]?.accessors?.get(name)
+                BoundImportPathSegment(segment.ref, lastPackage, item)
             }
             .toList()
 
         segments.lastOrNull()?.let { lastSeg ->
             lastSeg.node?.let { importedPackages[name] = it }
-            lastSeg.items.forEach {
-                (if (it.type.mutable) importedMutableItems else importedImmutableItems)[name] = it
-            }
+            lastSeg.item?.let { importedItems[name] = it }
         }
 
         return BoundImportPath(node.ref, segments)
     }
+}
+
+val HIR.Pattern.accessors get(): Pair<Accessor?, Accessor?> = getRefsFor(this, false)
+
+fun HIR.Pattern.findId(): LocalRef? = when (this) {
+    is HIR.IdentPattern -> this.local
+    is HIR.MutablePattern -> this.nested?.findId()
+    is HIR.WildcardPattern -> null
+}
+
+private tailrec fun getRefsFor(pattern: HIR.Pattern, mutable: Boolean): Pair<Accessor?, Accessor?> = when (pattern) {
+    is HIR.IdentPattern -> {
+        val first = Accessor(pattern.local, AccessorType.Get)
+        val second = if (mutable) Accessor(pattern.local, AccessorType.Set) else null
+        first to second
+    }
+
+    is HIR.MutablePattern -> {
+        val nested = pattern.nested
+        if (nested == null) null to null else getRefsFor(nested, true)
+    }
+
+    is HIR.WildcardPattern -> null to null
 }
