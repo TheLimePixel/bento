@@ -334,9 +334,8 @@ foo(b: 10)          // a and c get defalut values
 - [Scopes](features.md#scopes)
 - [Type Annotations](features.md#type-annotations)
 
-A `let` statement can be used to bind a value to a pattern for the rest of
-the scope. It consists of the `let` keyword, a pattern, an optional type annotation, and an
-expression following an equals sign.
+A `let` statement can be used to bind a value to a pattern for the rest of the scope. It consists of the `let` keyword, 
+a pattern, an optional type annotation, and an expression following an equals sign.
 
 For example:
 
@@ -366,26 +365,16 @@ def main() = {
 }
 ```
 
-## Top Level Let
+## Properties
 
 #### Requires
 
 - [Let Statement](features.md#let-statement)
 
-Just as in the local scope, `let` can be used in the global scope to make globally-accessible
-bindings to values which are only created once; when the file is being initialized.
-
-## Properties
-
-#### Requires
-
-- [Top Level Let](features.md#let-statement)
-
-In declaration scopes, rather than having constants, there are properties. A property is an identifier which is
-associated to some value, which may be a stored in memory or recomputed every time. Each property consists of
-a getter and a setter. The first one is called when using the identifier and the latter when following it with an
-equals sign and a value. Top-level `let` statements essentially store a value in memory and create a getter which is
-used to access it.
+In declaration scopes instead of local variables there are properties. A property is an identifier which is
+associated with some value, which may be a stored in memory or recomputed every time. Each property consists of
+a getter and a setter. The first one is called when using the identifier, and the latter by following it up with an
+equals sign and a value.
 
 ## Getters
 
@@ -423,6 +412,32 @@ For example:
 def foo_=(s: String) = {
   println("Tried to set foo to:")
   println(s)
+}
+```
+
+## Top Level Let
+
+#### Requires
+
+- [Properties](features.md#properties)
+
+Let statements can be used in declaration scopes as well for creating "stored properties" where rather than being 
+recomputed every time their value is stored and change in memory. Unlike normal let statements, here the type 
+annotation is required and only identifier and `mut` patterns are allowed.
+
+For example:
+
+```
+let mut message: String = "Hi"
+
+def update() = {  
+  message = "Bye"
+}
+
+def main() = {
+  println(message)  // Hi
+  update()
+  println(message)  // Bye
 }
 ```
 
