@@ -31,7 +31,7 @@ fun HIR.Def.type(defRef: ItemRef): Type = when (this) {
         paramTypes = params?.map { it.type.toType() ?: BuiltinTypes.nothing } ?: emptyList(),
         returnType = PathType(this.returnType?.type ?: BuiltinRefs.unit)
     )
-    is HIR.ConstantDef -> FunctionType(emptyList(),  PathType(this.type?.type ?: BuiltinRefs.unit))
+    is HIR.LetDef -> PathType(this.type?.type ?: BuiltinRefs.nothing)
     is HIR.Field -> this.type?.toType() ?: BuiltinTypes.nothing
 }
 

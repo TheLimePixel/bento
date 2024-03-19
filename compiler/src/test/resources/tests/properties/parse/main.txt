@@ -36,20 +36,40 @@ File
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
-│ └─CallExpr
-│   ├─Path
-│   │ └─Identifier
-│   │   └─StandardIdentifier(println)
-│   └─ArgList
-│     ├─LParen
-│     ├─Path
-│     │ └─Identifier
-│     │   └─StandardIdentifier(new)
-│     └─RParen
+│ └─ScopeExpr
+│   ├─LBrace
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─CallExpr
+│   │ ├─Path
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─Path
+│   │   │ └─Identifier
+│   │   │   └─BacktickedIdentifier(`Hey, World!`)
+│   │   └─RParen
+│   ├─Newline
+│   ├─Whitespace(    )
+│   ├─AssignmentExpr
+│   │ ├─Path
+│   │ │ └─Identifier
+│   │ │   └─BacktickedIdentifier(`Hey, World!`)
+│   │ ├─Whitespace( )
+│   │ ├─Equals
+│   │ ├─Whitespace( )
+│   │ └─Path
+│   │   └─Identifier
+│   │     └─StandardIdentifier(new)
+│   ├─Newline
+│   └─RBrace
 ├─Newline
 ├─Newline
 ├─LetDef
 │ ├─LetKeyword
+│ ├─Whitespace( )
+│ ├─MutKeyword
 │ ├─Whitespace( )
 │ ├─Identifier
 │ │ └─BacktickedIdentifier(`Hey, World!`)
@@ -99,9 +119,19 @@ File
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
-│   │ └─Path
-│   │   └─Identifier
-│   │     └─BacktickedIdentifier(`Hey, World!`)
+│   │ └─StringLiteral("Bye, World!")
+│   ├─Newline
+│   ├─Whitespace(  )
+│   ├─CallExpr
+│   │ ├─Path
+│   │ │ └─Identifier
+│   │ │   └─StandardIdentifier(println)
+│   │ └─ArgList
+│   │   ├─LParen
+│   │   ├─Path
+│   │   │ └─Identifier
+│   │   │   └─BacktickedIdentifier(`Hey, World!`)
+│   │   └─RParen
 │   ├─Newline
 │   └─RBrace
 └─EOF

@@ -9,9 +9,7 @@ interface JVMBindingContext {
 
     fun jvmClassOf(ref: PathType): String
 
-    fun jvmTypeOf(ref: PathType): String = "L${jvmClassOf(ref)};"
-
-    fun localId(ref: LocalId): Int
+    fun localId(ref: LocalRef): Int
 
     fun hirOf(ref: ItemRef): HIR.Def
 }
@@ -47,15 +45,15 @@ class TopLevelJVMBindingContext(
         else -> ref.ref.toJVMPath()
     }
 
-    override fun localId(ref: LocalId): Int = error("Unexpected call")
+    override fun localId(ref: LocalRef): Int = error("Unexpected call")
 
     override fun hirOf(ref: ItemRef): HIR.Def = error("Missing definition")
 }
 
 val ItemRef.jvmName
     get() = when (type) {
-        ItemType.Getter, ItemType.Constant -> "get" + rawName.capitalize()
-        ItemType.SingletonType, ItemType.Function, ItemType.RecordType, ItemType.Field -> rawName
+        ItemType.Getter -> "get" + rawName.capitalize()
+        ItemType.SingletonType, ItemType.Function, ItemType.RecordType, ItemType.Field, ItemType.StoredProperty -> rawName
     }
 
 internal fun String.capitalize() = replaceFirstChar {
@@ -72,28 +70,30 @@ class FileJVMBindingContext(
     override fun signatureOf(ref: ItemRef): JVMSignature =
         if (ref == BuiltinRefs.println) parent.signatureOf(ref)
         else JVMSignature(
-            parent = ref.fileJVMPath,
+            parent = ref.parentJVMFilePath,
             name = ref.jvmName,
             descriptor = mapType(typingContext.typeOf(ref), false)
         )
 
-    override fun localId(ref: LocalId): Int = parent.localId(ref)
+    override fun localId(ref: LocalRef): Int = parent.localId(ref)
 
     override fun hirOf(ref: ItemRef): HIR.Def = hirMap[ref] ?: parent.hirOf(ref)
 }
 
-val ItemRef.fileJVMPath: String
+val ItemRef.parentJVMFilePath: String
     get() = parent.toJVMPath() + "Bt"
 
 class LocalJVMBindingContext(
     private val parent: JVMBindingContext,
-    private val localMap: Map<LocalId, Int>
+    private val localMap: Map<LocalRef, Int>
 ): JVMBindingContext {
     override fun jvmClassOf(ref: PathType): String = parent.jvmClassOf(ref)
 
     override fun signatureOf(ref: ItemRef): JVMSignature = parent.signatureOf(ref)
 
-    override fun localId(ref: LocalId): Int = localMap[ref]!!
+    override fun localId(ref: LocalRef): Int = localMap[ref]!!
 
     override fun hirOf(ref: ItemRef): HIR.Def = parent.hirOf(ref)
 }
+
+fun JVMBindingContext.jvmTypeOf(ref: PathType): String = "L${jvmClassOf(ref)};"

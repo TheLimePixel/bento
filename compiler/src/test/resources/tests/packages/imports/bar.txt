@@ -1,7 +1,10 @@
 BoundImportData {
-  items: {
-    foo: Function {
-      packages::foo::foo
+  accessors: {
+    foo: Accessor {
+      of: Function {
+        packages::foo::foo
+      }
+      type: Get
     }
   }
   packages: {}
@@ -15,21 +18,22 @@ BoundImportData {
             bar: packages::bar: {}
             foo: packages::foo: {}
           }
-          items: []
+          item: null
         }
         BoundImportPathSegment {
           ref: Identifier@20..23
           node: packages::foo: {}
-          items: []
+          item: null
         }
         BoundImportPathSegment {
           ref: Identifier@30..33
           node: null
-          items: [
-            Function {
+          item: Accessor {
+            of: Function {
               packages::foo::foo
             }
-          ]
+            type: Get
+          }
         }
       ]
     }

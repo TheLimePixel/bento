@@ -23,8 +23,11 @@ FunctionDef {
     ref: CallExpr@26..45
     on: PathExpr {
       ref: Path@0..7
-      binding: Function {
-        bento::io::println
+      binding: Accessor {
+        of: Function {
+          bento::io::println
+        }
+        type: Get
       }
     }
     args: [
@@ -32,8 +35,11 @@ FunctionDef {
         ref: CallExpr@2..12
         on: PathExpr {
           ref: Path@0..8
-          binding: Function {
-            packages::bar::bar
+          binding: Accessor {
+            of: Function {
+              packages::bar::bar
+            }
+            type: Get
           }
         }
         args: []

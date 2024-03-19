@@ -21,8 +21,11 @@ FunctionDef {
     ref: CallExpr@54..76
     on: PathExpr {
       ref: Path@0..7
-      binding: Function {
-        bento::io::println
+      binding: Accessor {
+        of: Function {
+          bento::io::println
+        }
+        type: Get
       }
     }
     args: [
@@ -57,8 +60,11 @@ FunctionDef {
     ref: CallExpr@64..81
     on: PathExpr {
       ref: Path@0..7
-      binding: Function {
-        bento::io::println
+      binding: Accessor {
+        of: Function {
+          bento::io::println
+        }
+        type: Get
       }
     }
     args: [
@@ -66,9 +72,9 @@ FunctionDef {
         ref: AccessExpr@2..10
         on: PathExpr {
           ref: Path@0..3
-          binding: AccessorRef {
+          binding: Accessor {
             of: $0
-            type: Getter
+            type: Get
           }
         }
         field: name
@@ -89,15 +95,21 @@ FunctionDef {
         ref: CallExpr@14..29
         on: PathExpr {
           ref: Path@0..3
-          binding: Function {
-            types::main::foo
+          binding: Accessor {
+            of: Function {
+              types::main::foo
+            }
+            type: Get
           }
         }
         args: [
           PathExpr {
             ref: Path@2..12
-            binding: SingletonType {
-              types::types::Foo
+            binding: Accessor {
+              of: SingletonType {
+                types::types::Foo
+              }
+              type: Get
             }
           }
         ]
@@ -106,8 +118,11 @@ FunctionDef {
         ref: CallExpr@56..83
         on: PathExpr {
           ref: Path@0..8
-          binding: Function {
-            types::main::printBar
+          binding: Accessor {
+            of: Function {
+              types::main::printBar
+            }
+            type: Get
           }
         }
         args: [
@@ -115,8 +130,11 @@ FunctionDef {
             ref: CallExpr@2..19
             on: PathExpr {
               ref: Path@0..10
-              binding: RecordType {
-                types::types::Bar
+              binding: Accessor {
+                of: RecordType {
+                  types::types::Bar
+                }
+                type: Get
               }
             }
             args: [

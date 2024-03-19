@@ -39,8 +39,11 @@ FunctionDef {
         ref: CallExpr@14..38
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [
@@ -48,8 +51,11 @@ FunctionDef {
             ref: CallExpr@2..17
             on: PathExpr {
               ref: Path@0..3
-              binding: Function {
-                nesting::main::baz
+              binding: Accessor {
+                of: Function {
+                  nesting::main::baz
+                }
+                type: Get
               }
             }
             args: [
@@ -65,8 +71,11 @@ FunctionDef {
         ref: CallExpr@74..100
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [
@@ -103,8 +112,11 @@ FunctionDef {
     ref: CallExpr@58..106
     on: PathExpr {
       ref: Path@0..7
-      binding: Function {
-        bento::io::println
+      binding: Accessor {
+        of: Function {
+          bento::io::println
+        }
+        type: Get
       }
     }
     args: [
@@ -115,17 +127,20 @@ FunctionDef {
             ref: CallExpr@22..27
             on: PathExpr {
               ref: Path@0..3
-              binding: Function {
-                nesting::main::bar
+              binding: Accessor {
+                of: Function {
+                  nesting::main::bar
+                }
+                type: Get
               }
             }
             args: []
           }
           PathExpr {
             ref: Path@2..6
-            binding: AccessorRef {
+            binding: Accessor {
               of: $0
-              type: Getter
+              type: Get
             }
           }
         ]
@@ -146,8 +161,11 @@ FunctionDef {
         ref: CallExpr@14..36
         on: PathExpr {
           ref: Path@0..3
-          binding: Function {
-            nesting::main::foo
+          binding: Accessor {
+            of: Function {
+              nesting::main::foo
+            }
+            type: Get
           }
         }
         args: [
@@ -161,8 +179,11 @@ FunctionDef {
         ref: CallExpr@70..97
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [

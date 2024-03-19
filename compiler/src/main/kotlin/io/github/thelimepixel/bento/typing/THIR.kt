@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.LocalId
+import io.github.thelimepixel.bento.binding.LocalRef
 import io.github.thelimepixel.bento.ast.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
@@ -26,7 +26,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class LetExpr(
         override val ref: ASTRef,
-        val local: LocalId?,
+        val local: LocalRef?,
         val expr: THIR
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = sequenceOf(expr)
@@ -41,6 +41,24 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         val args: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
+    }
+
+    data class GetStoredExpr(
+        override val ref: ASTRef,
+        override val type: Type,
+        val property: ItemRef,
+    ) : THIR {
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+    }
+
+    data class SetStoredExpr(
+        override val ref: ASTRef,
+        val property: ItemRef,
+        val value: THIR,
+    ) : THIR {
+        override val type: Type
+            get() = BuiltinTypes.unit
+        override fun childSequence(): Sequence<THIR> = sequenceOf(value)
     }
 
     data class ConstructorCallExpr(
@@ -76,14 +94,14 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class LocalAccessExpr(
         override val ref: ASTRef,
         override val type: Type,
-        val binding: LocalId,
+        val binding: LocalRef,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 
     data class LocalAssignmentExpr(
         override val ref: ASTRef,
-        val binding: LocalId,
+        val binding: LocalRef,
         val value: THIR,
     ) : THIR {
         override val type: Type

@@ -30,9 +30,9 @@ FunctionDef {
         type: null
         expr: PathExpr {
           ref: Path@24..25
-          binding: AccessorRef {
+          binding: Accessor {
             of: $0
-            type: Getter
+            type: Get
           }
         }
       }
@@ -40,16 +40,19 @@ FunctionDef {
         ref: CallExpr@86..96
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [
           PathExpr {
             ref: Path@2..3
-            binding: AccessorRef {
+            binding: Accessor {
               of: $0
-              type: Getter
+              type: Get
             }
           }
         ]
@@ -58,16 +61,19 @@ FunctionDef {
         ref: CallExpr@118..128
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [
           PathExpr {
             ref: Path@2..3
-            binding: AccessorRef {
+            binding: Accessor {
               of: $1
-              type: Getter
+              type: Get
             }
           }
         ]
@@ -89,9 +95,9 @@ FunctionDef {
           }
           AssignmentExpr {
             ref: AssignmentExpr@64..71
-            left: AccessorRef {
+            left: Accessor {
               of: $1
-              type: Setter
+              type: Set
             }
             right: StringExpr {
               ref: StringLiteral@8..11
@@ -102,16 +108,19 @@ FunctionDef {
             ref: CallExpr@98..108
             on: PathExpr {
               ref: Path@0..7
-              binding: Function {
-                bento::io::println
+              binding: Accessor {
+                of: Function {
+                  bento::io::println
+                }
+                type: Get
               }
             }
             args: [
               PathExpr {
                 ref: Path@2..3
-                binding: AccessorRef {
+                binding: Accessor {
                   of: $2
-                  type: Getter
+                  type: Get
                 }
               }
             ]
@@ -120,16 +129,19 @@ FunctionDef {
             ref: CallExpr@138..148
             on: PathExpr {
               ref: Path@0..7
-              binding: Function {
-                bento::io::println
+              binding: Accessor {
+                of: Function {
+                  bento::io::println
+                }
+                type: Get
               }
             }
             args: [
               PathExpr {
                 ref: Path@2..3
-                binding: AccessorRef {
+                binding: Accessor {
                   of: $1
-                  type: Getter
+                  type: Get
                 }
               }
             ]
@@ -140,16 +152,19 @@ FunctionDef {
         ref: CallExpr@334..344
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [
           PathExpr {
             ref: Path@2..3
-            binding: AccessorRef {
+            binding: Accessor {
               of: $0
-              type: Getter
+              type: Get
             }
           }
         ]
@@ -158,16 +173,19 @@ FunctionDef {
         ref: CallExpr@366..376
         on: PathExpr {
           ref: Path@0..7
-          binding: Function {
-            bento::io::println
+          binding: Accessor {
+            of: Function {
+              bento::io::println
+            }
+            type: Get
           }
         }
         args: [
           PathExpr {
             ref: Path@2..3
-            binding: AccessorRef {
+            binding: Accessor {
               of: $1
-              type: Getter
+              type: Get
             }
           }
         ]

@@ -1,10 +1,14 @@
 def hello: String = "Hello, World!"
 
-def hello_=(new: String) = println(new)
+def hello_=(new: String) = {
+    println(`Hey, World!`)
+    `Hey, World!` = new
+}
 
-let `Hey, World!`: String = "Hey, World!"
+let mut `Hey, World!`: String = "Hey, World!"
 
 def main() = {
   println(hello)
-  hello = `Hey, World!`
+  hello = "Bye, World!"
+  println(`Hey, World!`)
 }

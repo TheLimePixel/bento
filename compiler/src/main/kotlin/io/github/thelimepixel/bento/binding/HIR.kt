@@ -34,7 +34,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     data class AssignmentExpr(
         override val ref: ASTRef,
-        val left: Ref?,
+        val left: Accessor?,
         val right: Expr,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = sequence {
@@ -44,14 +44,14 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     data class PathExpr(
         override val ref: ASTRef,
-        val binding: Ref,
+        val binding: Accessor,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
     sealed interface Pattern : HIR
 
-    data class IdentPattern(override val ref: ASTRef, val local: LocalId) : Pattern {
+    data class IdentPattern(override val ref: ASTRef, val local: LocalRef) : Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -141,7 +141,7 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
             get() = null
     }
 
-    data class ConstantDef(
+    data class LetDef(
         override val ref: ASTRef,
         val type: TypeRef?,
         val expr: Expr,

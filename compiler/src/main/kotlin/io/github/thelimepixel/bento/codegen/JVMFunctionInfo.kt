@@ -1,12 +1,12 @@
 package io.github.thelimepixel.bento.codegen
 
 import io.github.thelimepixel.bento.binding.HIR
-import io.github.thelimepixel.bento.binding.LocalId
+import io.github.thelimepixel.bento.binding.LocalRef
 import io.github.thelimepixel.bento.binding.findId
 import io.github.thelimepixel.bento.typing.THIR
 import kotlin.math.max
 
-data class JVMFunctionInfo(val maxLocals: Int, val maxStackSize: Int, val varIds: Map<LocalId, Int>)
+data class JVMFunctionInfo(val maxLocals: Int, val maxStackSize: Int, val varIds: Map<LocalRef, Int>)
 
 fun jvmFunctionInfoOf(hir: HIR.FunctionLikeDef, thir: THIR?): JVMFunctionInfo {
     val resolver = JVMInfoResolver()
@@ -22,15 +22,15 @@ fun jvmFunctionInfoOf(hir: HIR.FunctionLikeDef, thir: THIR?): JVMFunctionInfo {
 fun jvmFunctionInfoOf(thir: THIR): JVMFunctionInfo =
     JVMInfoResolver().apply { handle(thir) }.toInfo()
 
-private class JVMInfoResolver() {
+private class JVMInfoResolver {
     private var maxStackSize = 0
     private var currentStackSize = 0
     private var maxLocals = 0
-    private val localMapping = mutableMapOf<LocalId, Int>()
+    private val localMapping = mutableMapOf<LocalRef, Int>()
 
     fun toInfo() = JVMFunctionInfo(maxLocals, maxStackSize, localMapping)
 
-    fun addLocal(id: LocalId) {
+    fun addLocal(id: LocalRef) {
         localMapping[id] = maxLocals
         maxLocals++
     }
@@ -86,6 +86,12 @@ private class JVMInfoResolver() {
                 frame { handleRec(node.on, false) }
                 if (!toIgnore) currentStackSize += 1
             }
+
+            is THIR.GetStoredExpr ->
+                currentStackSize += 1
+
+            is THIR.SetStoredExpr ->
+                frame { handleRec(node.value, false) }
 
             is THIR.ConstructorCallExpr -> {
                 if (!toIgnore) currentStackSize += 1
