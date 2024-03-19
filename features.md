@@ -520,14 +520,7 @@ TODO
 
 - [Identifiers](features.md#identifiers)
 
-Every object (value) in Bento has a type. There are two flavours of types:
-
-- data types
-- codata types
-
-## Data Types
-
-Data types store a predefined set of named values which are stored in the object. There are 3 kinds of data types:
+Every object (value) in Bento has a type. There are 3 flavours of data types:
 
 - singleton types
 - product types
@@ -537,7 +530,7 @@ Data types store a predefined set of named values which are stored in the object
 
 #### Requires
 
-- [Data Types](features.md#data-types)
+- [Custom Types](features.md#custom-types)
 
 Singleton types are types with a single global instance. They are created by simply not putting
 anything after the type's name. An example of such a type is the `Unit` type.
@@ -546,7 +539,7 @@ anything after the type's name. An example of such a type is the `Unit` type.
 
 #### Requires
 
-- [Custom Types](features.md#data-types)
+- [Custom Types](features.md#custom-types)
 - [Properties](features.md#properties)
 
 Product types are custom types whose values contain values of other types. Thus, to define one, the type's name
@@ -648,7 +641,7 @@ TODO
 #### Requires
 
 - [Basic Patterns](features.md#basic-patterns)
-- [Data Types](features.md#data-types)
+- [Custom Types](features.md#custom-types)
 
 Sum types define a set of variants that their objects can be of. That is done by putting all the
 variants in curly braces after the type's name. Variants are declared just like data types, except they cannot be 
@@ -709,145 +702,6 @@ def foo(a: I32) = if {
 }
 ```
 
-## Codata Types
-
-TODO
-
-#### Requires
-
-- [Custom Types](features.md#custom-types)
-
-Codata types define a set of members which need to separately be implemented by all objects. A codata type can be 
-defined using the `codata` keyword, an identifier which it is bound to and the aforementioned set of members. 
-Therein, `let` and `let mut` may be used as aliases for immutable and mutable properties. 
-
-Objects of codata types are created using the `new` keyword followed by the type name and the implementations for 
-all the items inside curly braces. The type may be left out if it can be inferred. All local constants and variables 
-which are used inside the implementation will be captured and stored inside the object, retaining their mutability.
-
-For example:
-```
-codata Iterator<T> {
-  def next(): Option<T>
-}
-
-def constantIterator<T>(value: T): Iterator<T> = new {
-  def next(): Option<T> = Option::Some(value)
-}
-```
-
-## This Keyword
-
-TODO
-
-#### Requires
-
-- [Codata Types](features.md#codata-types)
-
-When declaring an object member function or computed property, the `this` keyword can be used inside its body to 
-reference the object that it is being called on. This reference can just be used implicitly however, so the keyword 
-is mostly useful if you need to pass in a reference to the object.
-
-For example:
-```
-codata Foo {
-  def foo()
-}
-
-def printFoo(foo: Foo) = ...
-
-let baseFoo: Foo = new {
-  def foo() = {
-    ...
-    printFoo(this)
-    ...
-  }
-}
-```
-
-## Default Codata Members Implementations
-
-TODO
-
-#### Requires
-
-- [Codata Types](features.md#codata-types)
-
-Codata types may specify default implementations for their members, which will be used if they are left out in the 
-object construction.
-
-For example:
-
-```kotlin
-codata Foo {
-  def foo() = {
-    println("Foo")
-    bar()
-  }
-  def bar()
-}
-
-let foo: Foo = new {
-  def bar() = println("Bar")
-}
-```
-
-## Sealed Codata Types
-
-TODO
-
-#### Requires
-
-- [Codata Types](features.md#codata-types)
-- [Visibility Modifiers](features.md#visibility-modifiers)
-
-By default, an object of a codata type may be constructed wherever said type is visible. Using the `sealed` keyword, 
-this can be reduced to the next lower visibility layer. This can come in handy if you want to be the only one 
-providing the implementations, yet the number of implementations may change over time, so using a sum type would be 
-a burden rather than a commodity. This additionally allows you to have members with said lower visibility.
-
-For example:
-
-```scala
-// publicly accessible, but can only be implemented in this module
-pub sealed codata Foo {
-  def foo()       // can be accessed anywhere
-  mod def bar()   // can only be accessed within this module
-}
-```
-
-## Implementation Members
-
-TODO
-
-#### Requires
-
-- [Codata Types](features.md#codata-types)
-
-When creating an object of a codata type or when inside an `impl` block, extra members may be added to aid in the 
-implementation. Such members need to be declared as implementation members using the `impl` keyword.
-
-For example:
-```
-codata ByteBuffer {
-  def length: I8
-  def get(index: I8): I8
-  def add(value: I8)
-}
-
-let buffer: Buffer = new {
-  let length: I8 = 0i8
-  impl let backing: I8Array = I8Array::ofSize(10)
-  def get(index: I8): I8 = backing[index]
-  def add(value: I8) = {
-    if (backing.size == length)
-      backing = I8Array::clone(backing, length * 2)
-    backing[length] = value
-    length += 1
-  }
-}
-```
-
 ## Impl Blocks
 
 TODO
@@ -872,6 +726,33 @@ data User(
 
 impl User {
   def fullName: String = name + surname
+}
+```
+
+## This Keyword
+
+TODO
+
+#### Requires
+
+- [Impl Blocks](features.md#impl-blocks)
+
+When declaring an object member function or computed property, the `this` keyword can be used inside its body to
+reference the object that it is being called on. This reference can just be used implicitly however, so the keyword
+is mostly useful if you need to pass in a reference to the object.
+
+For example:
+```
+data Foo
+
+def printFoo(foo: Foo) = ...
+
+impl Foo {
+  def foo() = {
+    ...
+    printFoo(this)
+    ...
+  }
 }
 ```
 
@@ -910,8 +791,10 @@ By simply putting a set of parameters in parentheses after an object reference, 
 For example:
 
 ```
-codata Expr {
-  def invoke(params: List<Int>): Int
+data Expr { ... }
+
+impl Expr {
+  def invoke(params: List<Int>): Int = ...
 }
 
 def calculate(): Int {
@@ -928,12 +811,10 @@ TODO
 
 #### Requires
 
-- [Codata Types](features.md#codata-types)
 - [Invocation Operator](features.md#invocation-operator)
 
 Functions themselves can be passed around as objects. To achieve this, there are function types which are represented 
-in the format `(Type1, Type2, ... TypeN) -> Result`. These functions types are merely codata types with a single 
-`invoke` function with the corresponding signature.
+in the format `(Type1, Type2, ... TypeN) -> Result`.
 
 Functions and properties can be passed around by just using their paths. Functions can also have the `this` parameter
 captured by using the access operator and not using parentheses.
@@ -956,14 +837,11 @@ TODO
 
 - [Functions As Values](features.md#functions-as-values)
 
-Objects of codata types which have only one unimplemented member can be created using lambda notation. In this 
-notation, the member's parameters are placed between pipes, followed by the term which needs to be evaluated. 
-If said term is in curly braces and is the last parameter, the lambda can be moved outside the function body. If that's 
-the only argument, the parentheses may be left out. Optionally, the returns type may be specified after the list of 
-parameters, separated by an arrow.
-
-The type of the parameters may be left out if it can be inferred. Additionally, if no type is expected, then the 
-lambda expression is assigned the function type corresponding to its parameters and return type.
+Objects of function types can also be created using lambda notation. In this notation, the function's parameters are 
+placed between pipes, followed by the term which needs to be evaluated. If said term is in curly braces and is the last
+parameter, the lambda can be moved outside the function body. If that's the only argument, the parentheses may be left out.
+Optionally, the returns type may be specified after the list of parameters, separated by an arrow. The type of the 
+parameters may also be left out if it can be inferred.
 
 For example:
 
@@ -1218,9 +1096,9 @@ TODO
 - [Type Members](features.md#type-members)
 - [Type Parameters](features.md#type-parameters)
 
-Traits are a special form of codata where instead of defining members for objects of the type, they define members 
-for objects of another type, which is the first type parameter in the declaration. Additionally, for a given set of 
-parameters traits have only one global implementation object.
+Traits are a special form of data type which define members for other data types, which are the first type 
+parameter in the declaration. Additionally, for a given set of parameters traits have only one global 
+implementation object.
 
 Importing a trait allows you to use all its members on objects of types which implement it, such that all members 
 defined within the trait have a trait object as a contextual parameter. Any function with a trait object as a 
@@ -1229,8 +1107,9 @@ contextual parameter implicitly has the global implementation passed in.
 Traits may also define type members which can be called directly using the scope operator on the type, or, if there 
 is a conflict, on the trait.
 
-Traits are created using the `trait` keyword, and they are implemented using regular `impl` blocks. Just like codata 
-objects, they may define `impl` items.
+Traits are created using the `trait` keyword, and they are implemented using regular `impl` blocks. To implement a 
+trait with a set of type arguments the trait or the first parameter must be defined within your module and all the 
+trait's members must be accessible at the implementation site.
 
 For example:
 
@@ -1240,11 +1119,11 @@ trait Printer<This, Of> {
 }
 
 trait Printable<This, Type> {
-  def print<P: Printer<Type>>(printer: P)
+  def print<P>[Printer<Type>](printer: P)
 }
 
 impl Foo<I32, String> {
-  def print<P: Printer<String>>(printer: P) =
+  def print<P>[Printer<String>](printer: P) =
     p.print(this.toString())
 }
 ```
@@ -1328,27 +1207,6 @@ impl Bar<I32>
 def fooBar<T>[Bar<T>](val: T) = {
   val.bar()
   val.foo()
-}
-```
-
-## Sealed Traits
-
-TODO
-
-#### Requires
-
-- [Traits](features.md#traits)
-- [Visibility Modifiers](features.md#visibility-modifiers)
-
-By default, a trait may be implemented anywhere it is visible. The scope for its implementations can be set to be one
-lower than its visibility using the `sealed` keyword. This also allows the trait to have members of said visibility.
-
-For example:
-
-```scala
-sealed pub trait Foo<This> { // Foo can be access anywhere, but only implemented in this module
-  def foo()     // foo can be accessed anywhere
-  mod def bar() // bar can only be accessed in this module
 }
 ```
 
