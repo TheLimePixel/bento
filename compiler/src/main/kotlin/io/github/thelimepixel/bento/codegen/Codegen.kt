@@ -4,7 +4,7 @@ import io.github.thelimepixel.bento.binding.*
 import io.github.thelimepixel.bento.typing.BuiltinTypes
 import io.github.thelimepixel.bento.typing.PathType
 import io.github.thelimepixel.bento.typing.THIR
-import io.github.thelimepixel.bento.typing.toType
+import io.github.thelimepixel.bento.typing.toPathType
 
 private typealias JC = JVMBindingContext
 
@@ -33,8 +33,11 @@ class BentoCodegen : Codegen {
 
         items.forEach { ref ->
             when (val def = hirMap[ref]!!) {
-                is HIR.FunctionLikeDef ->
-                    fileContext.genFunctionLikeDef(def, thirMap, ref, writer)
+                is HIR.FunctionDef ->
+                    fileContext.genFunctionDef(def, thirMap, ref, writer)
+
+                is HIR.GetterDef ->
+                    fileContext.genGetterDef(thirMap, ref, writer)
 
                 is HIR.LetDef -> {
                     fileContext.genStoredGetter(thirMap, ref, writer)
@@ -68,26 +71,26 @@ class BentoCodegen : Codegen {
 
         val ctorDescriptor = hir.constructor.descriptor
 
-        val ctor = writer.constructor(ctorDescriptor)
-        ctor.addVariables(ctorDescriptor.parameters.size)
-        ctor.callSuper()
+        writer.constructor(ctorDescriptor) { ctor ->
+            ctor.addVariables(ctorDescriptor.parameters.size)
+            ctor.callSuper()
 
-        if (fields.isNotEmpty()) {
-            ctor.getThis()
-            fields.forEachIndexed { index, field ->
-                if (index != fields.lastIndex)
-                    ctor.duplicateLast()
+            if (fields.isNotEmpty()) {
+                ctor.getThis()
+                fields.forEachIndexed { index, field ->
+                    if (index != fields.lastIndex)
+                        ctor.duplicateLast()
 
-                ctor.getLocal(index + 1)
-                ctor.setField(
-                    `class`,
-                    field.name.toJVMName(),
-                    typeOfField(field)
-                )
+                    ctor.getLocal(index + 1)
+                    ctor.setField(
+                        `class`,
+                        field.jvmName,
+                        typeOfField(field)
+                    )
+                }
             }
+            ctor.returnVoid()
         }
-        ctor.returnVoid()
-        ctor.finish()
 
         fields.forEach { field ->
             genRecordField(field, writer, `class`)
@@ -102,24 +105,22 @@ class BentoCodegen : Codegen {
         `class`: JVMClass
     ) {
         val type = typeOfField(field)
-        val name = field.name.toJVMName()
+        val name = field.jvmName
 
         writer.virtualField(name, type, field.mutable)
 
-        val getter = writer.virtualGetter(name, type)
-        getter.getThis()
-        getter.getField(`class`, name, type)
-        getter.returnLast()
-        getter.finish()
+        writer.virtualGetter(name, type) { getter ->
+            getter.getThis()
+            getter.getField(`class`, name, type)
+            getter.returnLast()
+        }
 
-        if (field.mutable) {
-            val setter = writer.virtualSetter(name, type)
+        if (field.mutable) writer.virtualSetter(name, type) { setter ->
             setter.addVariables(1)
             setter.getThis()
             setter.getLocal(1)
             setter.setField(`class`, name, type)
             setter.returnVoid()
-            setter.finish()
         }
     }
 
@@ -129,20 +130,20 @@ class BentoCodegen : Codegen {
 
         val writer = ClassWriter(`class`)
 
-        val ctor = writer.constructor(emptyJVMDescriptor, JVMVisibility.PRIVATE)
-        ctor.callSuper()
-        ctor.returnVoid()
-        ctor.finish()
+        writer.constructor(emptyJVMDescriptor, JVMVisibility.PRIVATE) { ctor ->
+            ctor.callSuper()
+            ctor.returnVoid()
+        }
 
         writer.staticField(instanceName, type, false, JVMVisibility.PUBLIC)
 
-        val staticCtor = writer.staticConstructor()
-        staticCtor.instantiate(`class`)
-        staticCtor.duplicateLast()
-        staticCtor.callConstructor(`class`, emptyJVMDescriptor)
-        staticCtor.setStatic(`class`, instanceName, type)
-        staticCtor.returnVoid()
-        staticCtor.finish()
+        writer.staticConstructor { staticCtor ->
+            staticCtor.instantiate(`class`)
+            staticCtor.duplicateLast()
+            staticCtor.callConstructor(`class`, emptyJVMDescriptor)
+            staticCtor.setStatic(`class`, instanceName, type)
+            staticCtor.returnVoid()
+        }
 
         return writer.finish()
     }
@@ -152,11 +153,7 @@ class BentoCodegen : Codegen {
         constants: List<ItemRef>,
         fileContext: JC,
         thirMap: Map<ItemRef, THIR>
-    ) {
-        if (constants.isEmpty()) return
-
-        val staticInitWriter = writer.staticConstructor()
-
+    ) = if (constants.isEmpty()) Unit else writer.staticConstructor { staticInitWriter ->
         constants.forEach { ref ->
             val thirType = thirMap[ref]!!.type.accessType
             val type = fileContext.jvmTypeOf(thirType)
@@ -168,26 +165,38 @@ class BentoCodegen : Codegen {
         }
 
         staticInitWriter.returnVoid()
-        staticInitWriter.finish()
     }
 
-    private fun JC.genFunctionLikeDef(
-        def: HIR.FunctionLikeDef,
+    private fun JC.genFunctionDef(
+        def: HIR.FunctionDef,
         thirMap: Map<ItemRef, THIR>,
         ref: ItemRef,
         writer: ClassWriter,
     ) {
         val sig = signatureOf(ref)
-        val methodVWriter = writer.staticMethod(sig.name, sig.descriptor)
-        def.params?.forEach {
-            it.pattern?.findId()
-                ?.let { id -> methodVWriter.addVariable(id) }
-                ?: methodVWriter.addVariables(1)
+        writer.staticMethod(sig.name, sig.descriptor) { methodWriter ->
+            def.params.forEach {
+                it.pattern?.local
+                    ?.let { id -> methodWriter.addVariable(id) }
+                    ?: methodWriter.addVariables(1)
+            }
+            val isVoid = sig.descriptor.returnType == JVMType.Void
+            genExpr(thirMap[ref]!!, methodWriter, isVoid)
+            if (isVoid) methodWriter.returnVoid() else methodWriter.returnLast()
         }
-        val isVoid = sig.descriptor.returnType == JVMType.Void
-        genExpr(thirMap[ref]!!, methodVWriter, isVoid)
-        if (isVoid) methodVWriter.returnVoid() else methodVWriter.returnLast()
-        methodVWriter.finish()
+    }
+
+    private fun JC.genGetterDef(
+        thirMap: Map<ItemRef, THIR>,
+        ref: ItemRef,
+        writer: ClassWriter,
+    ) {
+        val type = jvmTypeOf(thirMap[ref]!!.type.accessType)
+        writer.staticGetter(ref.jvmName, type) { methodWriter ->
+            val isVoid = type == JVMType.Void
+            genExpr(thirMap[ref]!!, methodWriter, isVoid)
+            if (isVoid) methodWriter.returnVoid() else methodWriter.returnLast()
+        }
     }
 
     private fun JC.genStoredGetter(
@@ -198,15 +207,14 @@ class BentoCodegen : Codegen {
         val thirType = thirMap[ref]!!.type.accessType
         val isUnitType = thirType.ref.type == ItemType.SingletonType
         val type = if (isUnitType) JVMType.Void else jvmTypeOf(thirType)
-        val methodVisitor = writer.staticGetter(ref.jvmName, type)
-
-        if (isUnitType) {
-            methodVisitor.returnVoid()
-        } else {
-            methodVisitor.getStatic(ref.parent.asJVMClass(), ref.jvmName, type)
-            methodVisitor.returnLast()
+        writer.staticGetter(ref.jvmName, type) { methodVisitor ->
+            if (isUnitType) {
+                methodVisitor.returnVoid()
+            } else {
+                methodVisitor.getStatic(ref.parent.asJVMClass(), ref.jvmName, type)
+                methodVisitor.returnLast()
+            }
         }
-        methodVisitor.finish()
     }
 
     private fun JC.genStoredSetter(
@@ -216,15 +224,16 @@ class BentoCodegen : Codegen {
     ) {
         val thirType = thirMap[ref]!!.type.accessType
         val type = jvmTypeOf(thirType)
-        val methodVisitor = writer.staticSetter(ref.jvmName, type)
-        methodVisitor.addVariables(1)
+        writer.staticSetter(ref.jvmName, type) { methodWriter ->
+            methodWriter.addVariables(1)
 
-        if (thirType.ref.type != ItemType.SingletonType) {
-            methodVisitor.getLocal(0)
-            methodVisitor.setStatic(ref.parent.asJVMClass(), ref.jvmName, type)
+            if (thirType.ref.type != ItemType.SingletonType) {
+                methodWriter.getLocal(0)
+                methodWriter.setStatic(ref.parent.asJVMClass(), ref.jvmName, type)
+            }
+
+            methodWriter.returnVoid()
         }
-        methodVisitor.returnVoid()
-        methodVisitor.finish()
     }
 
     private fun JC.genScopeExpr(
@@ -269,7 +278,7 @@ class BentoCodegen : Codegen {
         get() = JVMDescriptor(fields.map { typeOfField(it) }, JVMType.Void)
 
     private fun JC.typeOfField(ref: ItemRef): JVMType =
-        jvmTypeOf((hirOf(ref) as? HIR.Field)?.type?.toType() ?: BuiltinTypes.nothing)
+        jvmTypeOf((hirOf(ref) as? HIR.Field)?.type?.toPathType() ?: BuiltinTypes.nothing)
 
     private fun JC.genConstructorCallExpr(
         node: THIR.ConstructorCallExpr,
@@ -287,7 +296,7 @@ class BentoCodegen : Codegen {
         return ignoreOutput
     }
 
-    private fun JC.genAccessExpr(
+    private fun genAccessExpr(
         node: THIR.LocalAccessExpr,
         writer: MethodWriter,
         ignoreOutput: Boolean,
@@ -364,6 +373,8 @@ class BentoCodegen : Codegen {
         is THIR.SetFieldExpr -> genSetFieldExpr(node, writer)
 
         is THIR.ConstructorCallExpr -> genConstructorCallExpr(node, writer, ignoreOutput)
+
+        is THIR.GetComputedExpr -> genGetComputedExpr(node, writer, ignoreOutput)
     }
 
     private fun JC.genGetStoredExpr(node: THIR.GetStoredExpr, writer: MethodWriter, ignoreOutput: Boolean): Boolean {
@@ -371,6 +382,15 @@ class BentoCodegen : Codegen {
             return true
 
         val ref = node.property
+        writer.callStaticGetter(ref.parent.asJVMClass(), ref.jvmName, jvmTypeOf(node.type.accessType))
+        return false
+    }
+
+    private fun JC.genGetComputedExpr(node: THIR.GetComputedExpr, writer: MethodWriter, ignoreOutput: Boolean): Boolean {
+        if (ignoreOutput)
+            return true
+
+        val ref = node.def
         writer.callStaticGetter(ref.parent.asJVMClass(), ref.jvmName, jvmTypeOf(node.type.accessType))
         return false
     }
@@ -397,7 +417,7 @@ class BentoCodegen : Codegen {
 
         if (ignoreOutput) return false
 
-        val getterName = node.field.name.toJVMName()
+        val getterName = node.field.jvmName
         val descriptor = jvmTypeOf(node.type)
         writer.callVirtualGetter(node.field.parent.asJVMClass(), getterName, descriptor)
 
@@ -411,7 +431,7 @@ class BentoCodegen : Codegen {
         genExpr(node.on, writer, false)
         genExpr(node.value, writer, false)
 
-        val setterName = node.field.name.toJVMName()
+        val setterName = node.field.jvmName
         val descriptor = jvmTypeOf(node.value.type.accessType)
         writer.callVirtualSetter(node.field.parent.asJVMClass(), setterName, descriptor)
 

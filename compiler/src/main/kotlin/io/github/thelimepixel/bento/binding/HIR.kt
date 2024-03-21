@@ -38,7 +38,8 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         val right: Expr,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = sequence {
-            right?.let { yield(it) }
+            yield(left)
+            yield(right)
         }
     }
 
@@ -49,9 +50,11 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    sealed interface Pattern : HIR
+    sealed interface Pattern : HIR {
+        val local: LocalRef?
+    }
 
-    data class IdentPattern(override val ref: ASTRef, val local: LocalRef) : Pattern {
+    data class IdentPattern(override val ref: ASTRef, override val local: LocalRef) : Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -59,10 +62,15 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = sequence {
             nested?.let { yield(it) }
         }
+
+        override val local: LocalRef?
+            get() = nested?.local
     }
 
     data class WildcardPattern(override val ref: ASTRef) : Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
+        override val local: LocalRef?
+            get() = null
     }
 
     data class LetExpr(
@@ -115,32 +123,28 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
 
     sealed interface Def : HIR
 
-    sealed interface FunctionLikeDef : Def {
-        val params: List<Param>?
-        val returnType: TypeRef?
+    data class FunctionDef(
+        override val ref: ASTRef,
+        val params: List<Param>,
+        val returnType: TypeRef?,
         val body: Expr?
-
+    ) : Def {
         override fun childSequence(): Sequence<HIR> = sequence {
-            params?.let { yieldAll(it) }
+            yieldAll(params)
             returnType?.let { yield(it) }
             body?.let { yield(it) }
         }
     }
 
-    data class FunctionDef(
-        override val ref: ASTRef,
-        override val params: List<Param>,
-        override val returnType: TypeRef?,
-        override val body: Expr?
-    ) : FunctionLikeDef
-
     data class GetterDef(
         override val ref: ASTRef,
-        override val returnType: TypeRef?,
-        override val body: Expr?
-    ) : FunctionLikeDef {
-        override val params: List<Param>?
-            get() = null
+        val returnType: TypeRef?,
+        val body: Expr?
+    ) : Def {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            returnType?.let { yield(it) }
+            body?.let { yield(it) }
+        }
     }
 
     data class LetDef(

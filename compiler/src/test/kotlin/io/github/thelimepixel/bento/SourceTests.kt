@@ -29,12 +29,17 @@ class SourceTests {
         val typingContext = TopLevelTypingContext()
         val javaPackage = packageAt("java", "lang")
         val kotlinPackage = packageAt("kotlin")
-        val runFunctions = ItemRef(
-            packageAt("io", "github", "thelimepixel", "bento"),
-            "RunFunctionsKt",
-            9,
-            ItemType.RecordType,
-            false
+        val printlnRef = ItemRef(
+            ItemRef(
+                packageAt("io", "github", "thelimepixel", "bento"),
+                "RunFunctionsKt",
+                9,
+                ItemType.RecordType,
+                false
+            ),
+            "fakePrintln",
+            0,
+            ItemType.Function, false
         )
 
         return CompilationInstance(
@@ -50,8 +55,7 @@ class SourceTests {
             ),
             topTypingContext = typingContext,
             topJVMBindingContext = TopLevelJVMBindingContext(
-                printlnFilePath = runFunctions,
-                printlnName = "fakePrintln",
+                printlnRef = printlnRef,
                 stringJVMType = ItemRef(javaPackage, "String", 0, ItemType.RecordType, false),
                 unitJVMType = ItemRef(kotlinPackage, "Unit", 0, ItemType.SingletonType, false),
                 nothingJVMType = ItemRef(kotlinPackage, "Nothing", 0, ItemType.RecordType, false),

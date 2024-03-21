@@ -4,10 +4,15 @@ import io.github.thelimepixel.bento.binding.LocalRef
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-class MethodWriter internal constructor(private val visitor: MethodVisitor, virtual: Boolean) {
+class MethodWriter @PublishedApi internal constructor(
+    private val visitor: MethodVisitor,
+    access: JVMAccess
+) {
     private var stackCounter = 0
-    private var maxStack = 0
-    private var maxLocals = if (virtual) 1 else 0
+    var maxStack = 0
+        private set
+    var maxLocals = if (access == JVMAccess.VIRTUAL) 1 else 0
+        private set
     private val localMapping = mutableMapOf<LocalRef, Int>()
 
     private fun incrementStack() {
@@ -131,10 +136,5 @@ class MethodWriter internal constructor(private val visitor: MethodVisitor, virt
     fun loadString(value: String) {
         incrementStack()
         visitor.visitLdcInsn(value)
-    }
-
-    fun finish() {
-        visitor.visitMaxs(maxStack, maxLocals)
-        visitor.visitEnd()
     }
 }

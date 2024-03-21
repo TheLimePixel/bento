@@ -87,7 +87,7 @@ class BentoBinding : Binding {
         }
         ?.toList()
 
-    private fun BC.bindFunctionLike(node: RedNode): HIR.FunctionLikeDef {
+    private fun BC.bindFunctionLike(node: RedNode): HIR.Def {
         val context = LocalItemBindingContext(this)
         val params = context.bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
@@ -229,27 +229,4 @@ class BentoBinding : Binding {
 
         return BoundImportPath(node.ref, segments)
     }
-}
-
-val HIR.Pattern.accessors get(): Pair<Accessor?, Accessor?> = getRefsFor(this, false)
-
-fun HIR.Pattern.findId(): LocalRef? = when (this) {
-    is HIR.IdentPattern -> this.local
-    is HIR.MutablePattern -> this.nested?.findId()
-    is HIR.WildcardPattern -> null
-}
-
-private tailrec fun getRefsFor(pattern: HIR.Pattern, mutable: Boolean): Pair<Accessor?, Accessor?> = when (pattern) {
-    is HIR.IdentPattern -> {
-        val first = Accessor(pattern.local, AccessorType.Get)
-        val second = if (mutable) Accessor(pattern.local, AccessorType.Set) else null
-        first to second
-    }
-
-    is HIR.MutablePattern -> {
-        val nested = pattern.nested
-        if (nested == null) null to null else getRefsFor(nested, true)
-    }
-
-    is HIR.WildcardPattern -> null to null
 }

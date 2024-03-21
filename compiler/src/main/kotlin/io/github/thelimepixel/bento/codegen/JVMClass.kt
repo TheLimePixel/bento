@@ -19,7 +19,7 @@ private fun packageJVMPath(ref: PackageRef, builder: StringBuilder, pathDelim: S
     if (ref !is SubpackageRef) return
     packageJVMPath(ref.parent, builder, pathDelim)
     if (ref.parent != RootRef) builder.append(pathDelim)
-    builder.append(ref.name.toJVMName())
+    builder.append(ref.jvmName)
 }
 
 private fun itemJVMPath(ref: ItemRef, builder: StringBuilder, pathDelim: String) {
@@ -34,7 +34,7 @@ private fun itemJVMPath(ref: ItemRef, builder: StringBuilder, pathDelim: String)
             builder.append("$")
         }
     }
-    builder.append(ref.name.toJVMName())
+    builder.append(ref.jvmName)
 }
 
 data class JVMSignature(val parent: JVMClass, val name: JVMName, val descriptor: JVMDescriptor)

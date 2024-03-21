@@ -1,6 +1,8 @@
 package io.github.thelimepixel.bento.binding
 
-sealed interface ParentRef
+sealed interface ParentRef {
+    val name: String
+}
 
 sealed interface Ref
 
@@ -21,7 +23,7 @@ enum class ItemType(val isType: Boolean = false) {
 
 data class ItemRef(
     val parent: ParentRef,
-    val name: String,
+    override val name: String,
     val index: Int,
     val type: ItemType,
     val mutable: Boolean,
@@ -38,9 +40,12 @@ data class Accessor(val of: Ref, val type: AccessorType)
 
 sealed interface PackageRef : ParentRef
 
-data object RootRef : PackageRef
+data object RootRef : PackageRef {
+    override val name: String
+        get() = ""
+}
 
-data class SubpackageRef(val parent: PackageRef, val name: String) : PackageRef {
+data class SubpackageRef(val parent: PackageRef, override val name: String) : PackageRef {
     override fun toString(): String {
         val builder = StringBuilder()
         if (parent != RootRef) builder.append(parent.toString()).append("::")

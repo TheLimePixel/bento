@@ -43,6 +43,14 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
     }
 
+    data class GetComputedExpr(
+        override val ref: ASTRef,
+        override val type: Type,
+        val def: ItemRef,
+    ) : THIR {
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+    }
+
     data class GetStoredExpr(
         override val ref: ASTRef,
         override val type: Type,

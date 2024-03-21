@@ -27,12 +27,13 @@ data class FunctionType(val paramTypes: List<PathType>, val returnType: PathType
 
 fun HIR.Def.type(defRef: ItemRef): Type = when (this) {
     is HIR.TypeDef -> PathType(defRef)
-    is HIR.FunctionLikeDef -> FunctionType(
-        paramTypes = params?.map { it.type.toType() ?: BuiltinTypes.nothing } ?: emptyList(),
-        returnType = PathType(this.returnType?.type?.let { it.binding.of as ItemRef } ?: BuiltinRefs.unit)
+    is HIR.FunctionDef -> FunctionType(
+        paramTypes = params.map { it.type.toPathType() ?: BuiltinTypes.nothing },
+        returnType =  returnType?.toPathType() ?: BuiltinTypes.unit
     )
-    is HIR.LetDef -> PathType(this.type?.type?.let { it.binding.of as ItemRef } ?: BuiltinRefs.nothing)
-    is HIR.Field -> this.type?.toType() ?: BuiltinTypes.nothing
+    is HIR.GetterDef ->  returnType?.toPathType() ?: BuiltinTypes.unit
+    is HIR.LetDef -> type?.toPathType() ?: BuiltinTypes.unit
+    is HIR.Field -> type?.toPathType() ?: BuiltinTypes.nothing
 }
 
-fun HIR.TypeRef?.toType(): PathType? = this?.type?.let { PathType(it.binding.of as ItemRef) }
+fun HIR.TypeRef?.toPathType(): PathType? = this?.type?.let { PathType(it.binding.of as ItemRef) }

@@ -3,14 +3,11 @@ package io.github.thelimepixel.bento.codegen
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.ClassWriter as ASMClassWriter
 
-enum class JVMVisibility(internal val code: Int) {
-    PUBLIC(Opcodes.ACC_PUBLIC),
-    PACKAGE(0),
-    PRIVATE(Opcodes.ACC_PRIVATE)
-}
+
 
 class ClassWriter(`class`: JVMClass, visibility: JVMVisibility = JVMVisibility.PUBLIC) {
-    private val visitor = ASMClassWriter(0).apply {
+    @PublishedApi
+    internal val visitor = ASMClassWriter(0).apply {
         visit(
             52,
             Opcodes.ACC_FINAL + visibility.code,
@@ -21,120 +18,77 @@ class ClassWriter(`class`: JVMClass, visibility: JVMVisibility = JVMVisibility.P
         )
     }
 
-    fun virtualMethod(
+    @PublishedApi
+    internal inline fun method(
+        visibility: JVMVisibility,
+        access: JVMAccess,
+        name: String,
+        descriptor: String,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) {
+        val visitor = this.visitor.visitMethod(
+            visibility.code + access.code,
+            name,
+            descriptor,
+            null,
+            null
+        )
+        val writer = MethodWriter(visitor, access)
+        buildFn(writer)
+        visitor.visitMaxs(writer.maxStack, writer.maxLocals)
+        visitor.visitEnd()
+    }
+
+    inline fun virtualMethod(
         name: JVMName,
         descriptor: JVMDescriptor,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            visibility.code,
-            name.string,
-            "$descriptor",
-            null,
-            null
-        ),
-        true
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.VIRTUAL, name.string, "$descriptor", buildFn)
 
-    fun staticMethod(
+    inline fun staticMethod(
         name: JVMName,
         descriptor: JVMDescriptor,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            Opcodes.ACC_STATIC + visibility.code,
-            name.string,
-            "$descriptor",
-            null,
-            null
-        ),
-        false
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.STATIC,name.string, "$descriptor", buildFn)
 
-    fun virtualGetter(
+    inline fun virtualGetter(
         name: JVMName,
         type: JVMType,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            visibility.code,
-            "get${name.capitalize()}",
-            "()$type",
-            null,
-            null
-        ),
-        true
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.VIRTUAL,"get${name.capitalize()}", "()$type", buildFn)
 
-    fun staticGetter(
+    inline fun staticGetter(
         name: JVMName,
         type: JVMType,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            Opcodes.ACC_STATIC + visibility.code,
-            "get${name.capitalize()}",
-            "()$type",
-            null,
-            null
-        ),
-        false
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.STATIC,"get${name.capitalize()}", "()$type", buildFn)
 
-    fun virtualSetter(
+    inline fun virtualSetter(
         name: JVMName,
         type: JVMType,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            visibility.code,
-            "set${name.capitalize()}",
-            "($type)V",
-            null,
-            null
-        ) ,
-            true
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.VIRTUAL,"set${name.capitalize()}", "($type)V", buildFn)
 
-    fun staticSetter(
+    inline fun staticSetter(
         name: JVMName,
         type: JVMType,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            Opcodes.ACC_STATIC + visibility.code,
-            "set${name.capitalize()}",
-            "($type)V",
-            null,
-            null
-        ),
-        false
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.STATIC,"set${name.capitalize()}", "($type)V", buildFn)
 
-    fun constructor(
+    inline fun constructor(
         descriptor: JVMDescriptor,
-        visibility: JVMVisibility = JVMVisibility.PUBLIC
-    ): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            visibility.code,
-            "<init>",
-            "$descriptor",
-            null,
-            null
-        ),
-        true
-    )
+        visibility: JVMVisibility = JVMVisibility.PUBLIC,
+        crossinline buildFn: (MethodWriter) -> Unit
+    ) = method(visibility, JVMAccess.VIRTUAL,"<init>", "$descriptor", buildFn)
 
-    fun staticConstructor(): MethodWriter = MethodWriter(
-        visitor.visitMethod(
-            Opcodes.ACC_STATIC + Opcodes.ACC_PRIVATE,
-            "<clinit>",
-            "()V",
-            null,
-            null
-        ),
-        false
-    )
+    inline fun staticConstructor(crossinline buildFn: (MethodWriter) -> Unit) =
+        method(JVMVisibility.PRIVATE, JVMAccess.STATIC,"<clinit>", "()V", buildFn)
 
     fun virtualField(
         name: JVMName,

@@ -12,30 +12,35 @@ interface Typechecking {
 
 class BentoTypechecking : Typechecking {
     override fun type(hir: HIR.Def, context: TC): THIR? = when (hir) {
-        is HIR.FunctionLikeDef -> context.typeFunctionLikeDef(hir)
+        is HIR.FunctionDef -> context.typeFunctionDef(hir)
+        is HIR.GetterDef -> context.typeGetterDef(hir)
         is HIR.LetDef -> context.typeConstantDef(hir)
         is HIR.TypeDef, is HIR.Field -> null
     }
 
-    private fun TC.typeFunctionLikeDef(hir: HIR.FunctionLikeDef): THIR? {
+    private fun TC.typeFunctionDef(hir: HIR.FunctionDef): THIR? {
         val node = hir.body ?: return null
-        val expect = hir.returnType.toType() ?: BuiltinTypes.unit
+        val expect = hir.returnType.toPathType() ?: BuiltinTypes.unit
         val childContext = LocalTypingContext(this)
-        hir.params?.forEach {
-            childContext.setLetPattern(it.pattern, it.type.toType() ?: BuiltinTypes.nothing)
+        hir.params.forEach {
+            childContext.setLetPattern(it.pattern, it.type.toPathType() ?: BuiltinTypes.nothing)
         }
         return childContext.expectExpr(node, expect)
     }
 
+    private fun TC.typeGetterDef(hir: HIR.GetterDef): THIR? {
+        val node = hir.body ?: return null
+        val expect = hir.returnType.toPathType() ?: BuiltinTypes.unit
+        return LocalTypingContext(this).expectExpr(node, expect)
+    }
+
     private fun FC.setLetPattern(pattern: HIR.Pattern?, type: Type) {
-        val (getter, _) = pattern?.accessors ?: return
-        if (getter == null) return
-        this[getter.of] = type
+        this[pattern?.local ?: return] = type
     }
 
     private fun TC.typeConstantDef(hir: HIR.LetDef): THIR {
         val context = LocalTypingContext(this)
-        return context.expectExpr(hir.expr, hir.type.toType() ?: BuiltinTypes.unit)
+        return context.expectExpr(hir.expr, hir.type.toPathType() ?: BuiltinTypes.unit)
     }
 
     private fun FC.expectExpr(hir: HIR.Expr, type: Type): THIR {
@@ -50,7 +55,7 @@ class BentoTypechecking : Typechecking {
         return when (val binding = hir.binding.of) {
             is ItemRef -> when (binding.type) {
                 ItemType.Getter ->
-                    THIR.CallExpr(hir.ref, typeOf(binding).accessType, binding, emptyList())
+                    THIR.GetComputedExpr(hir.ref, typeOf(binding).accessType, binding)
 
                 ItemType.StoredProperty ->
                     THIR.GetStoredExpr(hir.ref, typeOf(binding).accessType, binding)
@@ -120,10 +125,10 @@ class BentoTypechecking : Typechecking {
     }
 
     private fun FC.typeLetExpr(hir: HIR.LetExpr): THIR {
-        val expr = hir.type.toType()?.let { expectExpr(hir.expr, it) } ?: typeExpr(hir.expr, false)
+        val expr = hir.type.toPathType()?.let { expectExpr(hir.expr, it) } ?: typeExpr(hir.expr, false)
 
         setLetPattern(hir.pattern, expr.type)
-        return THIR.LetExpr(hir.ref, hir.pattern?.findId(), expr)
+        return THIR.LetExpr(hir.ref, hir.pattern?.local, expr)
     }
 
     private fun FC.typeScope(hir: HIR.ScopeExpr, unit: Boolean): THIR.ScopeExpr {

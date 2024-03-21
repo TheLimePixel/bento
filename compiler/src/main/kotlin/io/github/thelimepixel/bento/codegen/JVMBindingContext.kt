@@ -3,7 +3,6 @@ package io.github.thelimepixel.bento.codegen
 import io.github.thelimepixel.bento.binding.BuiltinRefs
 import io.github.thelimepixel.bento.binding.HIR
 import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.LocalRef
 import io.github.thelimepixel.bento.typing.BuiltinTypes
 import io.github.thelimepixel.bento.typing.FunctionType
 import io.github.thelimepixel.bento.typing.PathType
@@ -23,16 +22,15 @@ private fun JVMBindingContext.mapType(type: FunctionType): JVMDescriptor {
 }
 
 class TopLevelJVMBindingContext(
-    printlnFilePath: ItemRef,
-    printlnName: String,
+    printlnRef: ItemRef,
     private val stringJVMType: ItemRef,
     private val unitJVMType: ItemRef,
     private val nothingJVMType: ItemRef,
     typingContext: TypingContext,
 ) : JVMBindingContext {
     private val printlnSignature = JVMSignature(
-        printlnFilePath.asJVMClass(),
-        printlnName.toJVMName(),
+        printlnRef.parent.asJVMClass(),
+        printlnRef.jvmName,
         mapType(typingContext.typeOf(BuiltinRefs.println) as FunctionType)
     )
 
