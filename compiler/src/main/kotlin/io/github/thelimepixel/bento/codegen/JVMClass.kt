@@ -2,13 +2,24 @@ package io.github.thelimepixel.bento.codegen
 
 import io.github.thelimepixel.bento.binding.*
 
-data class JVMSignature(val parent: String, val name: String, val descriptor: String)
+@JvmInline
+value class JVMClass(val string: String) {
+    override fun toString(): String = string
+}
+
+fun ParentRef.asJVMClass(): JVMClass = JVMClass(toJVMPath("/") + if (this is PackageRef) "Bt" else "")
+fun ParentRef.toJVMPath(pathDelim: String): String = StringBuilder().also { builder ->
+    when (this) {
+        is PackageRef -> packageJVMPath(this, builder, pathDelim)
+        is ItemRef -> itemJVMPath(this, builder, pathDelim)
+    }
+}.toString()
 
 private fun packageJVMPath(ref: PackageRef, builder: StringBuilder, pathDelim: String) {
     if (ref !is SubpackageRef) return
     packageJVMPath(ref.parent, builder, pathDelim)
     if (ref.parent != RootRef) builder.append(pathDelim)
-    builder.append(ref.rawName)
+    builder.append(ref.name.toJVMName())
 }
 
 private fun itemJVMPath(ref: ItemRef, builder: StringBuilder, pathDelim: String) {
@@ -17,17 +28,13 @@ private fun itemJVMPath(ref: ItemRef, builder: StringBuilder, pathDelim: String)
             packageJVMPath(parent, builder, pathDelim)
             builder.append(pathDelim)
         }
+
         is ItemRef -> {
             itemJVMPath(parent, builder, pathDelim)
             builder.append("$")
         }
     }
-    builder.append(ref.rawName)
+    builder.append(ref.name.toJVMName())
 }
 
-fun ParentRef.toJVMPath(pathDelim: String = "/"): String = StringBuilder().also { builder ->
-    when (this) {
-        is PackageRef -> packageJVMPath(this, builder, pathDelim)
-        is ItemRef -> itemJVMPath(this, builder, pathDelim)
-    }
-}.toString()
+data class JVMSignature(val parent: JVMClass, val name: JVMName, val descriptor: JVMDescriptor)

@@ -27,6 +27,16 @@ class SourceTests {
 
     private fun createInstance(): CompilationInstance {
         val typingContext = TopLevelTypingContext()
+        val javaPackage = packageAt("java", "lang")
+        val kotlinPackage = packageAt("kotlin")
+        val runFunctions = ItemRef(
+            packageAt("io", "github", "thelimepixel", "bento"),
+            "RunFunctionsKt",
+            9,
+            ItemType.RecordType,
+            false
+        )
+
         return CompilationInstance(
             PackageTree(),
             parsing = BentoParsing(),
@@ -36,16 +46,16 @@ class SourceTests {
                 RootRef,
                 BuiltinRefs.map,
                 emptyMap(),
-                emptySet()
+                emptySet(),
             ),
             topTypingContext = typingContext,
             topJVMBindingContext = TopLevelJVMBindingContext(
-                printlnFilePath = packageAt("io", "github", "thelimepixel", "bento", "RunFunctionsKt"),
+                printlnFilePath = runFunctions,
                 printlnName = "fakePrintln",
-                stringJVMType = "java/lang/String",
-                unitJVMType = "kotlin/Unit",
-                nothingJVMType = "kotlin/Nothing",
-                typingContext
+                stringJVMType = ItemRef(javaPackage, "String", 0, ItemType.RecordType, false),
+                unitJVMType = ItemRef(kotlinPackage, "Unit", 0, ItemType.SingletonType, false),
+                nothingJVMType = ItemRef(kotlinPackage, "Nothing", 0, ItemType.RecordType, false),
+                typingContext,
             ),
             typing = BentoTypechecking(),
             bentoCodegen = BentoCodegen(),
@@ -143,7 +153,7 @@ class SourceTests {
         try {
             `class`.getDeclaredMethod("main").invoke(null)
         } catch (e: Exception) {
-            printBuffer.append(e)
+            printBuffer.append(e.cause)
         }
         return printBuffer.toString().also { printBuffer.clear() }
     }

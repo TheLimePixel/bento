@@ -56,5 +56,5 @@ class LocalTypingContext(
 
 fun TypingContext.typeOf(accessor: Accessor) = when (accessor.type) {
     AccessorType.Get -> typeOf(accessor.of)
-    AccessorType.Set -> FunctionType(listOf(typeOf(accessor.of)), BuiltinTypes.unit)
+    AccessorType.Set -> FunctionType(listOf(typeOf(accessor.of) as PathType), BuiltinTypes.unit)
 }

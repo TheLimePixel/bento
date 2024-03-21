@@ -16,10 +16,10 @@ data class PathType(val ref: ItemRef) : Type {
         get() = ref.type == ItemType.SingletonType
 }
 
-data class FunctionType(val paramTypes: List<Type>, val returnType: Type) : Type {
+data class FunctionType(val paramTypes: List<PathType>, val returnType: PathType) : Type {
     override fun toString(): String = "(${paramTypes.joinToString(", ")}) -> $returnType"
     override val accessType: PathType
-        get() = returnType.accessType
+        get() = returnType
 
     override val isSingleton: Boolean
         get() = false

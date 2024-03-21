@@ -1,0 +1,63 @@
+// class version 52.0 (52)
+// access flags 0x11
+public final class types/types/Foo {
+
+
+  // access flags 0x19
+  public final static Ltypes/types/Foo; INSTANCE
+
+  // access flags 0x2
+  private <init>()V
+    ALOAD 0
+    INVOKESPECIAL java/lang/Object.<init> ()V
+    RETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1
+
+  // access flags 0xA
+  private static <clinit>()V
+    NEW types/types/Foo
+    DUP
+    INVOKESPECIAL types/types/Foo.<init> ()V
+    PUTSTATIC types/types/Foo.INSTANCE : Ltypes/types/Foo;
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 0
+}
+
+// class version 52.0 (52)
+// access flags 0x11
+public final class types/types/Bar {
+
+
+  // access flags 0x2
+  private Ljava/lang/String; name
+
+  // access flags 0x1
+  public <init>(Ljava/lang/String;)V
+    ALOAD 0
+    INVOKESPECIAL java/lang/Object.<init> ()V
+    ALOAD 0
+    ALOAD 1
+    PUTFIELD types/types/Bar.name : Ljava/lang/String;
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2
+
+  // access flags 0x1
+  public getName()Ljava/lang/String;
+    ALOAD 0
+    GETFIELD types/types/Bar.name : Ljava/lang/String;
+    ARETURN
+    MAXSTACK = 1
+    MAXLOCALS = 1
+
+  // access flags 0x1
+  public setName(Ljava/lang/String;)V
+    ALOAD 0
+    ALOAD 1
+    PUTFIELD types/types/Bar.name : Ljava/lang/String;
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2
+}

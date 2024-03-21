@@ -3,8 +3,8 @@
 public final class properties/mainBt {
 
 
-  // access flags 0x9
-  public static Ljava/lang/String; Hey, World!
+  // access flags 0xA
+  private static Ljava/lang/String; Hey, World!
 
   // access flags 0x9
   public static getHello()Ljava/lang/String;

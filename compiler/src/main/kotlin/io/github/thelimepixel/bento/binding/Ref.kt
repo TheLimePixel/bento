@@ -1,7 +1,5 @@
 package io.github.thelimepixel.bento.binding
 
-import io.github.thelimepixel.bento.codegen.capitalize
-
 sealed interface ParentRef
 
 sealed interface Ref
@@ -28,9 +26,6 @@ data class ItemRef(
     val type: ItemType,
     val mutable: Boolean,
 ) : ParentRef, Ref {
-    val rawName: String
-        get() = name.toJVMIdent()
-
     override fun toString(): String = "$type($parent::$name)"
 }
 
@@ -52,27 +47,7 @@ data class SubpackageRef(val parent: PackageRef, val name: String) : PackageRef 
         builder.append(name)
         return builder.toString()
     }
-
-    val rawName: String
-        get() = name.toJVMIdent()
 }
-
-fun String.toJVMIdent(): String =
-    this.asSequence().joinToString(separator = "") { c ->
-        when (c) {
-            '`' -> ""
-            '\\' -> "\\\\"
-            '.' -> "\\d"
-            ';' -> "\\s"
-            '[' -> "\\b"
-            '/' -> "\\f"
-            '<' -> "\\l"
-            else -> c.toString()
-        }
-    }.let {
-        if (it.endsWith("_=")) "set" + it.dropLast(2).capitalize()
-        else it
-    }
 
 
 fun PackageRef.subpackage(name: String) = SubpackageRef(this, name)

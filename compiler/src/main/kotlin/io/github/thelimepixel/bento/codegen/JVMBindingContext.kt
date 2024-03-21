@@ -1,36 +1,39 @@
 package io.github.thelimepixel.bento.codegen
 
-import io.github.thelimepixel.bento.binding.*
-import io.github.thelimepixel.bento.typing.*
-import java.util.*
+import io.github.thelimepixel.bento.binding.BuiltinRefs
+import io.github.thelimepixel.bento.binding.HIR
+import io.github.thelimepixel.bento.binding.ItemRef
+import io.github.thelimepixel.bento.binding.LocalRef
+import io.github.thelimepixel.bento.typing.BuiltinTypes
+import io.github.thelimepixel.bento.typing.FunctionType
+import io.github.thelimepixel.bento.typing.PathType
+import io.github.thelimepixel.bento.typing.TypingContext
 
 interface JVMBindingContext {
     fun signatureOf(ref: ItemRef): JVMSignature
 
-    fun jvmClassOf(ref: PathType): String
-
-    fun localId(ref: LocalRef): Int
+    fun jvmClassOf(ref: PathType): JVMClass
 
     fun hirOf(ref: ItemRef): HIR.Def
 }
 
-private fun JVMBindingContext.mapType(type: Type, returnType: Boolean): String = when (type) {
-    is PathType -> if (returnType && type.isSingleton) "V" else jvmTypeOf(type)
-    is FunctionType -> "(${type.paramTypes.joinToString("") { mapType(it, false) }})${mapType(type.returnType, true)}"
+private fun JVMBindingContext.mapType(type: FunctionType): JVMDescriptor {
+    val returnType = if (type.returnType.isSingleton) JVMType.Void else jvmTypeOf(type.returnType)
+    return JVMDescriptor(type.paramTypes.map { jvmTypeOf(it) }, returnType)
 }
 
 class TopLevelJVMBindingContext(
-    printlnFilePath: PackageRef,
+    printlnFilePath: ItemRef,
     printlnName: String,
-    private val stringJVMType: String,
-    private val unitJVMType: String,
-    private val nothingJVMType: String,
+    private val stringJVMType: ItemRef,
+    private val unitJVMType: ItemRef,
+    private val nothingJVMType: ItemRef,
     typingContext: TypingContext,
 ) : JVMBindingContext {
     private val printlnSignature = JVMSignature(
-        printlnFilePath.toJVMPath(),
-        printlnName,
-        mapType(typingContext.typeOf(BuiltinRefs.println), false)
+        printlnFilePath.asJVMClass(),
+        printlnName.toJVMName(),
+        mapType(typingContext.typeOf(BuiltinRefs.println) as FunctionType)
     )
 
     override fun signatureOf(ref: ItemRef): JVMSignature =
@@ -38,26 +41,14 @@ class TopLevelJVMBindingContext(
         else error("Unexpected reference: Expected println, got $ref")
 
 
-    override fun jvmClassOf(ref: PathType): String = when (ref) {
+    override fun jvmClassOf(ref: PathType): JVMClass = when (ref) {
         BuiltinTypes.string -> stringJVMType
         BuiltinTypes.unit -> unitJVMType
         BuiltinTypes.nothing -> nothingJVMType
-        else -> ref.ref.toJVMPath()
-    }
-
-    override fun localId(ref: LocalRef): Int = error("Unexpected call")
+        else -> ref.ref
+    }.asJVMClass()
 
     override fun hirOf(ref: ItemRef): HIR.Def = error("Missing definition")
-}
-
-val ItemRef.jvmName
-    get() = when (type) {
-        ItemType.Getter -> "get" + rawName.capitalize()
-        ItemType.SingletonType, ItemType.Function, ItemType.RecordType, ItemType.Field, ItemType.StoredProperty -> rawName
-    }
-
-internal fun String.capitalize() = replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
 
 class FileJVMBindingContext(
@@ -65,35 +56,17 @@ class FileJVMBindingContext(
     private val typingContext: TypingContext,
     private val hirMap: Map<ItemRef, HIR.Def>,
 ) : JVMBindingContext {
-    override fun jvmClassOf(ref: PathType): String = parent.jvmClassOf(ref)
+    override fun jvmClassOf(ref: PathType): JVMClass = parent.jvmClassOf(ref)
 
     override fun signatureOf(ref: ItemRef): JVMSignature =
         if (ref == BuiltinRefs.println) parent.signatureOf(ref)
         else JVMSignature(
-            parent = ref.parentJVMFilePath,
+            parent = ref.parent.asJVMClass(),
             name = ref.jvmName,
-            descriptor = mapType(typingContext.typeOf(ref), false)
+            descriptor = mapType(typingContext.typeOf(ref) as FunctionType)
         )
-
-    override fun localId(ref: LocalRef): Int = parent.localId(ref)
 
     override fun hirOf(ref: ItemRef): HIR.Def = hirMap[ref] ?: parent.hirOf(ref)
 }
 
-val ItemRef.parentJVMFilePath: String
-    get() = parent.toJVMPath() + "Bt"
-
-class LocalJVMBindingContext(
-    private val parent: JVMBindingContext,
-    private val localMap: Map<LocalRef, Int>
-): JVMBindingContext {
-    override fun jvmClassOf(ref: PathType): String = parent.jvmClassOf(ref)
-
-    override fun signatureOf(ref: ItemRef): JVMSignature = parent.signatureOf(ref)
-
-    override fun localId(ref: LocalRef): Int = localMap[ref]!!
-
-    override fun hirOf(ref: ItemRef): HIR.Def = parent.hirOf(ref)
-}
-
-fun JVMBindingContext.jvmTypeOf(ref: PathType): String = "L${jvmClassOf(ref)};"
+fun JVMBindingContext.jvmTypeOf(ref: PathType): JVMType = JVMType.Class(jvmClassOf(ref))
