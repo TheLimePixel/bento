@@ -1,7 +1,6 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.binding.ItemRef
-import io.github.thelimepixel.bento.binding.LocalRef
+import io.github.thelimepixel.bento.binding.*
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
 import io.github.thelimepixel.bento.utils.Span
@@ -35,7 +34,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class CallExpr(
         override val span: Span,
         override val type: Type,
-        val fn: ItemRef,
+        val fn: FunctionRef,
         val args: List<THIR>,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
@@ -44,7 +43,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class GetComputedExpr(
         override val span: Span,
         override val type: Type,
-        val def: ItemRef,
+        val def: GetterRef,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
@@ -52,14 +51,14 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class GetStoredExpr(
         override val span: Span,
         override val type: Type,
-        val property: ItemRef,
+        val property: StoredPropertyRef,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 
     data class SetStoredExpr(
         override val span: Span,
-        val property: ItemRef,
+        val property: StoredPropertyRef,
         val value: THIR,
     ) : THIR {
         override val type: Type
@@ -118,7 +117,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     data class GetFieldExpr(
         override val span: Span,
         override val type: PathType,
-        val field: ItemRef,
+        val field: FieldRef,
         val on: THIR,
     ) : THIR {
         override fun childSequence(): Sequence<THIR> = sequenceOf(on)
@@ -126,7 +125,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
 
     data class SetFieldExpr(
         override val span: Span,
-        val field: ItemRef,
+        val field: FieldRef,
         val on: THIR,
         val value: THIR,
     ) : THIR {

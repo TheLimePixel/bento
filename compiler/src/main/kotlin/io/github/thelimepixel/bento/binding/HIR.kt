@@ -162,15 +162,15 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
-    data class Field(override val span: Span, val ident: String, val type: TypeRef?) : Def {
+    data class Field(
+        override val span: Span,
+        val ref: FieldRef,
+        val type: TypeRef?
+    ) : Def {
         override fun childSequence(): Sequence<HIR> = sequence { type?.let { yield(it) } }
     }
 
-    data class Constructor(override val span: Span, val fields: List<ItemRef>) : HIR {
-        override fun childSequence(): Sequence<HIR> = EmptySequence
-    }
-
-    data class RecordType(override val span: Span, val constructor: Constructor) : TypeDef {
-        override fun childSequence(): Sequence<HIR> = sequence { yield(constructor) }
+    data class ProductType(override val span: Span, val fields: List<Field>) : TypeDef {
+        override fun childSequence(): Sequence<HIR> = fields.asSequence()
     }
 }

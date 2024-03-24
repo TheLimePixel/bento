@@ -1,8 +1,12 @@
 package io.github.thelimepixel.bento.binding
 
-sealed interface ParentRef {
+import io.github.thelimepixel.bento.ast.RedNode
+
+sealed interface NamedRef {
     val name: String
 }
+
+sealed interface ParentRef : NamedRef
 
 sealed interface Ref
 
@@ -11,24 +15,79 @@ value class LocalRef(private val index: Int) : Ref {
     override fun toString(): String = "\$$index"
 }
 
-
-enum class ItemType(val isType: Boolean = false) {
-    Function,
-    SingletonType(isType = true),
-    RecordType(isType = true),
-    Getter,
-    StoredProperty,
-    Field,
+sealed interface ItemRef : Ref {
+    val parent: ParentRef
+    val index: Int
+    val ast: RedNode?
+    val mutable: Boolean
 }
 
-data class ItemRef(
-    val parent: ParentRef,
+sealed interface NamedItemRef : NamedRef, ItemRef
+
+sealed interface TypeRef : ParentRef, NamedItemRef {
+    override val mutable: Boolean
+        get() = false
+}
+
+data class SingletonTypeRef(
+    override val parent: ParentRef,
     override val name: String,
-    val index: Int,
-    val type: ItemType,
-    val mutable: Boolean,
-) : ParentRef, Ref {
-    override fun toString(): String = "$type($parent::$name)"
+    override val index: Int,
+    override val ast: RedNode?,
+) : TypeRef {
+    override fun toString(): String = "$parent::$name"
+}
+
+data class ProductTypeRef(
+    override val parent: ParentRef,
+    override val name: String,
+    override val index: Int,
+    override val ast: RedNode?,
+) : TypeRef {
+    override fun toString(): String = "$parent::$name"
+}
+
+data class StoredPropertyRef(
+    override val parent: ParentRef,
+    override val name: String,
+    override val index: Int,
+    override val mutable: Boolean,
+    override val ast: RedNode,
+) : NamedItemRef {
+    override fun toString(): String = "$parent::$name"
+}
+
+data class FunctionRef(
+    override val parent: ParentRef,
+    override val name: String,
+    override val index: Int,
+    override val ast: RedNode?,
+) : NamedItemRef {
+    override val mutable: Boolean
+        get() = false
+    override fun toString(): String = "$parent::$name"
+}
+
+data class GetterRef(
+    override val parent: ParentRef,
+    override val name: String,
+    override val index: Int,
+    override val ast: RedNode,
+) : NamedItemRef {
+    override val mutable: Boolean
+        get() = false
+    override fun toString(): String = "$parent::$name"
+}
+
+data class FieldRef(
+    override val parent: ProductTypeRef,
+    override val name: String,
+    override val index: Int,
+    override val mutable: Boolean,
+) : NamedItemRef {
+    override val ast: RedNode?
+        get() = null
+    override fun toString(): String = "$parent.$name"
 }
 
 enum class AccessorType {

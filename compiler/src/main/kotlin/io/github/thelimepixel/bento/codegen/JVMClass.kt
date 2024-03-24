@@ -11,7 +11,7 @@ fun ParentRef.asJVMClass(): JVMClass = JVMClass(toJVMPath("/") + if (this is Pac
 fun ParentRef.toJVMPath(pathDelim: String): String = StringBuilder().also { builder ->
     when (this) {
         is PackageRef -> packageJVMPath(this, builder, pathDelim)
-        is ItemRef -> itemJVMPath(this, builder, pathDelim)
+        is NamedItemRef -> itemJVMPath(this, builder, pathDelim)
     }
 }.toString()
 
@@ -22,14 +22,14 @@ private fun packageJVMPath(ref: PackageRef, builder: StringBuilder, pathDelim: S
     builder.append(ref.jvmName)
 }
 
-private fun itemJVMPath(ref: ItemRef, builder: StringBuilder, pathDelim: String) {
+private fun itemJVMPath(ref: NamedItemRef, builder: StringBuilder, pathDelim: String) {
     when (val parent = ref.parent) {
         is PackageRef -> {
             packageJVMPath(parent, builder, pathDelim)
             builder.append(pathDelim)
         }
 
-        is ItemRef -> {
+        is NamedItemRef -> {
             itemJVMPath(parent, builder, pathDelim)
             builder.append("$")
         }

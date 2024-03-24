@@ -1,4 +1,4 @@
-======= Function(variables::main::main) =======
+======= variables::main::main =======
 FunctionDef {
   span: 0..208
   params: []
@@ -41,9 +41,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }
@@ -62,9 +60,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }
@@ -112,9 +108,7 @@ FunctionDef {
             on: Path {
               span: 0..6
               binding: Accessor {
-                of: Function {
-                  bento::io::println
-                }
+                of: bento::io::println
                 type: Get
               }
             }
@@ -133,9 +127,7 @@ FunctionDef {
             on: Path {
               span: 0..6
               binding: Accessor {
-                of: Function {
-                  bento::io::println
-                }
+                of: bento::io::println
                 type: Get
               }
             }
@@ -156,9 +148,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }
@@ -177,9 +167,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }

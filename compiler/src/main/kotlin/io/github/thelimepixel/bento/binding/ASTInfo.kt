@@ -1,78 +1,71 @@
 package io.github.thelimepixel.bento.binding
 
-import io.github.thelimepixel.bento.ast.BaseSets
-import io.github.thelimepixel.bento.ast.GreenNode
-import io.github.thelimepixel.bento.ast.SyntaxType
+import io.github.thelimepixel.bento.ast.*
 
 data class ASTInfo(
     val items: List<ItemRef>,
     val accessors: Map<String, Accessor>,
-    val dataMap: Map<String, List<GreenNode>>,
     val importNode: GreenNode?
 )
 
 typealias InfoMap = Map<ParentRef, ASTInfo>
 
 fun collectItems(node: GreenNode, parent: PackageRef, collection: MutableMap<ParentRef, ASTInfo>) {
-    val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
     val accessors = mutableMapOf<String, Accessor>()
     val importNode = node.firstChild(ST.ImportStatement)?.node
-    val items = node.childSequence()
-        .map { it.node }
+    val items = node.toRedRoot().childSequence()
         .filter { it.type in BaseSets.definitions }
-        .map {
+        .mapIndexed { index, it ->
             val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
-            val list = dataMap.computeIfAbsent(name) { mutableListOf() }
-            list.add(it)
-            val mutable = it.type == SyntaxType.LetDef && it.firstChild(ST.MutKeyword) != null
-            val ref = ItemRef(parent, name, list.lastIndex,  itemTypeFrom(it), mutable)
+            val ref = toRef(parent, name, index, it, collection)
             accessors[name] = Accessor(ref, AccessorType.Get)
-            if (mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
-
-            if (ref.type == ItemType.RecordType) {
-                collection[ref] = collectFields(it.firstChild(ST.Constructor)!!.node, ref)
-            }
+            if (ref.mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
 
             ref
         }
         .toList()
 
-    collection[parent] = ASTInfo(items, accessors, dataMap, importNode)
+    collection[parent] = ASTInfo(items, accessors, importNode)
 }
 
-private fun collectFields(node: GreenNode, parent: ItemRef): ASTInfo {
-    val dataMap = mutableMapOf<String, MutableList<GreenNode>>()
+private fun collectFields(node: RedNode, parent: ProductTypeRef): ASTInfo {
     val accessors = mutableMapOf<String, Accessor>()
     val fields = node.childSequence()
         .filter { it.type == ST.Field }
-        .map {
-            val name = it.node.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
-            val list = dataMap.computeIfAbsent(name) { mutableListOf() }
-            list.add(it.node)
-            val mutable = it.node.firstChild(ST.MutKeyword) != null
-            val ref = ItemRef(parent, name,list.lastIndex, ItemType.Field, mutable)
+        .mapIndexed { index, child ->
+            val name = child.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
+            val mutable = child.firstChild(ST.MutKeyword) != null
+            val ref = FieldRef(parent, name, index, mutable)
             accessors[name] = Accessor(ref, AccessorType.Get)
             if (mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
             ref
         }
         .toList()
 
-    return ASTInfo(fields, accessors, dataMap, null)
+    return ASTInfo(fields, accessors, null)
 }
 
-private fun itemTypeFrom(node: GreenNode) = when (node.type) {
+private fun toRef(parent: ParentRef, name: String, index: Int, ast: RedNode, collection: MutableMap<ParentRef, ASTInfo>): ItemRef = when (ast.type) {
     SyntaxType.FunDef ->
-        if (node.lastChild(SyntaxType.ParamList) == null) ItemType.Getter
-        else ItemType.Function
+        if (ast.lastChild(SyntaxType.ParamList) == null) GetterRef(parent, name, index, ast)
+        else FunctionRef(parent, name, index, ast)
 
     SyntaxType.LetDef ->
-        ItemType.StoredProperty
+        StoredPropertyRef(parent, name, index, ast.firstChild(ST.MutKeyword) != null, ast)
 
-    SyntaxType.TypeDef -> when (val bodyType = node.lastChild(BaseSets.typeBodies)?.type) {
-        null -> ItemType.SingletonType
-        ST.Constructor -> ItemType.RecordType
-        else -> error("Unexpected type body: $bodyType")
+    SyntaxType.TypeDef -> {
+        val body =  ast.lastChild(BaseSets.typeBodies)
+        when (val bodyType = body?.type) {
+            null -> SingletonTypeRef(parent, name, index, ast)
+            ST.Constructor -> {
+                val ref = ProductTypeRef(parent, name, index, ast)
+                collection[ref] = collectFields(body, ref)
+                ref
+            }
+
+            else -> error("Unexpected type body: $bodyType")
+        }
     }
 
-    else -> error("Unsupported definition type: ${node.type}")
+    else -> error("Unsupported definition type: ${ast.type}")
 }

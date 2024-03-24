@@ -1,33 +1,23 @@
-======= Function(nesting::main::baz) =======
+======= nesting::main::baz =======
 StringExpr {
   span: 58..74
   content: "Hello from Baz!"
 }
 
-======= Function(nesting::main::bar) =======
+======= nesting::main::bar =======
 ScopeExpr {
   span: 24..89
-  type: SingletonType {
-    bento::Unit
-  }
+  type: bento::Unit
   statements: [
     CallExpr {
       span: 14..37
-      type: SingletonType {
-        bento::Unit
-      }
-      fn: Function {
-        bento::io::println
-      }
+      type: bento::Unit
+      fn: bento::io::println
       args: [
         CallExpr {
           span: 2..16
-          type: RecordType {
-            bento::String
-          }
-          fn: Function {
-            nesting::main::baz
-          }
+          type: bento::String
+          fn: nesting::main::baz
           args: [
             StringExpr {
               span: 2..11
@@ -39,12 +29,8 @@ ScopeExpr {
     }
     CallExpr {
       span: 74..99
-      type: SingletonType {
-        bento::Unit
-      }
-      fn: Function {
-        bento::io::println
-      }
+      type: bento::Unit
+      fn: bento::io::println
       args: [
         StringExpr {
           span: 2..18
@@ -55,37 +41,25 @@ ScopeExpr {
   ]
 }
 
-======= Function(nesting::main::foo) =======
+======= nesting::main::foo =======
 CallExpr {
   span: 58..105
-  type: SingletonType {
-    bento::Unit
-  }
-  fn: Function {
-    bento::io::println
-  }
+  type: bento::Unit
+  fn: bento::io::println
   args: [
     ScopeExpr {
       span: 2..40
-      type: RecordType {
-        bento::String
-      }
+      type: bento::String
       statements: [
         CallExpr {
           span: 22..26
-          type: SingletonType {
-            bento::Unit
-          }
-          fn: Function {
-            nesting::main::bar
-          }
+          type: bento::Unit
+          fn: nesting::main::bar
           args: []
         }
         LocalAccessExpr {
           span: 2..5
-          type: RecordType {
-            bento::String
-          }
+          type: bento::String
           binding: $0
         }
       ]
@@ -93,21 +67,15 @@ CallExpr {
   ]
 }
 
-======= Function(nesting::main::main) =======
+======= nesting::main::main =======
 ScopeExpr {
   span: 26..90
-  type: SingletonType {
-    bento::Unit
-  }
+  type: bento::Unit
   statements: [
     CallExpr {
       span: 14..35
-      type: SingletonType {
-        bento::Unit
-      }
-      fn: Function {
-        nesting::main::foo
-      }
+      type: bento::Unit
+      fn: nesting::main::foo
       args: [
         StringExpr {
           span: 2..18
@@ -117,12 +85,8 @@ ScopeExpr {
     }
     CallExpr {
       span: 70..96
-      type: SingletonType {
-        bento::Unit
-      }
-      fn: Function {
-        bento::io::println
-      }
+      type: bento::Unit
+      fn: bento::io::println
       args: [
         StringExpr {
           span: 2..19

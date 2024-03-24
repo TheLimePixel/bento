@@ -1,15 +1,13 @@
-======= Function(packages::bar::bar) =======
+======= packages::bar::bar =======
 FunctionDef {
-  span: 0..24
+  span: 66..90
   params: []
   returnType: TypeRef {
     span: 4..9
     type: Path {
       span: 4..9
       binding: Accessor {
-        of: RecordType {
-          bento::String
-        }
+        of: bento::String
         type: Get
       }
     }
@@ -20,9 +18,9 @@ FunctionDef {
   }
 }
 
-======= Function(packages::bar::main) =======
+======= packages::bar::main =======
 FunctionDef {
-  span: 0..26
+  span: 124..150
   params: []
   returnType: null
   body: CallExpr {
@@ -30,9 +28,7 @@ FunctionDef {
     on: Path {
       span: 0..6
       binding: Accessor {
-        of: Function {
-          bento::io::println
-        }
+        of: bento::io::println
         type: Get
       }
     }
@@ -42,9 +38,7 @@ FunctionDef {
         on: Path {
           span: 0..2
           binding: Accessor {
-            of: Function {
-              packages::foo::foo
-            }
+            of: packages::foo::foo
             type: Get
           }
         }

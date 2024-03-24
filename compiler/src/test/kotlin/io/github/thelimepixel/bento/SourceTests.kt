@@ -19,7 +19,7 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class SourceTests {
-    private val objFormatter: Formatter<Any> = ObjectFormatter()
+    private val objFormatter: Formatter<Any?> = ObjectFormatter()
     private val bytecodeFormatter: Formatter<ByteArray> = BytecodeFormatter()
     private val nodeFormatter: Formatter<GreenNode> = ASTFormatter()
     private val classLoader = TestClassLoader(this::class.java.classLoader)
@@ -29,17 +29,16 @@ class SourceTests {
         val typingContext = TopLevelTypingContext()
         val javaPackage = packageAt("java", "lang")
         val kotlinPackage = packageAt("kotlin")
-        val printlnRef = ItemRef(
-            ItemRef(
+        val printlnRef = FunctionRef(
+            ProductTypeRef(
                 packageAt("io", "github", "thelimepixel", "bento"),
                 "RunFunctionsKt",
                 9,
-                ItemType.RecordType,
-                false
+                null
             ),
             "fakePrintln",
             0,
-            ItemType.Function, false
+            null
         )
 
         return CompilationInstance(
@@ -56,9 +55,9 @@ class SourceTests {
             topTypingContext = typingContext,
             topJVMBindingContext = TopLevelJVMBindingContext(
                 printlnRef = printlnRef,
-                stringJVMType = ItemRef(javaPackage, "String", 0, ItemType.RecordType, false),
-                unitJVMType = ItemRef(kotlinPackage, "Unit", 0, ItemType.SingletonType, false),
-                nothingJVMType = ItemRef(kotlinPackage, "Nothing", 0, ItemType.RecordType, false),
+                stringJVMType = ProductTypeRef(javaPackage, "String", 0, null),
+                unitJVMType = SingletonTypeRef(kotlinPackage, "Unit", 0, null),
+                nothingJVMType = ProductTypeRef(kotlinPackage, "Nothing", 0, null),
                 typingContext,
             ),
             typing = BentoTypechecking(),
@@ -114,27 +113,25 @@ class SourceTests {
             val bindings = binding.bind(pack, imports, rootContext)
             test(dir, "Bind", pack) { formatItemTrees(bindings) }
 
-            bindings.asSequence() + fileInfo.items.asSequence().flatMap childMap@{ ref ->
-                binding.bind(ref, imports, rootContext).asSequence()
-            }
+            bindings.asSequence() + fileInfo.items.asSequence()
+                .filterIsInstance<ParentRef>()
+                .flatMap childMap@{ ref -> binding.bind(ref, imports, rootContext).asSequence() }
         }.associate { (key, value) -> key to value }
 
         val typingContext = FileTypingContext(
             topTypingContext,
-            hirMap.mapValues { (ref, value) -> value.type(ref) },
+            hirMap.mapValues { (ref, _) -> type(ref, hirMap) },
             hirMap,
             astMap,
         )
 
         val thirMap = hirMap.mapNotNull { (ref, node) ->
-            typing.type(node, typingContext)?.let { ref to it }
+            node?.let { hir -> typing.type(hir, typingContext)}?.let { ref to it }
         }.toMap()
 
         sources.forEach { (pack, _) ->
             test(dir, "Typecheck", pack) {
-                formatItemTrees(thirMap.filterKeys { ref ->
-                    ref.parent == pack
-                })
+                formatItemTrees(thirMap.filterKeys { ref -> ref.parent == pack })
             }
         }
 
@@ -162,7 +159,7 @@ class SourceTests {
         return printBuffer.toString().also { printBuffer.clear() }
     }
 
-    private fun <Node, Err> formatItemTrees(hirMap: Map<ItemRef, Node>)
+    private fun <Node, Err> formatItemTrees(hirMap: Map<ItemRef, Node?>)
             where Err : ErrorKind, Node : Spanned, Node : CodeTree<Node, Err> =
         hirMap.asSequence().joinToString("\n") { (key, value) ->
             val errors = collectErrors(value)

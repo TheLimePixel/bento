@@ -1,9 +1,7 @@
 BoundImportData {
   accessors: {
     foo: Accessor {
-      of: Function {
-        packages::foo::foo
-      }
+      of: packages::foo::foo
       type: Get
     }
   }
@@ -29,9 +27,7 @@ BoundImportData {
           span: 30..32
           node: null
           item: Accessor {
-            of: Function {
-              packages::foo::foo
-            }
+            of: packages::foo::foo
             type: Get
           }
         }

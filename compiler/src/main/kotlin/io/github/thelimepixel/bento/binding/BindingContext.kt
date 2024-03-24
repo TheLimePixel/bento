@@ -23,13 +23,13 @@ class ParentBindingContext(
     private val current: ParentRef,
     private val accessors: Map<String, Accessor>,
     private val packages: Map<String, PackageTreeNode>,
-    private val initialized: Set<ItemRef>,
+    private val initialized: Set<StoredPropertyRef>,
 ) : BindingContext {
     override fun accessorFor(name: String): Accessor? =
         accessors[name] ?: parent?.accessorFor(name)
 
     override fun isInitialized(ref: Ref): Boolean =
-        ref !is ItemRef || ref.type != ItemType.StoredProperty || ref in initialized || ref.parent != current
+        ref !is StoredPropertyRef || ref in initialized || ref.parent != current
 
     override fun packageNodeFor(name: String): PackageTreeNode? =
         packages[name] ?: parent?.packageNodeFor(name)
@@ -67,7 +67,7 @@ class LocalItemBindingContext(private val parent: BindingContext) : LocalBinding
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 }
 
-class ScopeBindingContext(private val parent: LocalBindingContext): LocalBindingContext {
+class ScopeBindingContext(private val parent: LocalBindingContext) : LocalBindingContext {
     private val localsMap = mutableMapOf<String, Accessor>()
 
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)

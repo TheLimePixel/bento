@@ -1,4 +1,4 @@
-======= Function(nesting::main::baz) =======
+======= nesting::main::baz =======
 FunctionDef {
   span: 0..45
   params: [
@@ -12,9 +12,7 @@ FunctionDef {
         type: Path {
           span: 4..9
           binding: Accessor {
-            of: RecordType {
-              bento::String
-            }
+            of: bento::String
             type: Get
           }
         }
@@ -26,9 +24,7 @@ FunctionDef {
     type: Path {
       span: 4..9
       binding: Accessor {
-        of: RecordType {
-          bento::String
-        }
+        of: bento::String
         type: Get
       }
     }
@@ -39,9 +35,9 @@ FunctionDef {
   }
 }
 
-======= Function(nesting::main::bar) =======
+======= nesting::main::bar =======
 FunctionDef {
-  span: 0..77
+  span: 100..177
   params: []
   returnType: null
   body: ScopeExpr {
@@ -52,9 +48,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }
@@ -64,9 +58,7 @@ FunctionDef {
             on: Path {
               span: 0..2
               binding: Accessor {
-                of: Function {
-                  nesting::main::baz
-                }
+                of: nesting::main::baz
                 type: Get
               }
             }
@@ -84,9 +76,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }
@@ -101,9 +91,9 @@ FunctionDef {
   }
 }
 
-======= Function(nesting::main::foo) =======
+======= nesting::main::foo =======
 FunctionDef {
-  span: 0..76
+  span: 264..340
   params: [
     Param {
       span: 2..13
@@ -116,9 +106,7 @@ FunctionDef {
         type: Path {
           span: 4..9
           binding: Accessor {
-            of: RecordType {
-              bento::String
-            }
+            of: bento::String
             type: Get
           }
         }
@@ -131,9 +119,7 @@ FunctionDef {
     on: Path {
       span: 0..6
       binding: Accessor {
-        of: Function {
-          bento::io::println
-        }
+        of: bento::io::println
         type: Get
       }
     }
@@ -146,9 +132,7 @@ FunctionDef {
             on: Path {
               span: 0..2
               binding: Accessor {
-                of: Function {
-                  nesting::main::bar
-                }
+                of: nesting::main::bar
                 type: Get
               }
             }
@@ -167,9 +151,9 @@ FunctionDef {
   }
 }
 
-======= Function(nesting::main::main) =======
+======= nesting::main::main =======
 FunctionDef {
-  span: 0..77
+  span: 426..503
   params: []
   returnType: null
   body: ScopeExpr {
@@ -180,9 +164,7 @@ FunctionDef {
         on: Path {
           span: 0..2
           binding: Accessor {
-            of: Function {
-              nesting::main::foo
-            }
+            of: nesting::main::foo
             type: Get
           }
         }
@@ -198,9 +180,7 @@ FunctionDef {
         on: Path {
           span: 0..6
           binding: Accessor {
-            of: Function {
-              bento::io::println
-            }
+            of: bento::io::println
             type: Get
           }
         }

@@ -8,7 +8,7 @@ private typealias LC = LocalBindingContext
 private typealias RC = RootBindingContext
 
 interface Binding {
-    fun bind(parentRef: ParentRef, importData: BoundImportData, parentContext: BindingContext): Map<ItemRef, HIR.Def>
+    fun bind(parentRef: ParentRef, importData: BoundImportData, parentContext: BindingContext): Map<ItemRef, HIR.Def?>
     fun bindImport(node: GreenNode?, context: RC): BoundImportData
 }
 
@@ -17,8 +17,8 @@ class BentoBinding : Binding {
         parentRef: ParentRef,
         importData: BoundImportData,
         parentContext: BindingContext,
-    ): Map<ItemRef, HIR.Def> {
-        val initialized = mutableSetOf<ItemRef>()
+    ): Map<ItemRef, HIR.Def?> {
+        val initialized = mutableSetOf<StoredPropertyRef>()
         val info = parentContext.astInfoOf(parentRef) ?: return emptyMap()
         val context = ParentBindingContext(
             parentContext,
@@ -27,33 +27,34 @@ class BentoBinding : Binding {
             importData.packages,
             initialized,
         )
-        val (stored, computed) = info.items.partition { it.type == ItemType.StoredProperty }
+        val (stored, computed) = info.items.partition { it is StoredPropertyRef }
         return stored.associateWith { ref ->
-            context.bindDefinition(ref, info.dataMap[ref.name]!![ref.index].toRedRoot())
-                .also { initialized.add(ref) }
-        } + computed.associateWith { ref ->
-            context.bindDefinition(ref, info.dataMap[ref.name]!![ref.index].toRedRoot())
+            context.bindLet(ref.ast!!).also { initialized.add(ref as StoredPropertyRef) }
+        } + computed.associateWith { ref -> context.bindDefinition(ref) }
+    }
+
+    private fun BC.bindDefinition(ref: ItemRef): HIR.Def? {
+        val node = ref.ast ?: return null
+        return when (val type = node.type) {
+            ST.FunDef -> bindFunctionLike(node)
+            ST.TypeDef -> bindTypeDef(ref, node)
+            else -> error("Unexpected definition type: $type")
         }
     }
 
-    private fun BC.bindDefinition(ref: ParentRef, node: RedNode): HIR.Def = when (node.type) {
-        ST.FunDef -> bindFunctionLike(node)
-        ST.LetDef -> bindLet(node)
-        ST.TypeDef -> bindTypeDef(ref, node)
-        ST.Field -> bindField(node)
-        else -> error("Unsupported definition type")
-    }
-
-    private fun BC.bindTypeDef(ref: ParentRef, node: RedNode): HIR.TypeDef {
+    private fun BC.bindTypeDef(ref: ItemRef, node: RedNode): HIR.TypeDef {
         val ctor = node.lastChild(ST.Constructor) ?: return HIR.SingletonType(node.span)
-        val fields = astInfoOf(ref)!!.items
-        return HIR.RecordType(node.span, HIR.Constructor(ctor.span, fields))
+        val refs = astInfoOf(ref as ProductTypeRef)!!.items.asSequence().map { it as FieldRef }
+        val fields = ctor.childSequence()
+            .filter { it.type == ST.Field }
+            .zip(refs) { fieldNode, fieldRef -> bindField(fieldNode, fieldRef) }
+            .toList()
+        return HIR.ProductType(node.span, fields)
     }
 
-    private fun BC.bindField(node: RedNode): HIR.Field {
-        val name = node.firstChild(ST.Identifier)?.rawContent ?: ""
+    private fun BC.bindField(node: RedNode, ref: FieldRef): HIR.Field {
         val type = findAndBindTypeAnnotation(node)
-        return HIR.Field(node.span, name, type)
+        return HIR.Field(node.span, ref, type)
     }
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
@@ -62,7 +63,7 @@ class BentoBinding : Binding {
         ?.let {
             val path = bindPath(it, false) ?: return@let null
             val itemRef = path.binding.of
-            if (itemRef is ItemRef && itemRef.type.isType)
+            if (itemRef is TypeRef)
                 HIR.TypeRef(it.span, path)
             else null
         }

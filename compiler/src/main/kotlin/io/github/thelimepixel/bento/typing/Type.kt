@@ -7,13 +7,13 @@ sealed interface Type {
     val isSingleton: Boolean
 }
 
-data class PathType(val ref: ItemRef) : Type {
+data class PathType(val ref: TypeRef) : Type {
     override fun toString(): String = ref.toString()
     override val accessType: PathType
         get() = this
 
     override val isSingleton: Boolean
-        get() = ref.type == ItemType.SingletonType
+        get() = ref is SingletonTypeRef
 }
 
 data class FunctionType(val paramTypes: List<PathType>, val returnType: PathType) : Type {
@@ -25,15 +25,26 @@ data class FunctionType(val paramTypes: List<PathType>, val returnType: PathType
         get() = false
 }
 
-fun HIR.Def.type(defRef: ItemRef): Type = when (this) {
-    is HIR.TypeDef -> PathType(defRef)
-    is HIR.FunctionDef -> FunctionType(
-        paramTypes = params.map { it.type.toPathType() ?: BuiltinTypes.nothing },
-        returnType =  returnType?.toPathType() ?: BuiltinTypes.unit
-    )
-    is HIR.GetterDef ->  returnType?.toPathType() ?: BuiltinTypes.unit
-    is HIR.LetDef -> type?.toPathType() ?: BuiltinTypes.unit
-    is HIR.Field -> type?.toPathType() ?: BuiltinTypes.nothing
+fun type(ref: ItemRef, hirMap: Map<ItemRef, HIR.Def?>): Type = when (ref) {
+    is TypeRef ->
+        PathType(ref)
+
+    is FunctionRef -> {
+        val hir = hirMap[ref] as HIR.FunctionDef
+        FunctionType(
+            paramTypes = hir.params.map { it.type.toPathType() ?: BuiltinTypes.nothing },
+            returnType = hir.returnType?.toPathType() ?: BuiltinTypes.unit
+        )
+    }
+
+    is GetterRef ->
+        (hirMap[ref] as HIR.GetterDef).returnType?.toPathType() ?: BuiltinTypes.unit
+
+    is StoredPropertyRef ->
+        (hirMap[ref] as HIR.LetDef).type?.toPathType() ?: BuiltinTypes.unit
+
+    is FieldRef ->
+        (hirMap[ref.parent] as HIR.ProductType).fields[ref.index].type.toPathType() ?: BuiltinTypes.nothing
 }
 
-fun HIR.TypeRef?.toPathType(): PathType? = this?.type?.let { PathType(it.binding.of as ItemRef) }
+fun HIR.TypeRef?.toPathType(): PathType? = this?.type?.let { PathType(it.binding.of as TypeRef) }

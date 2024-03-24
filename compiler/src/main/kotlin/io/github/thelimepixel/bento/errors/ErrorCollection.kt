@@ -11,6 +11,6 @@ private fun <Node, Err> collectErrors(
     node.childSequence().forEach { collectErrors(it, list) }
 }
 
-fun <Node, Err> collectErrors(node: Node): List<CodeError<Err>>
+fun <Node, Err> collectErrors(node: Node?): List<CodeError<Err>>
         where Node : CodeTree<Node, Err>, Node : Spanned, Err : ErrorKind =
-    mutableListOf<CodeError<Err>>().also { collectErrors(node, it) }
+    mutableListOf<CodeError<Err>>().also { node?.let { node -> collectErrors(node, it) } }

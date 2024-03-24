@@ -1,5 +1,6 @@
 package io.github.thelimepixel.bento.codegen
 
+import io.github.thelimepixel.bento.binding.NamedRef
 import io.github.thelimepixel.bento.binding.ParentRef
 import java.util.*
 
@@ -9,7 +10,7 @@ value class JVMName internal constructor(val string: String) {
 }
 
 
-val ParentRef.jvmName: JVMName
+val NamedRef.jvmName: JVMName
     get() = name.asSequence().joinToString(separator = "") { c ->
         when (c) {
             '`' -> ""

@@ -53,20 +53,10 @@ class BentoTypechecking : Typechecking {
             return THIRError.InvalidIdentifierUse.at(hir.span)
 
         return when (val binding = hir.binding.of) {
-            is ItemRef -> when (binding.type) {
-                ItemType.Getter ->
-                    THIR.GetComputedExpr(hir.span, typeOf(binding).accessType, binding)
-
-                ItemType.StoredProperty ->
-                    THIR.GetStoredExpr(hir.span, typeOf(binding).accessType, binding)
-
-                ItemType.SingletonType ->
-                    THIR.SingletonAccessExpr(hir.span, PathType(binding))
-
-                ItemType.RecordType, ItemType.Function, ItemType.Field ->
-                    THIRError.InvalidIdentifierUse.at(hir.span)
-            }
-
+            is GetterRef -> THIR.GetComputedExpr(hir.span, typeOf(binding).accessType, binding)
+            is StoredPropertyRef -> THIR.GetStoredExpr(hir.span, typeOf(binding).accessType, binding)
+            is SingletonTypeRef -> THIR.SingletonAccessExpr(hir.span, PathType(binding))
+            is ProductTypeRef, is FunctionRef, is FieldRef -> THIRError.InvalidIdentifierUse.at(hir.span)
             is LocalRef -> THIR.LocalAccessExpr(hir.span, typeOf(binding), binding)
         }
     }
@@ -85,7 +75,7 @@ class BentoTypechecking : Typechecking {
     private fun FC.typeAccessExpr(hir: HIR.MemberAccessExpr): THIR {
         val on = typeExpr(hir.on, false)
         val member = memberOf(on.type.accessType.ref, hir.field) ?: return THIRError.UnknownMember.at(hir.span)
-        return THIR.GetFieldExpr(hir.span, typeOf(member.of).accessType, member.of as ItemRef, on)
+        return THIR.GetFieldExpr(hir.span, typeOf(member.of).accessType, member.of as FieldRef, on)
     }
 
     private fun FC.typeAssignment(hir: HIR.AssignmentExpr): THIR {
@@ -100,7 +90,7 @@ class BentoTypechecking : Typechecking {
     private fun FC.typeFieldAssignment(span: Span, left: HIR.MemberAccessExpr, right: THIR): THIR {
         val on = typeExpr(left.on, false)
         val member = memberOf(on.type.accessType.ref, left.field + "_=") ?: return THIRError.UnknownMember.at(span)
-        return THIR.SetFieldExpr(span, member.of as ItemRef, on, right)
+        return THIR.SetFieldExpr(span, member.of as FieldRef, on, right)
     }
 
     private fun FC.typeDirectAssignment(span: Span, left: HIR.Path, right: THIR): THIR {
@@ -114,13 +104,10 @@ class BentoTypechecking : Typechecking {
             else THIRError.InvalidType.at(span, listOf(right))
 
         return when (val ref = left.binding.of) {
-            is ItemRef -> when (ref.type) {
-                ItemType.Function -> THIR.CallExpr(span, BuiltinTypes.unit, ref, listOf(value))
-                ItemType.StoredProperty -> THIR.SetStoredExpr(span, ref, value)
-                else -> THIRError.InvalidSetter.at(span)
-            }
-
+            is FunctionRef -> THIR.CallExpr(span, BuiltinTypes.unit, ref, listOf(value))
+            is StoredPropertyRef -> THIR.SetStoredExpr(span, ref, value)
             is LocalRef -> THIR.LocalAssignmentExpr(span, ref, value)
+            else -> THIRError.InvalidSetter.at(span)
         }
     }
 
@@ -141,13 +128,11 @@ class BentoTypechecking : Typechecking {
         val binding = (hir.on as? HIR.Path)?.binding?.of
             ?: return THIRError.CallOnNonFunction.at(hir.span, hir.args.map { typeExpr(it, false) })
 
-        if (binding is ItemRef) when (binding.type) {
-            ItemType.Function -> return typeFunctionCall(binding, hir)
-            ItemType.RecordType -> return typeConstructorCall(binding, hir)
-            ItemType.SingletonType, ItemType.Getter, ItemType.StoredProperty, ItemType.Field -> Unit
+        return when (binding) {
+            is FunctionRef -> typeFunctionCall(binding, hir)
+            is ProductTypeRef -> typeConstructorCall(binding, hir)
+            else -> THIRError.CallOnNonFunction.at(hir.span, hir.args.map { typeExpr(it, false) })
         }
-
-        return THIRError.CallOnNonFunction.at(hir.span, hir.args.map { typeExpr(it, false) })
     }
 
     private fun FC.typeArgs(args: List<HIR.Expr>, paramTypes: List<Type>): List<THIR> =
@@ -158,15 +143,15 @@ class BentoTypechecking : Typechecking {
             else THIRError.UnexpectedArgument.at(expr.span, listOf(typeExpr(expr, false)))
         }
 
-    private fun FC.typeConstructorCall(ref: ItemRef, hir: HIR.CallExpr): THIR {
-        val typeHIR = hirOf(ref) as HIR.RecordType
-        val paramTypes = typeHIR.constructor.fields.map { typeOf(it) }
+    private fun FC.typeConstructorCall(ref: ProductTypeRef, hir: HIR.CallExpr): THIR {
+        val typeHIR = hirOf(ref) as HIR.ProductType
+        val paramTypes = typeHIR.fields.map { it.type.toPathType() ?: BuiltinTypes.nothing }
         val args = typeArgs(hir.args, paramTypes)
 
         return THIR.ConstructorCallExpr(hir.span, PathType(ref), args)
     }
 
-    private fun FC.typeFunctionCall(ref: ItemRef, hir: HIR.CallExpr): THIR {
+    private fun FC.typeFunctionCall(ref: FunctionRef, hir: HIR.CallExpr): THIR {
         val signature = typeOf(ref) as FunctionType
         val params = signature.paramTypes
         val args = typeArgs(hir.args, params)
