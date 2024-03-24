@@ -1,11 +1,11 @@
 ======= Function(packages::foo::foo) =======
 FunctionDef {
-  span: 0..25
+  span: 0..24
   params: []
   returnType: TypeRef {
-    span: 4..10
+    span: 4..9
     type: Path {
-      span: 4..10
+      span: 4..9
       binding: Accessor {
         of: RecordType {
           bento::String
@@ -15,20 +15,20 @@ FunctionDef {
     }
   }
   body: StringExpr {
-    span: 40..45
+    span: 40..44
     content: "Foo"
   }
 }
 
 ======= Function(packages::foo::main) =======
 FunctionDef {
-  span: 0..32
+  span: 0..31
   params: []
   returnType: null
   body: CallExpr {
-    span: 26..45
+    span: 26..44
     on: Path {
-      span: 0..7
+      span: 0..6
       binding: Accessor {
         of: Function {
           bento::io::println
@@ -38,9 +38,9 @@ FunctionDef {
     }
     args: [
       CallExpr {
-        span: 2..12
+        span: 2..11
         on: Path {
-          span: 0..8
+          span: 0..7
           binding: Accessor {
             of: Function {
               packages::bar::bar

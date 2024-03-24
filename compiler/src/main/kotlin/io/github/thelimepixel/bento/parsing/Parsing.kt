@@ -8,14 +8,20 @@ import io.github.thelimepixel.bento.ast.SyntaxType
 private typealias P = Parser
 private typealias ST = SyntaxType
 
+data class Parse(val node: GreenNode, val errors: List<ParseError>)
+
 interface Parsing {
-    fun parseFile(code: String): GreenNode
+    fun parseFile(code: String): Parse
 }
 
 class BentoParsing : Parsing {
-    override fun parseFile(code: String): GreenNode = parser(Lexer(code), ST.File) {
-        parseImportStatement()
-        handleFile()
+    override fun parseFile(code: String): Parse {
+        val errorCollector = ParseErrorCollector()
+        val node = parser(errorCollector, Lexer(code, errorCollector), ST.File) {
+            parseImportStatement()
+            handleFile()
+        }
+        return Parse(node, errorCollector.errors())
     }
 
     private fun P.handleFile() {
@@ -24,7 +30,7 @@ class BentoParsing : Parsing {
             ST.DefKeyword -> handleFunctionLike()
             ST.LetKeyword -> handleTopLevelLet()
             ST.DataKeyword -> handleTypeDef()
-            else -> errorNode(ParseError.ExpectedDeclaration) { push() }
+            else -> errorNode(ParseErrorKind.ExpectedDeclaration)
         }
         handleFile()
     }
@@ -57,7 +63,7 @@ class BentoParsing : Parsing {
 
     private fun P.expectImportBlock(): ParseResult {
         if (!at(ST.LBrace))
-            return handleError(ParseError.ExpectedImportBlock)
+            return handleError(ParseErrorKind.ExpectedImportBlock)
 
         return node(ST.ImportBlock) {
             push()      // LBrace
@@ -75,14 +81,9 @@ class BentoParsing : Parsing {
             }
         }
 
-    private fun P.handleError(type: ParseError): ParseResult =
-        if (current in BaseSets.baseRecoverySet) {
-            pushError(type)
-            ParseResult.Recover
-        } else {
-            errorNode(type) { push() }
-            ParseResult.Failure
-        }
+    private fun P.handleError(type: ParseErrorKind): ParseResult =
+        if (current in BaseSets.baseRecoverySet) pushError(type) else errorNode(type)
+
 
 
     private fun P.handleFunctionLike() = node(ST.FunDef) {
@@ -101,11 +102,11 @@ class BentoParsing : Parsing {
 
     private fun P.expectTypeAnnotation(): ParseResult =
         if (parseTypeAnnotation() == ParseResult.Success) ParseResult.Success
-        else handleError(ParseError.ExpectedTypeAnnotation)
+        else handleError(ParseErrorKind.ExpectedTypeAnnotation)
 
     private fun P.expectIdentifier(): ParseResult =
         if (at(BaseSets.identifiers)) pushWrapped(ST.Identifier)
-        else handleError(ParseError.ExpectedIdentifier)
+        else handleError(ParseErrorKind.ExpectedIdentifier)
 
     private fun P.parseParamList(): ParseResult =
         if (at(ST.LParen)) node(ST.ParamList) {
@@ -121,7 +122,7 @@ class BentoParsing : Parsing {
         }
 
         in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
-        else -> handleError(ParseError.ExpectedPattern)
+        else -> handleError(ParseErrorKind.ExpectedPattern)
     }
 
     private fun P.expectParam(): ParseResult =
@@ -139,7 +140,7 @@ class BentoParsing : Parsing {
 
     private fun P.expectEqExpression(): ParseResult =
         if (consume(ST.Equals)) expectTerm()
-        else handleError(ParseError.ExpectedEquals)
+        else handleError(ParseErrorKind.ExpectedEquals)
 
     private fun P.handleLetExpr(): ParseResult = node(ST.LetExpr) {
         push()  // let keyword
@@ -166,7 +167,7 @@ class BentoParsing : Parsing {
         push()  // (
         expectTerm().then {
             if (consume(SyntaxType.RParen)) ParseResult.Success
-            else handleError(ParseError.ExpectedClosedParen)
+            else handleError(ParseErrorKind.ExpectedClosedParen)
         }
     }
 
@@ -184,7 +185,7 @@ class BentoParsing : Parsing {
                 handlePath()
             }
 
-            else -> handleError(ParseError.ExpectedExpression)
+            else -> handleError(ParseErrorKind.ExpectedExpression)
         }
 
     private fun P.expectPath(): ParseResult =
@@ -215,10 +216,7 @@ class BentoParsing : Parsing {
             ParseResult.Success
         }
 
-        in recoverySet -> {
-            pushError(ParseError.ExpectedCommaOrClosedParen)
-            ParseResult.Recover
-        }
+        in recoverySet -> pushError(ParseErrorKind.ExpectedCommaOrClosedParen)
 
         else -> ParseResult.Pass
     }
@@ -229,10 +227,7 @@ class BentoParsing : Parsing {
             ParseResult.Success
         }
 
-        in recoverySet -> {
-            pushError(ParseError.ExpectedCommaOrClosedBrace)
-            ParseResult.Recover
-        }
+        in recoverySet -> pushError(ParseErrorKind.ExpectedCommaOrClosedBrace)
 
         else -> ParseResult.Pass
     }
@@ -242,7 +237,7 @@ class BentoParsing : Parsing {
             handleParenthesizedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
             expectFn().ifIs(ParseResult.Recover) { return it }
             handleParenthesizedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
-            if (!consume(ST.Comma) && !seenNewline) pushError(ParseError.ExpectedCommaOrClosedParen)
+            if (!consume(ST.Comma) && !seenNewline) pushError(ParseErrorKind.ExpectedCommaOrClosedParen)
         }
     }
 
@@ -251,7 +246,7 @@ class BentoParsing : Parsing {
             handleBracedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
             expectFn().ifIs(ParseResult.Recover) { return it }
             handleBracedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
-            if (!consume(ST.Comma) && !seenNewline) pushError(ParseError.ExpectedCommaOrClosedBrace)
+            if (!consume(ST.Comma) && !seenNewline) pushError(ParseErrorKind.ExpectedCommaOrClosedBrace)
         }
     }
 

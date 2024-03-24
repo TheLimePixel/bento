@@ -1,6 +1,6 @@
 package io.github.thelimepixel.bento.errors
 
-interface ErrorType {
+interface ErrorKind {
     val ignore: Boolean
         get() = false
 }

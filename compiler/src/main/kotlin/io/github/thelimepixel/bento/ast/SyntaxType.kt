@@ -1,18 +1,12 @@
 package io.github.thelimepixel.bento.ast
 
-import io.github.thelimepixel.bento.parsing.ParseError
-
 enum class SyntaxType(
     val dynamic: Boolean = false,
     val ignore: Boolean = false,
-    val error: ParseError? = null,
 ) {
     EOF,
 
-    Unknown(dynamic = true, error = ParseError.UnknownSymbol),
-    UnclosedComment(dynamic = true, error = ParseError.UnclosedComment, ignore = true),
-    UnclosedString(dynamic = true, error = ParseError.UnclosedString),
-    UnclosedRawIdentifier(dynamic = true, error = ParseError.UnclosedRawIdentifier),
+    Unknown(dynamic = true),
 
     Whitespace(dynamic = true, ignore = true),
     Newline(ignore = true),
@@ -86,22 +80,22 @@ fun SyntaxType.edge(code: String, start: Int, exclusiveEnd: Int) =
 
 object BaseEdges {
     val eof = SyntaxType.EOF.edge("")
-    val nlN = SyntaxType.Newline.edge( "\n")
-    val nlR = SyntaxType.Newline.edge( "\r")
-    val nlRN = SyntaxType.Newline.edge( "\r\n")
-    val lParen = SyntaxType.LParen.edge( "(")
-    val rParen = SyntaxType.RParen.edge( ")")
-    val lBrace = SyntaxType.LBrace.edge( "{")
-    val rBrace = SyntaxType.RBrace.edge( "}")
-    val comma = SyntaxType.Comma.edge( ",")
-    val dot = SyntaxType.Dot.edge( ".")
+    val nlN = SyntaxType.Newline.edge("\n")
+    val nlR = SyntaxType.Newline.edge("\r")
+    val nlRN = SyntaxType.Newline.edge("\r\n")
+    val lParen = SyntaxType.LParen.edge("(")
+    val rParen = SyntaxType.RParen.edge(")")
+    val lBrace = SyntaxType.LBrace.edge("{")
+    val rBrace = SyntaxType.RBrace.edge("}")
+    val comma = SyntaxType.Comma.edge(",")
+    val dot = SyntaxType.Dot.edge(".")
     val colon = SyntaxType.Colon.edge(":")
     val eq = SyntaxType.Equals.edge("=")
     val colonColon = SyntaxType.ColonColon.edge("::")
-    val defKeyword = SyntaxType.DefKeyword.edge( "def")
-    val letKeyword = SyntaxType.LetKeyword.edge( "let")
-    val importKeyword = SyntaxType.ImportKeyword.edge( "import")
-    val dataKeyword = SyntaxType.DataKeyword.edge( "data")
-    val mutKeyword = SyntaxType.MutKeyword.edge( "mut")
-    val loneSlash = SyntaxType.Unknown.edge( "/")
+    val defKeyword = SyntaxType.DefKeyword.edge("def")
+    val letKeyword = SyntaxType.LetKeyword.edge("let")
+    val importKeyword = SyntaxType.ImportKeyword.edge("import")
+    val dataKeyword = SyntaxType.DataKeyword.edge("data")
+    val mutKeyword = SyntaxType.MutKeyword.edge("mut")
+    val loneSlash = SyntaxType.Unknown.edge("/")
 }

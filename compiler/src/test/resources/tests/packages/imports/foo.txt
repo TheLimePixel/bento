@@ -5,10 +5,10 @@ BoundImportData {
   }
   binding: [
     BoundImportPath {
-      span: 4..17
+      span: 4..16
       segments: [
         BoundImportPathSegment {
-          span: 0..8
+          span: 0..7
           node: packages: {
             bar: packages::bar: {}
             foo: packages::foo: {}
@@ -16,7 +16,7 @@ BoundImportData {
           item: null
         }
         BoundImportPathSegment {
-          span: 20..23
+          span: 20..22
           node: packages::bar: {}
           item: null
         }

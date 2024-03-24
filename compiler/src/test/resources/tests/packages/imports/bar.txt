@@ -10,10 +10,10 @@ BoundImportData {
   packages: {}
   binding: [
     BoundImportPath {
-      span: 4..22
+      span: 4..21
       segments: [
         BoundImportPathSegment {
-          span: 0..8
+          span: 0..7
           node: packages: {
             bar: packages::bar: {}
             foo: packages::foo: {}
@@ -21,12 +21,12 @@ BoundImportData {
           item: null
         }
         BoundImportPathSegment {
-          span: 20..23
+          span: 20..22
           node: packages::foo: {}
           item: null
         }
         BoundImportPathSegment {
-          span: 30..33
+          span: 30..32
           node: null
           item: Accessor {
             of: Function {

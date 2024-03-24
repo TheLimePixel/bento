@@ -1,35 +1,35 @@
 ======= Function(variables::main::main) =======
 FunctionDef {
-  span: 0..209
+  span: 0..208
   params: []
   returnType: null
   body: ScopeExpr {
-    span: 26..222
+    span: 26..221
     statements: [
       LetExpr {
-        span: 14..25
+        span: 14..24
         pattern: IdentPattern {
-          span: 8..9
+          span: 8..8
           local: $0
         }
         type: null
         expr: StringExpr {
-          span: 16..19
+          span: 16..18
           content: "a"
         }
       }
       LetExpr {
-        span: 48..61
+        span: 48..60
         pattern: MutablePattern {
-          span: 8..13
+          span: 8..12
           nested: IdentPattern {
-            span: 8..9
+            span: 8..8
             local: $1
           }
         }
         type: null
         expr: Path {
-          span: 24..25
+          span: 24..24
           binding: Accessor {
             of: $0
             type: Get
@@ -37,9 +37,9 @@ FunctionDef {
         }
       }
       CallExpr {
-        span: 86..96
+        span: 86..95
         on: Path {
-          span: 0..7
+          span: 0..6
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -49,7 +49,7 @@ FunctionDef {
         }
         args: [
           Path {
-            span: 2..3
+            span: 2..2
             binding: Accessor {
               of: $0
               type: Get
@@ -58,9 +58,9 @@ FunctionDef {
         ]
       }
       CallExpr {
-        span: 118..128
+        span: 118..127
         on: Path {
-          span: 0..7
+          span: 0..6
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -70,7 +70,7 @@ FunctionDef {
         }
         args: [
           Path {
-            span: 2..3
+            span: 2..2
             binding: Accessor {
               of: $1
               type: Get
@@ -79,38 +79,38 @@ FunctionDef {
         ]
       }
       ScopeExpr {
-        span: 150..236
+        span: 150..235
         statements: [
           LetExpr {
-            span: 22..33
+            span: 22..32
             pattern: IdentPattern {
-              span: 8..9
+              span: 8..8
               local: $2
             }
             type: null
             expr: StringExpr {
-              span: 16..19
+              span: 16..18
               content: "A"
             }
           }
           AssignmentExpr {
-            span: 64..71
+            span: 64..70
             left: Path {
-              span: 0..1
+              span: 0..0
               binding: Accessor {
                 of: $1
                 type: Set
               }
             }
             right: StringExpr {
-              span: 8..11
+              span: 8..10
               content: "b"
             }
           }
           CallExpr {
-            span: 98..108
+            span: 98..107
             on: Path {
-              span: 0..7
+              span: 0..6
               binding: Accessor {
                 of: Function {
                   bento::io::println
@@ -120,7 +120,7 @@ FunctionDef {
             }
             args: [
               Path {
-                span: 2..3
+                span: 2..2
                 binding: Accessor {
                   of: $2
                   type: Get
@@ -129,9 +129,9 @@ FunctionDef {
             ]
           }
           CallExpr {
-            span: 138..148
+            span: 138..147
             on: Path {
-              span: 0..7
+              span: 0..6
               binding: Accessor {
                 of: Function {
                   bento::io::println
@@ -141,7 +141,7 @@ FunctionDef {
             }
             args: [
               Path {
-                span: 2..3
+                span: 2..2
                 binding: Accessor {
                   of: $1
                   type: Get
@@ -152,9 +152,9 @@ FunctionDef {
         ]
       }
       CallExpr {
-        span: 334..344
+        span: 334..343
         on: Path {
-          span: 0..7
+          span: 0..6
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -164,7 +164,7 @@ FunctionDef {
         }
         args: [
           Path {
-            span: 2..3
+            span: 2..2
             binding: Accessor {
               of: $0
               type: Get
@@ -173,9 +173,9 @@ FunctionDef {
         ]
       }
       CallExpr {
-        span: 366..376
+        span: 366..375
         on: Path {
-          span: 0..7
+          span: 0..6
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -185,7 +185,7 @@ FunctionDef {
         }
         args: [
           Path {
-            span: 2..3
+            span: 2..2
             binding: Accessor {
               of: $1
               type: Get

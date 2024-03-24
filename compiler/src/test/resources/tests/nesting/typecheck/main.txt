@@ -1,18 +1,18 @@
 ======= Function(nesting::main::baz) =======
 StringExpr {
-  span: 58..75
+  span: 58..74
   content: "Hello from Baz!"
 }
 
 ======= Function(nesting::main::bar) =======
 ScopeExpr {
-  span: 24..90
+  span: 24..89
   type: SingletonType {
     bento::Unit
   }
   statements: [
     CallExpr {
-      span: 14..38
+      span: 14..37
       type: SingletonType {
         bento::Unit
       }
@@ -21,7 +21,7 @@ ScopeExpr {
       }
       args: [
         CallExpr {
-          span: 2..17
+          span: 2..16
           type: RecordType {
             bento::String
           }
@@ -30,7 +30,7 @@ ScopeExpr {
           }
           args: [
             StringExpr {
-              span: 2..12
+              span: 2..11
               content: "Hellope!"
             }
           ]
@@ -38,7 +38,7 @@ ScopeExpr {
       ]
     }
     CallExpr {
-      span: 74..100
+      span: 74..99
       type: SingletonType {
         bento::Unit
       }
@@ -47,7 +47,7 @@ ScopeExpr {
       }
       args: [
         StringExpr {
-          span: 2..19
+          span: 2..18
           content: "Hello from Bar!"
         }
       ]
@@ -57,7 +57,7 @@ ScopeExpr {
 
 ======= Function(nesting::main::foo) =======
 CallExpr {
-  span: 58..106
+  span: 58..105
   type: SingletonType {
     bento::Unit
   }
@@ -66,13 +66,13 @@ CallExpr {
   }
   args: [
     ScopeExpr {
-      span: 2..41
+      span: 2..40
       type: RecordType {
         bento::String
       }
       statements: [
         CallExpr {
-          span: 22..27
+          span: 22..26
           type: SingletonType {
             bento::Unit
           }
@@ -82,7 +82,7 @@ CallExpr {
           args: []
         }
         LocalAccessExpr {
-          span: 2..6
+          span: 2..5
           type: RecordType {
             bento::String
           }
@@ -95,13 +95,13 @@ CallExpr {
 
 ======= Function(nesting::main::main) =======
 ScopeExpr {
-  span: 26..91
+  span: 26..90
   type: SingletonType {
     bento::Unit
   }
   statements: [
     CallExpr {
-      span: 14..36
+      span: 14..35
       type: SingletonType {
         bento::Unit
       }
@@ -110,13 +110,13 @@ ScopeExpr {
       }
       args: [
         StringExpr {
-          span: 2..19
+          span: 2..18
           content: "Hello from Foo!"
         }
       ]
     }
     CallExpr {
-      span: 70..97
+      span: 70..96
       type: SingletonType {
         bento::Unit
       }
@@ -125,7 +125,7 @@ ScopeExpr {
       }
       args: [
         StringExpr {
-          span: 2..20
+          span: 2..19
           content: "Hello from Main!"
         }
       ]

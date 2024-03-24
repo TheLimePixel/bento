@@ -1,8 +1,12 @@
 package io.github.thelimepixel.bento.parsing
 
-import io.github.thelimepixel.bento.errors.ErrorType
+import io.github.thelimepixel.bento.errors.ErrorKind
+import io.github.thelimepixel.bento.utils.Span
+import io.github.thelimepixel.bento.utils.span
 
-enum class ParseError : ErrorType {
+data class ParseError(val span: Span, val kind: ErrorKind)
+
+enum class ParseErrorKind : ErrorKind {
     UnknownSymbol,
     UnclosedComment,
     UnclosedString,

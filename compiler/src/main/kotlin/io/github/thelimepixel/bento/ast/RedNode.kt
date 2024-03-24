@@ -1,14 +1,15 @@
 package io.github.thelimepixel.bento.ast
 
-import io.github.thelimepixel.bento.parsing.ParseError
+import io.github.thelimepixel.bento.parsing.ParseErrorKind
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
+import io.github.thelimepixel.bento.utils.span
 
 class RedNode internal constructor(
     private val green: GreenNode,
     private val offset: Int
-) : CodeTree<RedNode, ParseError>, Spanned {
+) : Spanned {
     val content: String
         get() = green.content
 
@@ -22,10 +23,7 @@ class RedNode internal constructor(
         get() = green.length
 
     override val span: Span
-        get() = Span(offset..(offset + length))
-
-    override val error: ParseError?
-        get() = green.error
+        get() = span(offset,(offset + length))
 
     fun firstChild(type: SyntaxType): RedNode? =
         green.firstChild(type)?.wrap()
@@ -54,7 +52,7 @@ class RedNode internal constructor(
     }
 
     private fun childIterator(): Iterator<RedNode> = ChildIterator(this, green.childIterator())
-    override fun childSequence(): Sequence<RedNode> = childIterator().asSequence()
+    fun childSequence(): Sequence<RedNode> = childIterator().asSequence()
 }
 
 fun GreenNode.toRedRoot() = RedNode(this, 0)

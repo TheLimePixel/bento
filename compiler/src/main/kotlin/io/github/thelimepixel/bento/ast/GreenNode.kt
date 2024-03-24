@@ -1,17 +1,14 @@
 package io.github.thelimepixel.bento.ast
 
-import io.github.thelimepixel.bento.parsing.ParseError
-import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptyIterator
 
-sealed interface GreenNode : CodeTree<GreenChild, ParseError> {
+sealed interface GreenNode {
     val type: SyntaxType
     val length: Int
     val content: String
-    override val error: ParseError?
     fun childIterator(): Iterator<GreenChild>
     fun revChildIterator(): Iterator<GreenChild>
-    override fun childSequence(): Sequence<GreenChild> = childIterator().asSequence()
+    fun childSequence(): Sequence<GreenChild> = childIterator().asSequence()
     fun revChildSequence(): Sequence<GreenChild> = revChildIterator().asSequence()
 
     fun firstChild(type: SyntaxType): GreenChild? =
@@ -31,8 +28,6 @@ sealed interface GreenNode : CodeTree<GreenChild, ParseError> {
 }
 
 data class GreenEdge(override val type: SyntaxType, override val content: String) : GreenNode {
-    override val error: ParseError?
-        get() = type.error
     override val length: Int
         get() = content.length
 
@@ -52,26 +47,8 @@ data class GreenBranch(
     override val length: Int,
     val children: List<GreenChild>
 ) : GreenNode {
-    override val error: ParseError?
-        get() = null
     override val content: String
         get() = children.joinToString("") { it.node.content }
-
-    override fun childIterator(): Iterator<GreenChild> = children.iterator()
-
-    override fun revChildIterator(): Iterator<GreenChild> = children.asReversed().iterator()
-}
-
-data class GreenError(
-    override val error: ParseError,
-    override val length: Int,
-    val children: List<GreenChild>
-) : GreenNode {
-    override val type: SyntaxType
-        get() = SyntaxType.Error
-
-    override val content: String
-        get() = children.joinToString { it.node.content }
 
     override fun childIterator(): Iterator<GreenChild> = children.iterator()
 

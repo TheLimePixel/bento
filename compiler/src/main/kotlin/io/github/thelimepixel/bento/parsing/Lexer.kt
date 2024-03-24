@@ -7,9 +7,15 @@ import io.github.thelimepixel.bento.ast.edge
 
 private const val eofChar = Char.MAX_VALUE
 
-class Lexer(private val code: String, private var pos: Int = 0) {
+class Lexer(private val code: String, private val errorCollector: ParseErrorCollector) {
+    var pos: Int = 0
+        private set
     var current: GreenEdge = edgeAt(pos)
         private set
+
+    private fun pushError(kind: ParseErrorKind, start: Int, inclusiveEnd: Int) {
+        errorCollector.push(kind,start, inclusiveEnd + 1)
+    }
 
     private fun at(index: Int): Char =
         if (index in code.indices) code[index] else eofChar
@@ -35,7 +41,10 @@ class Lexer(private val code: String, private var pos: Int = 0) {
         else -> when {
             char.isLetter() -> getIdentifierOrKeyword(index + 1)
             char.isWhitespace() -> getWhitespace(index + 1)
-            else -> SyntaxType.Unknown.edge(char.toString())
+            else -> {
+                pushError(ParseErrorKind.UnknownSymbol, index, index)
+                SyntaxType.Unknown.edge(char.toString())
+            }
         }
     }
 
@@ -56,10 +65,12 @@ class Lexer(private val code: String, private var pos: Int = 0) {
 
         '*' -> {
             val endPos = getMultilineComment(curr + 1)
-            if (endPos > code.length)
-                SyntaxType.UnclosedComment.edge(code, pos, code.length)
-            else
+            if (endPos > code.length) {
+                pushError(ParseErrorKind.UnclosedComment, code.length, code.length)
+                SyntaxType.MultiLineComment.edge(code, pos, code.length)
+            } else {
                 SyntaxType.MultiLineComment.edge(code, pos, endPos)
+            }
         }
 
         else -> BaseEdges.loneSlash
@@ -86,7 +97,11 @@ class Lexer(private val code: String, private var pos: Int = 0) {
     }
 
     private tailrec fun getString(curr: Int): GreenEdge = when (at(curr)) {
-        eofChar -> SyntaxType.UnclosedString.edge(code, pos, curr)
+        eofChar -> {
+            pushError(ParseErrorKind.UnclosedString, curr, curr)
+            SyntaxType.StringLiteral.edge(code, pos, curr)
+        }
+
         '\"' -> SyntaxType.StringLiteral.edge(code, pos, curr + 1)
         else -> getString(curr + 1)
     }
@@ -137,7 +152,11 @@ class Lexer(private val code: String, private var pos: Int = 0) {
 
     private tailrec fun getRawIdentifier(curr: Int): GreenEdge = when (at(curr)) {
         '`' -> SyntaxType.BacktickedIdentifier.edge(code, pos, curr + 1)
-        eofChar -> SyntaxType.UnclosedRawIdentifier.edge(code, pos, curr)
+        eofChar -> {
+            pushError(ParseErrorKind.UnclosedRawIdentifier, curr, curr)
+            SyntaxType.BacktickedIdentifier.edge(code, pos, curr)
+        }
+
         else -> getRawIdentifier(curr + 1)
     }
 

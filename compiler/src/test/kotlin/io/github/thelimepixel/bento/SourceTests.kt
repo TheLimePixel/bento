@@ -4,7 +4,7 @@ import io.github.thelimepixel.bento.ast.*
 import io.github.thelimepixel.bento.binding.*
 import io.github.thelimepixel.bento.codegen.*
 import io.github.thelimepixel.bento.driver.CompilationInstance
-import io.github.thelimepixel.bento.errors.ErrorType
+import io.github.thelimepixel.bento.errors.ErrorKind
 import io.github.thelimepixel.bento.errors.collectErrors
 import io.github.thelimepixel.bento.parsing.*
 import io.github.thelimepixel.bento.typing.*
@@ -98,9 +98,9 @@ class SourceTests {
 
         val astMap: InfoMap = buildMap {
             sources.forEach { (path, code) ->
-                val node = parsing.parseFile(code)
-                test(dir, "Parse", path) { formatAST(node) }
-                collectItems(node, path, this)
+                val parse = parsing.parseFile(code)
+                test(dir, "Parse", path) { formatAST(parse) }
+                collectItems(parse.node, path, this)
             }
         }
 
@@ -163,16 +163,15 @@ class SourceTests {
     }
 
     private fun <Node, Err> formatItemTrees(hirMap: Map<ItemRef, Node>)
-            where Err : ErrorType, Node : Spanned, Node : CodeTree<Node, Err> =
+            where Err : ErrorKind, Node : Spanned, Node : CodeTree<Node, Err> =
         hirMap.asSequence().joinToString("\n") { (key, value) ->
             val errors = collectErrors(value)
             "$itemPadding $key $itemPadding\n${objFormatter.format(value) + errors.joinToString("\n", "\n")}"
         }
 
-    private fun formatAST(node: GreenNode): String {
-        val ast = nodeFormatter.format(node)
-        val errors = collectErrors(node.toRedRoot())
-        return ast + errors.joinToString("\n", "\n")
+    private fun formatAST(parse: Parse): String {
+        val ast = nodeFormatter.format(parse.node)
+        return ast + parse.errors.joinToString("\n", "\n")
     }
 
     private inline fun withContentOf(dir: File, name: String, fn: (content: String) -> Unit) {

@@ -2,7 +2,10 @@ package io.github.thelimepixel.bento.parsing
 
 import io.github.thelimepixel.bento.ast.*
 
-class Parser internal constructor(private val lexer: Lexer) {
+class Parser internal constructor(
+    private val errorCollector: ParseErrorCollector,
+    private val lexer: Lexer,
+) {
     @PublishedApi
     internal val nodeStack: MutableList<NodeBuilder> = mutableListOf(NodeBuilder())
     private var ignore: MutableList<GreenEdge> = mutableListOf()
@@ -38,8 +41,9 @@ class Parser internal constructor(private val lexer: Lexer) {
         collectIgnorables()
     }
 
-    fun pushError(type: ParseError) {
-        nodeStack.last().push(GreenError(type, 0, emptyList()))
+    fun pushError(kind: ParseErrorKind): ParseResult {
+        errorCollector.push(kind, lexer.pos, lexer.pos)
+        return ParseResult.Recover
     }
 
     inline fun node(type: SyntaxType, crossinline build: () -> ParseResult): ParseResult {
@@ -51,12 +55,10 @@ class Parser internal constructor(private val lexer: Lexer) {
         return res
     }
 
-    inline fun errorNode(error: ParseError, crossinline build: () -> Unit) {
-        pushIgnorables()
-        nodeStack.add(NodeBuilder())
-        build()
-        val node = nodeStack.removeLast().build { length, children -> GreenError(error, length, children) }
-        nodeStack.last().push(node)
+    fun errorNode(error: ParseErrorKind): ParseResult {
+        errorCollector.push(error, lexer.pos, lexer.pos + lexer.current.length)
+        pushWrapped(SyntaxType.Error)
+        return ParseResult.Failure
     }
 
     inline fun nestLast(type: SyntaxType, crossinline build: () -> ParseResult = { ParseResult.Success }): ParseResult {
@@ -86,5 +88,5 @@ class Parser internal constructor(private val lexer: Lexer) {
     }
 }
 
-fun parser(lexer: Lexer, baseType: SyntaxType, fn: Parser.() -> Unit): GreenNode =
-    Parser(lexer).apply(fn).finish(baseType)
+fun parser(errorCollector: ParseErrorCollector, lexer: Lexer, baseType: SyntaxType, fn: Parser.() -> Unit): GreenNode =
+    Parser(errorCollector, lexer).apply(fn).finish(baseType)
