@@ -1,6 +1,6 @@
 package io.github.thelimepixel.bento.binding
 
-import io.github.thelimepixel.bento.ast.ASTRef
+import io.github.thelimepixel.bento.utils.Span
 
 data class BoundImportData(
     val accessors: Map<String, Accessor>,
@@ -11,12 +11,12 @@ data class BoundImportData(
 val emptyImportData = BoundImportData(emptyMap(), emptyMap(), emptyList())
 
 data class BoundImportPath(
-    val ref: ASTRef,
+    val span: Span,
     val segments: List<BoundImportPathSegment>,
 )
 
 data class BoundImportPathSegment(
-    val ref: ASTRef,
+    val span: Span,
     val node: PackageTreeNode?,
     val item: Accessor?,
 )

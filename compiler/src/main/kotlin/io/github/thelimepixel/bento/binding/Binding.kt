@@ -45,15 +45,15 @@ class BentoBinding : Binding {
     }
 
     private fun BC.bindTypeDef(ref: ParentRef, node: RedNode): HIR.TypeDef {
-        val ctor = node.lastChild(ST.Constructor) ?: return HIR.SingletonType(node.ref)
+        val ctor = node.lastChild(ST.Constructor) ?: return HIR.SingletonType(node.span)
         val fields = astInfoOf(ref)!!.items
-        return HIR.RecordType(node.ref, HIR.Constructor(ctor.ref, fields))
+        return HIR.RecordType(node.span, HIR.Constructor(ctor.span, fields))
     }
 
     private fun BC.bindField(node: RedNode): HIR.Field {
         val name = node.firstChild(ST.Identifier)?.rawContent ?: ""
         val type = findAndBindTypeAnnotation(node)
-        return HIR.Field(node.ref, name, type)
+        return HIR.Field(node.span, name, type)
     }
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
@@ -63,16 +63,16 @@ class BentoBinding : Binding {
             val path = bindPath(it, false) ?: return@let null
             val itemRef = path.binding.of
             if (itemRef is ItemRef && itemRef.type.isType)
-                HIR.TypeRef(it.ref, path)
+                HIR.TypeRef(it.span, path)
             else null
         }
 
     private fun LC.findAndBindPattern(node: RedNode, mutable: Boolean): HIR.Pattern? =
         node.firstChild(BaseSets.patterns)?.let {
             when (it.type) {
-                ST.IdentPattern -> HIR.IdentPattern(it.ref, addLocal(it.rawContent, mutable))
-                ST.WildcardPattern -> HIR.WildcardPattern(it.ref)
-                ST.MutPattern -> HIR.MutablePattern(it.ref, findAndBindPattern(it, true))
+                ST.IdentPattern -> HIR.IdentPattern(it.span, addLocal(it.rawContent, mutable))
+                ST.WildcardPattern -> HIR.WildcardPattern(it.span)
+                ST.MutPattern -> HIR.MutablePattern(it.span, findAndBindPattern(it, true))
                 else -> error("Unsupported pattern type: ${it.type}")
             }
         }
@@ -83,7 +83,7 @@ class BentoBinding : Binding {
         ?.map {
             val name = findAndBindPattern(it, false)
             val type = findAndBindTypeAnnotation(it)
-            HIR.Param(it.ref, name, type)
+            HIR.Param(it.span, name, type)
         }
         ?.toList()
 
@@ -93,19 +93,19 @@ class BentoBinding : Binding {
         val returnType = findAndBindTypeAnnotation(node)
         val body = node.lastChild(BaseSets.expressions)?.let { context.bindResultingExpression(it) }
 
-        return if (params == null) HIR.GetterDef(node.ref, returnType, body)
-        else HIR.FunctionDef(node.ref, params, returnType, body)
+        return if (params == null) HIR.GetterDef(node.span, returnType, body)
+        else HIR.FunctionDef(node.span, params, returnType, body)
     }
 
     private fun BC.bindLet(node: RedNode): HIR.LetDef {
         val type = findAndBindTypeAnnotation(node)
         val body = node.lastChild(BaseSets.expressions)?.let { bindResultingExpression(it) }
-            ?: HIRError.Propagation.at(node.ref)
-        return HIR.LetDef(node.ref, type, body)
+            ?: HIRError.Propagation.at(node.span)
+        return HIR.LetDef(node.span, type, body)
     }
 
     private fun LC.bindCall(node: RedNode): HIR.CallExpr {
-        val on = node.firstChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)
+        val on = node.firstChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.span)
         val args = node
             .lastChild(ST.ArgList)
             ?.childSequence()
@@ -114,11 +114,11 @@ class BentoBinding : Binding {
             ?.toList()
             ?: emptyList()
 
-        return HIR.CallExpr(node.ref, on, args)
+        return HIR.CallExpr(node.span, on, args)
     }
 
     private fun BC.bindIdentifier(node: RedNode, mutable: Boolean): HIR.Expr =
-        bindPath(node, mutable) ?: HIR.ErrorExpr(node.ref, HIRError.UnboundIdentifier)
+        bindPath(node, mutable) ?: HIR.ErrorExpr(node.span, HIRError.UnboundIdentifier)
 
     private fun BC.bindPath(node: RedNode, mutable: Boolean): HIR.Path? {
         val segments = node.childSequence().filter { it.type == ST.Identifier }.toList()
@@ -135,12 +135,12 @@ class BentoBinding : Binding {
             astInfoOf(packNode.path)?.accessors?.get(lastName)
         }
         return if (isInitialized(accessor?.of ?: return null)) {
-            HIR.Path(node.ref, accessor)
+            HIR.Path(node.span, accessor)
         } else null
     }
 
     private fun LC.bindExpr(node: RedNode, mutable: Boolean = false): HIR.Expr = when (node.type) {
-        ST.StringLiteral -> HIR.StringExpr(node.ref, node.content)
+        ST.StringLiteral -> HIR.StringExpr(node.span, node.content)
         ST.Path -> bindIdentifier(node, mutable)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
@@ -148,32 +148,32 @@ class BentoBinding : Binding {
         ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
         ST.AssignmentExpr -> bindAssignmentExpr(node)
         ST.AccessExpr -> bindAccessExpr(node)
-        else -> HIR.ErrorExpr(node.ref, HIRError.Propagation)
+        else -> HIR.ErrorExpr(node.span, HIRError.Propagation)
     }
 
     private fun LC.bindAccessExpr(node: RedNode): HIR.MemberAccessExpr {
         val on = bindExpr(node.firstChild(BaseSets.expressions)!!)
         val field = node.lastChild(ST.Identifier)?.rawContent ?: ""
-        return HIR.MemberAccessExpr(node.ref, on, field)
+        return HIR.MemberAccessExpr(node.span, on, field)
     }
 
     private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
         val leftRef = bindExpr(node.firstChild(BaseSets.expressions)!!, true)
-        val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.ref)
-        return HIR.AssignmentExpr(node.ref, leftRef, right)
+        val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.span)
+        return HIR.AssignmentExpr(node.span, leftRef, right)
     }
 
     private fun LC.bindParenthesizedExpr(node: RedNode): HIR.Expr =
         node.firstChild(BaseSets.expressions)?.let { bindExpr(it) }
-            ?: HIRError.Propagation.at(node.ref)
+            ?: HIRError.Propagation.at(node.span)
 
     private fun LC.bindLetExpr(node: RedNode): HIR.LetExpr {
         val pattern = findAndBindPattern(node, false)
         val type = findAndBindTypeAnnotation(node)
         val expr = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) }
-            ?: HIRError.Propagation.at(node.ref)
+            ?: HIRError.Propagation.at(node.span)
 
-        return HIR.LetExpr(node.ref, pattern, type, expr)
+        return HIR.LetExpr(node.span, pattern, type, expr)
     }
 
     private fun BC.bindResultingExpression(node: RedNode): HIR.Expr =
@@ -187,7 +187,7 @@ class BentoBinding : Binding {
             .map { context.bindExpr(it) }
             .toList()
 
-        return HIR.ScopeExpr(node.ref, statements)
+        return HIR.ScopeExpr(node.span, statements)
     }
 
     override fun bindImport(node: GreenNode?, context: RC): BoundImportData {
@@ -215,10 +215,10 @@ class BentoBinding : Binding {
             .filter { it.type == ST.Identifier }
             .map { segment ->
                 name = segment.rawContent
-                val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.ref, null, null)
+                val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.span, null, null)
                 lastPackage = lastPack.children[name]
                 val item = astInfoMap[lastPack.path]?.accessors?.get(name)
-                BoundImportPathSegment(segment.ref, lastPackage, item)
+                BoundImportPathSegment(segment.span, lastPackage, item)
             }
             .toList()
 
@@ -227,6 +227,6 @@ class BentoBinding : Binding {
             lastSeg.item?.let { importedItems[name] = it }
         }
 
-        return BoundImportPath(node.ref, segments)
+        return BoundImportPath(node.span, segments)
     }
 }

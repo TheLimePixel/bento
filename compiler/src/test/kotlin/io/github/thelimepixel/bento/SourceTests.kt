@@ -126,9 +126,9 @@ class SourceTests {
             astMap,
         )
 
-        val thirMap = hirMap.mapValues { (_, node) ->
-            typing.type(node, typingContext) ?: THIRError.Propagation.at(ASTRef(SyntaxType.File, 0..0))
-        }
+        val thirMap = hirMap.mapNotNull { (ref, node) ->
+            typing.type(node, typingContext)?.let { ref to it }
+        }.toMap()
 
         sources.forEach { (pack, _) ->
             test(dir, "Typecheck", pack) {

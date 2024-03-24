@@ -1,16 +1,16 @@
 ======= Function(nesting::main::baz) =======
 FunctionDef {
-  ref: FunDef@0..46
+  span: 0..46
   params: [
     Param {
-      ref: Param@2..11
+      span: 2..11
       pattern: WildcardPattern {
-        ref: WildcardPattern@0..1
+        span: 0..1
       }
       type: TypeRef {
-        ref: Path@4..10
+        span: 4..10
         type: Path {
-          ref: Path@4..10
+          span: 4..10
           binding: Accessor {
             of: RecordType {
               bento::String
@@ -22,9 +22,9 @@ FunctionDef {
     }
   ]
   returnType: TypeRef {
-    ref: Path@4..10
+    span: 4..10
     type: Path {
-      ref: Path@4..10
+      span: 4..10
       binding: Accessor {
         of: RecordType {
           bento::String
@@ -34,23 +34,23 @@ FunctionDef {
     }
   }
   body: StringExpr {
-    ref: StringLiteral@58..75
+    span: 58..75
     content: "Hello from Baz!"
   }
 }
 
 ======= Function(nesting::main::bar) =======
 FunctionDef {
-  ref: FunDef@0..78
+  span: 0..78
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@24..90
+    span: 24..90
     statements: [
       CallExpr {
-        ref: CallExpr@14..38
+        span: 14..38
         on: Path {
-          ref: Path@0..7
+          span: 0..7
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -60,9 +60,9 @@ FunctionDef {
         }
         args: [
           CallExpr {
-            ref: CallExpr@2..17
+            span: 2..17
             on: Path {
-              ref: Path@0..3
+              span: 0..3
               binding: Accessor {
                 of: Function {
                   nesting::main::baz
@@ -72,7 +72,7 @@ FunctionDef {
             }
             args: [
               StringExpr {
-                ref: StringLiteral@2..12
+                span: 2..12
                 content: "Hellope!"
               }
             ]
@@ -80,9 +80,9 @@ FunctionDef {
         ]
       }
       CallExpr {
-        ref: CallExpr@74..100
+        span: 74..100
         on: Path {
-          ref: Path@0..7
+          span: 0..7
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -92,7 +92,7 @@ FunctionDef {
         }
         args: [
           StringExpr {
-            ref: StringLiteral@2..19
+            span: 2..19
             content: "Hello from Bar!"
           }
         ]
@@ -103,18 +103,18 @@ FunctionDef {
 
 ======= Function(nesting::main::foo) =======
 FunctionDef {
-  ref: FunDef@0..77
+  span: 0..77
   params: [
     Param {
-      ref: Param@2..14
+      span: 2..14
       pattern: IdentPattern {
-        ref: IdentPattern@0..4
+        span: 0..4
         local: $0
       }
       type: TypeRef {
-        ref: Path@4..10
+        span: 4..10
         type: Path {
-          ref: Path@4..10
+          span: 4..10
           binding: Accessor {
             of: RecordType {
               bento::String
@@ -127,9 +127,9 @@ FunctionDef {
   ]
   returnType: null
   body: CallExpr {
-    ref: CallExpr@58..106
+    span: 58..106
     on: Path {
-      ref: Path@0..7
+      span: 0..7
       binding: Accessor {
         of: Function {
           bento::io::println
@@ -139,12 +139,12 @@ FunctionDef {
     }
     args: [
       ScopeExpr {
-        ref: ScopeExpr@2..41
+        span: 2..41
         statements: [
           CallExpr {
-            ref: CallExpr@22..27
+            span: 22..27
             on: Path {
-              ref: Path@0..3
+              span: 0..3
               binding: Accessor {
                 of: Function {
                   nesting::main::bar
@@ -155,7 +155,7 @@ FunctionDef {
             args: []
           }
           Path {
-            ref: Path@2..6
+            span: 2..6
             binding: Accessor {
               of: $0
               type: Get
@@ -169,16 +169,16 @@ FunctionDef {
 
 ======= Function(nesting::main::main) =======
 FunctionDef {
-  ref: FunDef@0..78
+  span: 0..78
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@26..91
+    span: 26..91
     statements: [
       CallExpr {
-        ref: CallExpr@14..36
+        span: 14..36
         on: Path {
-          ref: Path@0..3
+          span: 0..3
           binding: Accessor {
             of: Function {
               nesting::main::foo
@@ -188,15 +188,15 @@ FunctionDef {
         }
         args: [
           StringExpr {
-            ref: StringLiteral@2..19
+            span: 2..19
             content: "Hello from Foo!"
           }
         ]
       }
       CallExpr {
-        ref: CallExpr@70..97
+        span: 70..97
         on: Path {
-          ref: Path@0..7
+          span: 0..7
           binding: Accessor {
             of: Function {
               bento::io::println
@@ -206,7 +206,7 @@ FunctionDef {
         }
         args: [
           StringExpr {
-            ref: StringLiteral@2..20
+            span: 2..20
             content: "Hello from Main!"
           }
         ]

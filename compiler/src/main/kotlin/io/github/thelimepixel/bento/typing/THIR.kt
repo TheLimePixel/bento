@@ -2,22 +2,20 @@ package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.binding.ItemRef
 import io.github.thelimepixel.bento.binding.LocalRef
-import io.github.thelimepixel.bento.ast.ASTRef
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptySequence
+import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
 
 sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
-    val ref: ASTRef
+    override val span: Span
     val type: Type
-    override val span: IntRange
-        get() = ref.span
 
     override val error: THIRError?
         get() = null
 
     data class ScopeExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: Type,
         val statements: List<THIR>,
     ) : THIR {
@@ -25,7 +23,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class LetExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         val local: LocalRef?,
         val expr: THIR
     ) : THIR {
@@ -35,7 +33,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class CallExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: Type,
         val fn: ItemRef,
         val args: List<THIR>,
@@ -44,7 +42,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class GetComputedExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: Type,
         val def: ItemRef,
     ) : THIR {
@@ -52,7 +50,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class GetStoredExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: Type,
         val property: ItemRef,
     ) : THIR {
@@ -60,7 +58,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class SetStoredExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         val property: ItemRef,
         val value: THIR,
     ) : THIR {
@@ -70,7 +68,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class ConstructorCallExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: PathType,
         val args: List<THIR>,
     ) : THIR {
@@ -78,7 +76,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class ErrorExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val error: THIRError,
         override val type: Type,
         val children: List<THIR>,
@@ -87,7 +85,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class StringExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         val content: String,
     ) : THIR {
         override val type: Type
@@ -100,7 +98,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class LocalAccessExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: Type,
         val binding: LocalRef,
     ) : THIR {
@@ -108,7 +106,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class LocalAssignmentExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         val binding: LocalRef,
         val value: THIR,
     ) : THIR {
@@ -118,7 +116,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class GetFieldExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: PathType,
         val field: ItemRef,
         val on: THIR,
@@ -127,7 +125,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class SetFieldExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         val field: ItemRef,
         val on: THIR,
         val value: THIR,
@@ -138,7 +136,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class SingletonAccessExpr(
-        override val ref: ASTRef,
+        override val span: Span,
         override val type: PathType,
     ): THIR {
         override fun childSequence(): Sequence<THIR> = EmptySequence

@@ -1,17 +1,17 @@
 ======= Function(types::main::foo) =======
 FunctionDef {
-  ref: FunDef@0..49
+  span: 0..49
   params: [
     Param {
-      ref: Param@2..17
+      span: 2..17
       pattern: IdentPattern {
-        ref: IdentPattern@0..3
+        span: 0..3
         local: $0
       }
       type: TypeRef {
-        ref: Path@4..14
+        span: 4..14
         type: Path {
-          ref: Path@4..14
+          span: 4..14
           binding: Accessor {
             of: SingletonType {
               types::types::Foo
@@ -24,9 +24,9 @@ FunctionDef {
   ]
   returnType: null
   body: CallExpr {
-    ref: CallExpr@54..76
+    span: 54..76
     on: Path {
-      ref: Path@0..7
+      span: 0..7
       binding: Accessor {
         of: Function {
           bento::io::println
@@ -36,7 +36,7 @@ FunctionDef {
     }
     args: [
       StringExpr {
-        ref: StringLiteral@2..15
+        span: 2..15
         content: "Foooooooooo"
       }
     ]
@@ -45,18 +45,18 @@ FunctionDef {
 
 ======= Function(types::main::printBar) =======
 FunctionDef {
-  ref: FunDef@0..49
+  span: 0..49
   params: [
     Param {
-      ref: Param@2..17
+      span: 2..17
       pattern: IdentPattern {
-        ref: IdentPattern@0..3
+        span: 0..3
         local: $0
       }
       type: TypeRef {
-        ref: Path@4..14
+        span: 4..14
         type: Path {
-          ref: Path@4..14
+          span: 4..14
           binding: Accessor {
             of: RecordType {
               types::types::Bar
@@ -69,9 +69,9 @@ FunctionDef {
   ]
   returnType: null
   body: CallExpr {
-    ref: CallExpr@64..81
+    span: 64..81
     on: Path {
-      ref: Path@0..7
+      span: 0..7
       binding: Accessor {
         of: Function {
           bento::io::println
@@ -81,9 +81,9 @@ FunctionDef {
     }
     args: [
       MemberAccessExpr {
-        ref: AccessExpr@2..10
+        span: 2..10
         on: Path {
-          ref: Path@0..3
+          span: 0..3
           binding: Accessor {
             of: $0
             type: Get
@@ -97,16 +97,16 @@ FunctionDef {
 
 ======= Function(types::main::main) =======
 FunctionDef {
-  ref: FunDef@0..136
+  span: 0..136
   params: []
   returnType: null
   body: ScopeExpr {
-    ref: ScopeExpr@26..149
+    span: 26..149
     statements: [
       CallExpr {
-        ref: CallExpr@14..29
+        span: 14..29
         on: Path {
-          ref: Path@0..3
+          span: 0..3
           binding: Accessor {
             of: Function {
               types::main::foo
@@ -116,7 +116,7 @@ FunctionDef {
         }
         args: [
           Path {
-            ref: Path@2..12
+            span: 2..12
             binding: Accessor {
               of: SingletonType {
                 types::types::Foo
@@ -127,16 +127,16 @@ FunctionDef {
         ]
       }
       LetExpr {
-        ref: LetExpr@56..88
+        span: 56..88
         pattern: IdentPattern {
-          ref: IdentPattern@8..11
+          span: 8..11
           local: $0
         }
         type: null
         expr: CallExpr {
-          ref: CallExpr@30..47
+          span: 30..47
           on: Path {
-            ref: Path@0..10
+            span: 0..10
             binding: Accessor {
               of: RecordType {
                 types::types::Bar
@@ -146,16 +146,16 @@ FunctionDef {
           }
           args: [
             StringExpr {
-              ref: StringLiteral@2..7
+              span: 2..7
               content: "Bar"
             }
           ]
         }
       }
       CallExpr {
-        ref: CallExpr@132..145
+        span: 132..145
         on: Path {
-          ref: Path@0..8
+          span: 0..8
           binding: Accessor {
             of: Function {
               types::main::printBar
@@ -165,7 +165,7 @@ FunctionDef {
         }
         args: [
           Path {
-            ref: Path@2..5
+            span: 2..5
             binding: Accessor {
               of: $0
               type: Get
@@ -174,11 +174,11 @@ FunctionDef {
         ]
       }
       AssignmentExpr {
-        ref: AssignmentExpr@170..186
+        span: 170..186
         left: MemberAccessExpr {
-          ref: AccessExpr@0..8
+          span: 0..8
           on: Path {
-            ref: Path@0..3
+            span: 0..3
             binding: Accessor {
               of: $0
               type: Get
@@ -187,14 +187,14 @@ FunctionDef {
           field: name
         }
         right: StringExpr {
-          ref: StringLiteral@22..27
+          span: 22..27
           content: "Baz"
         }
       }
       CallExpr {
-        ref: CallExpr@214..227
+        span: 214..227
         on: Path {
-          ref: Path@0..8
+          span: 0..8
           binding: Accessor {
             of: Function {
               types::main::printBar
@@ -204,7 +204,7 @@ FunctionDef {
         }
         args: [
           Path {
-            ref: Path@2..5
+            span: 2..5
             binding: Accessor {
               of: $0
               type: Get

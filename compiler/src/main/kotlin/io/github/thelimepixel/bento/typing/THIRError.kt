@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.typing
 
 import io.github.thelimepixel.bento.errors.ErrorType
-import io.github.thelimepixel.bento.ast.ASTRef
+import io.github.thelimepixel.bento.utils.Span
 
 enum class THIRError : ErrorType {
     Propagation {
@@ -16,6 +16,6 @@ enum class THIRError : ErrorType {
     UnknownMember,
     ;
 
-    fun at(ref: ASTRef, children: List<THIR> = emptyList(), type: Type = BuiltinTypes.nothing) =
-        THIR.ErrorExpr(ref, this, type, children)
+    fun at(span: Span, children: List<THIR> = emptyList(), type: Type = BuiltinTypes.nothing) =
+        THIR.ErrorExpr(span, this, type, children)
 }

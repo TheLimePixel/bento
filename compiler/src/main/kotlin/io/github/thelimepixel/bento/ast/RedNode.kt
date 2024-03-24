@@ -2,13 +2,13 @@ package io.github.thelimepixel.bento.ast
 
 import io.github.thelimepixel.bento.parsing.ParseError
 import io.github.thelimepixel.bento.utils.CodeTree
+import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
 
-data class RedNode internal constructor(
-    val parent: RedNode?,
-    val green: GreenNode,
-    val offset: Int
-): CodeTree<RedNode, ParseError>, Spanned {
+class RedNode internal constructor(
+    private val green: GreenNode,
+    private val offset: Int
+) : CodeTree<RedNode, ParseError>, Spanned {
     val content: String
         get() = green.content
 
@@ -21,11 +21,8 @@ data class RedNode internal constructor(
     private val length: Int
         get() = green.length
 
-    override val span: IntRange
-        get() = offset..(offset + length)
-
-    val ref: ASTRef
-        get() = ASTRef(type, span)
+    override val span: Span
+        get() = Span(offset..(offset + length))
 
     override val error: ParseError?
         get() = green.error
@@ -42,8 +39,10 @@ data class RedNode internal constructor(
     fun lastChild(set: SyntaxSet): RedNode? =
         green.lastChild(set)?.wrap()
 
+    fun toRoot() = RedNode(green, 0)
+
     private fun GreenChild.wrap(): RedNode =
-        RedNode(this@RedNode, this.node, offset + this.offset)
+        RedNode(this.node, offset + this.offset)
 
     private class ChildIterator(
         private val red: RedNode,
@@ -58,4 +57,4 @@ data class RedNode internal constructor(
     override fun childSequence(): Sequence<RedNode> = childIterator().asSequence()
 }
 
-fun GreenNode.toRedRoot() = RedNode(null, this, 0)
+fun GreenNode.toRedRoot() = RedNode(this, 0)

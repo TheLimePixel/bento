@@ -1,7 +1,7 @@
 package io.github.thelimepixel.bento.binding
 
 import io.github.thelimepixel.bento.errors.ErrorType
-import io.github.thelimepixel.bento.ast.ASTRef
+import io.github.thelimepixel.bento.utils.Span
 
 enum class HIRError : ErrorType {
     Propagation {
@@ -11,5 +11,5 @@ enum class HIRError : ErrorType {
     UnboundIdentifier,
     ;
 
-    fun at(ref: ASTRef) = HIR.ErrorExpr(ref, this)
+    fun at(span: Span) = HIR.ErrorExpr(span, this)
 }
