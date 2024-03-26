@@ -23,7 +23,7 @@ fun collectItems(
         items += node.toRedRoot().childSequence()
             .filter { it.type in BaseSets.definitions }
             .mapIndexed { index, it ->
-                val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
+                val name = it.firstChild(SyntaxType.Name)?.rawContent ?: ""
                 val ref = toRef(pack, name, index, it, collection)
                 accessors[name] = Accessor(ref, AccessorType.Get)
                 if (ref.mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
@@ -40,7 +40,7 @@ private fun collectFields(node: RedNode, parent: ProductTypeRef): ASTInfo {
     val fields = node.childSequence()
         .filter { it.type == ST.Field }
         .mapIndexed { index, child ->
-            val name = child.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
+            val name = child.firstChild(SyntaxType.Name)?.rawContent ?: ""
             val mutable = child.firstChild(ST.MutKeyword) != null
             val ref = FieldRef(parent, name, index, mutable)
             accessors[name] = Accessor(ref, AccessorType.Get)

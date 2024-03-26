@@ -49,15 +49,16 @@ class BentoTypechecking : Typechecking {
     }
 
     private fun TC.typeIdentExpr(hir: HIR.Path): THIR {
-        if (hir.binding.type != AccessorType.Get)
+        val accessor = hir.binding
+        if (accessor?.type != AccessorType.Get)
             return THIRError.InvalidIdentifierUse.at(hir.span)
 
-        return when (val binding = hir.binding.of) {
-            is GetterRef -> THIR.GetComputedExpr(hir.span, typeOf(binding).accessType, binding)
-            is StoredPropertyRef -> THIR.GetStoredExpr(hir.span, typeOf(binding).accessType, binding)
-            is SingletonTypeRef -> THIR.SingletonAccessExpr(hir.span, PathType(binding))
+        return when (val ref = accessor.of) {
+            is GetterRef -> THIR.GetComputedExpr(hir.span, typeOf(ref).accessType, ref)
+            is StoredPropertyRef -> THIR.GetStoredExpr(hir.span, typeOf(ref).accessType, ref)
+            is SingletonTypeRef -> THIR.SingletonAccessExpr(hir.span, PathType(ref))
             is ProductTypeRef, is FunctionRef, is FieldRef, is PackageRef -> THIRError.InvalidIdentifierUse.at(hir.span)
-            is LocalRef -> THIR.LocalAccessExpr(hir.span, typeOf(binding), binding)
+            is LocalRef -> THIR.LocalAccessExpr(hir.span, typeOf(ref), ref)
         }
     }
 
@@ -94,16 +95,17 @@ class BentoTypechecking : Typechecking {
     }
 
     private fun FC.typeDirectAssignment(span: Span, left: HIR.Path, right: THIR): THIR {
-        val type = typeOf(left.binding)
+        val leftAccessor = left.binding ?: return THIRError.CallOnNonFunction.at(span, listOf(right))
+        val type = typeOf(leftAccessor)
         if (type !is FunctionType)
-            return THIRError.CallOnNonFunction.at(span, listOf(right))
+            return THIRError.InvalidSetter.at(span, listOf(right))
         if (type.paramTypes.size != 1)
             return THIRError.InvalidSetter.at(span, listOf(right))
         val value =
             if (type.paramTypes[0] == right.type) right
             else THIRError.InvalidType.at(span, listOf(right))
 
-        return when (val ref = left.binding.of) {
+        return when (val ref = leftAccessor.of) {
             is FunctionRef -> THIR.CallExpr(span, BuiltinTypes.unit, ref, listOf(value))
             is StoredPropertyRef -> THIR.SetStoredExpr(span, ref, value)
             is LocalRef -> THIR.LocalAssignmentExpr(span, ref, value)

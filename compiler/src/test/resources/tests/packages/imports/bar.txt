@@ -6,31 +6,35 @@ BoundImportData {
     }
   }
   binding: [
-    BoundImportPath {
-      span: 4..21
-      segments: [
-        BoundImportPathSegment {
-          span: 0..7
-          item: Accessor {
+    ScopeAccess {
+      prefix: ScopeAccess {
+        prefix: Identifier {
+          lastNameSegment: packages
+          binding: Accessor {
             of: packages
             type: Set
           }
+          span: 9..16
         }
-        BoundImportPathSegment {
-          span: 20..22
-          item: Accessor {
+        span: 9..21
+        segment: PathSegment {
+          name: foo
+          span: 19..21
+          binding: Accessor {
             of: packages::foo
             type: Set
           }
         }
-        BoundImportPathSegment {
-          span: 30..32
-          item: Accessor {
-            of: packages::foo::foo
-            type: Get
-          }
+      }
+      span: 9..26
+      segment: PathSegment {
+        name: foo
+        span: 24..26
+        binding: Accessor {
+          of: packages::foo::foo
+          type: Get
         }
-      ]
+      }
     }
   ]
 }

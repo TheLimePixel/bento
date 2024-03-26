@@ -18,9 +18,13 @@ object BaseSets {
         SyntaxType.StandardIdentifier,
         SyntaxType.BacktickedIdentifier,
     )
+    val paths = syntaxSetOf(
+        SyntaxType.Path,
+        SyntaxType.NameRef,
+    )
     val expressions = syntaxSetOf(
         SyntaxType.StringLiteral,
-        SyntaxType.Path,
+        SyntaxType.PathExpr,
         SyntaxType.ScopeExpr,
         SyntaxType.CallExpr,
         SyntaxType.ScopeExpr,

@@ -16,7 +16,6 @@ private data class MutablePackageTreeNode(
 class PackageTree {
     private val _root = MutablePackageTreeNode(RootRef)
     private val nodes = mutableMapOf<PackageRef, MutablePackageTreeNode>(RootRef to _root)
-    val root: PackageTreeNode get() = _root
     fun get(path: PackageRef): PackageTreeNode? =
         nodes[path]
 

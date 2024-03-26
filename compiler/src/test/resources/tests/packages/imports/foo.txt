@@ -6,24 +6,24 @@ BoundImportData {
     }
   }
   binding: [
-    BoundImportPath {
-      span: 4..16
-      segments: [
-        BoundImportPathSegment {
-          span: 0..7
-          item: Accessor {
-            of: packages
-            type: Set
-          }
+    ScopeAccess {
+      prefix: Identifier {
+        lastNameSegment: packages
+        binding: Accessor {
+          of: packages
+          type: Set
         }
-        BoundImportPathSegment {
-          span: 20..22
-          item: Accessor {
-            of: packages::bar
-            type: Set
-          }
+        span: 9..16
+      }
+      span: 9..21
+      segment: PathSegment {
+        name: bar
+        span: 19..21
+        binding: Accessor {
+          of: packages::bar
+          type: Set
         }
-      ]
+      }
     }
   ]
 }

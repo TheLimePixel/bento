@@ -2,27 +2,26 @@ File
 ├─TypeDef
 │ ├─DataKeyword
 │ ├─Whitespace( )
-│ └─Identifier
+│ └─Name
 │   └─StandardIdentifier(Foo)
 ├─Newline
 ├─Newline
 ├─TypeDef
 │ ├─DataKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(Bar)
 │ └─Constructor
 │   ├─LParen
 │   ├─Field
 │   │ ├─MutKeyword
 │   │ ├─Whitespace( )
-│   │ ├─Identifier
+│   │ ├─Name
 │   │ │ └─StandardIdentifier(name)
 │   │ └─TypeAnnotation
 │   │   ├─Colon
 │   │   ├─Whitespace( )
-│   │   └─Path
-│   │     └─Identifier
-│   │       └─StandardIdentifier(String)
+│   │   └─NameRef
+│   │     └─StandardIdentifier(String)
 │   └─RParen
 └─EOF

@@ -1,26 +1,26 @@
 ======= nesting::main::baz =======
 StringExpr {
-  span: 58..74
+  span: 29..45
   content: "Hello from Baz!"
 }
 
 ======= nesting::main::bar =======
 ScopeExpr {
-  span: 24..89
+  span: 12..77
   type: bento::Unit
   statements: [
     CallExpr {
-      span: 14..37
+      span: 19..42
       type: bento::Unit
       fn: bento::io::println
       args: [
         CallExpr {
-          span: 2..16
+          span: 27..41
           type: bento::String
           fn: nesting::main::baz
           args: [
             StringExpr {
-              span: 2..11
+              span: 31..40
               content: "Hellope!"
             }
           ]
@@ -28,12 +28,12 @@ ScopeExpr {
       ]
     }
     CallExpr {
-      span: 74..99
+      span: 49..74
       type: bento::Unit
       fn: bento::io::println
       args: [
         StringExpr {
-          span: 2..18
+          span: 57..73
           content: "Hello from Bar!"
         }
       ]
@@ -43,22 +43,22 @@ ScopeExpr {
 
 ======= nesting::main::foo =======
 CallExpr {
-  span: 58..105
+  span: 29..76
   type: bento::Unit
   fn: bento::io::println
   args: [
     ScopeExpr {
-      span: 2..40
+      span: 37..75
       type: bento::String
       statements: [
         CallExpr {
-          span: 22..26
+          span: 48..52
           type: bento::Unit
           fn: nesting::main::bar
           args: []
         }
         LocalAccessExpr {
-          span: 2..5
+          span: 64..67
           type: bento::String
           binding: $0
         }
@@ -69,27 +69,27 @@ CallExpr {
 
 ======= nesting::main::main =======
 ScopeExpr {
-  span: 26..90
+  span: 13..77
   type: bento::Unit
   statements: [
     CallExpr {
-      span: 14..35
+      span: 20..41
       type: bento::Unit
       fn: nesting::main::foo
       args: [
         StringExpr {
-          span: 2..18
+          span: 24..40
           content: "Hello from Foo!"
         }
       ]
     }
     CallExpr {
-      span: 70..96
+      span: 48..74
       type: bento::Unit
       fn: bento::io::println
       args: [
         StringExpr {
-          span: 2..19
+          span: 56..73
           content: "Hello from Main!"
         }
       ]

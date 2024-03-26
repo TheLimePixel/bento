@@ -41,20 +41,44 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         }
     }
 
-    data class Path(
-        override val span: Span,
-        val binding: Accessor,
-    ) : Expr {
-        override fun childSequence(): Sequence<HIR> = EmptySequence
+    sealed interface Path : Expr {
+        val binding: Accessor?
+        val lastNameSegment: String?
     }
 
-    data class Identifier(val string: String, val span: Span)
+    data class ScopeAccess(
+        val prefix: Path,
+        override val span: Span,
+        val segment: PathSegment?,
+    ) : Path {
+        override val binding: Accessor?
+            get() = segment?.binding
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+        override val lastNameSegment: String?
+            get() = segment?.name
+    }
+
+    data class Identifier(
+        override val lastNameSegment: String,
+        override val binding: Accessor?,
+        override val span: Span
+    ) : Path {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
 
     sealed interface Pattern : HIR {
         val local: LocalRef?
     }
 
     data class IdentPattern(override val span: Span, override val local: LocalRef) : Pattern {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    data class PathSegment(
+        val name: String,
+        override val span: Span,
+        val binding: Accessor?
+    ) : HIR {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -108,8 +132,10 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = sequenceOf(on)
     }
 
-    data class TypeRef(override val span: Span, val type: Path) : HIR {
+    data class TypeRef(val type: Path) : HIR {
         override fun childSequence(): Sequence<HIR> = sequenceOf(type)
+        override val span: Span
+            get() = type.span
     }
 
     data class Param(override val span: Span, val pattern: Pattern?, val type: TypeRef?) : HIR {

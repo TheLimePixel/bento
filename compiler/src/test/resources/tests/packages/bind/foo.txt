@@ -1,45 +1,58 @@
 ======= packages::foo::foo =======
 FunctionDef {
-  span: 56..80
+  span: 0..24
   params: []
   returnType: TypeRef {
-    span: 4..9
-    type: Path {
-      span: 4..9
+    type: Identifier {
+      lastNameSegment: String
       binding: Accessor {
         of: bento::String
         type: Get
       }
+      span: 11..16
     }
   }
   body: StringExpr {
-    span: 40..44
+    span: 20..24
     content: "Foo"
   }
 }
 
 ======= packages::foo::main =======
 FunctionDef {
-  span: 114..145
+  span: 0..31
   params: []
   returnType: null
   body: CallExpr {
-    span: 26..44
-    on: Path {
-      span: 0..6
+    span: 13..31
+    on: Identifier {
+      lastNameSegment: println
       binding: Accessor {
         of: bento::io::println
         type: Get
       }
+      span: 13..19
     }
     args: [
       CallExpr {
-        span: 2..11
-        on: Path {
-          span: 0..7
-          binding: Accessor {
-            of: packages::bar::bar
-            type: Get
+        span: 21..30
+        on: ScopeAccess {
+          prefix: Identifier {
+            lastNameSegment: bar
+            binding: Accessor {
+              of: packages::bar
+              type: Set
+            }
+            span: 21..23
+          }
+          span: 21..28
+          segment: PathSegment {
+            name: bar
+            span: 26..28
+            binding: Accessor {
+              of: packages::bar::bar
+              type: Get
+            }
           }
         }
         args: []

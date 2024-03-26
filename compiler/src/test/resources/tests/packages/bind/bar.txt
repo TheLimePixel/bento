@@ -1,46 +1,48 @@
 ======= packages::bar::bar =======
 FunctionDef {
-  span: 66..90
+  span: 0..24
   params: []
   returnType: TypeRef {
-    span: 4..9
-    type: Path {
-      span: 4..9
+    type: Identifier {
+      lastNameSegment: String
       binding: Accessor {
         of: bento::String
         type: Get
       }
+      span: 11..16
     }
   }
   body: StringExpr {
-    span: 40..44
+    span: 20..24
     content: "Bar"
   }
 }
 
 ======= packages::bar::main =======
 FunctionDef {
-  span: 124..150
+  span: 0..26
   params: []
   returnType: null
   body: CallExpr {
-    span: 26..39
-    on: Path {
-      span: 0..6
+    span: 13..26
+    on: Identifier {
+      lastNameSegment: println
       binding: Accessor {
         of: bento::io::println
         type: Get
       }
+      span: 13..19
     }
     args: [
       CallExpr {
-        span: 2..6
-        on: Path {
-          span: 0..2
+        span: 21..25
+        on: Identifier {
+          lastNameSegment: foo
           binding: Accessor {
             of: packages::foo::foo
             type: Get
           }
+          span: 21..23
         }
         args: []
       }

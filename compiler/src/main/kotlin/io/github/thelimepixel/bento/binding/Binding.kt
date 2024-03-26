@@ -28,12 +28,12 @@ class BentoBinding : Binding {
         )
         val (stored, computed) = info.items.partition { it is StoredPropertyRef }
         return stored.associateWith { ref ->
-            context.bindLet(ref.ast!!).also { initialized.add(ref as StoredPropertyRef) }
+            context.bindLet(ref.ast!!.toRoot()).also { initialized.add(ref as StoredPropertyRef) }
         } + computed.associateWith { ref -> context.bindDefinition(ref) }
     }
 
     private fun BC.bindDefinition(ref: ItemRef): HIR.Def? {
-        val node = ref.ast ?: return null
+        val node = (ref.ast ?: return null).toRoot()
         return when (val type = node.type) {
             ST.FunDef -> bindFunctionLike(node)
             ST.TypeDef -> bindTypeDef(ref, node)
@@ -58,14 +58,8 @@ class BentoBinding : Binding {
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
         .firstChild(SyntaxType.TypeAnnotation)
-        ?.firstChild(SyntaxType.Path)
-        ?.let {
-            val path = bindPath(it, false) ?: return@let null
-            val itemRef = path.binding.of
-            if (itemRef is TypeRef)
-                HIR.TypeRef(it.span, path)
-            else null
-        }
+        ?.let { tryBindPath(it) }
+        ?.let { path -> HIR.TypeRef(path) }
 
     private fun LC.findAndBindPattern(node: RedNode, mutable: Boolean): HIR.Pattern? =
         node.firstChild(BaseSets.patterns)?.let {
@@ -117,32 +111,56 @@ class BentoBinding : Binding {
         return HIR.CallExpr(node.span, on, args)
     }
 
-    private fun BC.bindIdentifier(node: RedNode, mutable: Boolean): HIR.Expr =
-        bindPath(node, mutable) ?: HIR.ErrorExpr(node.span, HIRError.UnboundIdentifier)
-
-    private fun BC.bindPath(node: RedNode, mutable: Boolean): HIR.Path? {
-        val segments = node.childSequence().filter { it.type == ST.Identifier }.toList()
-
-        val accessor = if (segments.size == 1) {
-            val name = segments[0].rawContent
-            if (mutable) accessorFor(name + "_=") else accessorFor(name)
-        } else {
-            var parentRef = accessorFor(segments.first().rawContent)?.of as? ParentRef ?: return null
-            segments.subList(1, segments.lastIndex).forEach {
-                val accessor = astInfoOf(parentRef)?.accessors?.get(it.rawContent)
-                parentRef = accessor?.of as? ParentRef ?: return null
-            }
-            val lastName = segments.last().rawContent + if (mutable) "_=" else ""
-            astInfoOf(parentRef)?.accessors?.get(lastName)
+    private fun BC.tryBindPath(node: RedNode): HIR.Path? {
+        val pathNode = node.firstChild(BaseSets.paths) ?: return null
+        return when (pathNode.type) {
+            ST.NameRef -> bindNameRef(pathNode, false)
+            ST.Path -> bindScopeAccess(pathNode, false)
+            else -> error("Got invalid path type: ${pathNode.type}")
         }
-        return if (isInitialized(accessor?.of ?: return null)) {
-            HIR.Path(node.span, accessor)
-        } else null
+    }
+
+    private fun BC.bindPath(node: RedNode, mutable: Boolean): HIR.Path {
+        val pathNode = node.firstChild(BaseSets.paths)!!
+        return when (pathNode.type) {
+            ST.NameRef -> bindNameRef(pathNode, mutable)
+            ST.Path -> bindScopeAccess(pathNode, mutable)
+            else -> error("Got invalid path type: ${pathNode.type}")
+        }
+    }
+
+    private fun BC.bindScopeAccess(node: RedNode, mutable: Boolean): HIR.Path {
+        val parent = bindPath(node, false)
+        return HIR.ScopeAccess(parent, node.span, findAndBindPathSegment(parent, node, mutable))
+    }
+
+    private fun BC.findAndBindPathSegment(parent: HIR.Path, node: RedNode, mutable: Boolean): HIR.PathSegment? {
+        val segmentNode = node
+            .firstChild(ST.PathSegment)
+            ?: return null
+        val span = segmentNode.span
+        val name = segmentNode.rawContent
+        val accessedName = name + if (mutable) "_=" else ""
+        val parentRef = parent.binding?.of as? ParentRef
+            ?: return HIR.PathSegment(name, span, null)
+        val accessor = astInfoOf(parentRef)?.accessors?.get(accessedName)
+            ?: return HIR.PathSegment(name, span, null)
+        return HIR.PathSegment(name, span, accessor)
+    }
+
+    private fun BC.bindNameRef(node: RedNode, mutable: Boolean): HIR.Path {
+        val name = node.rawContent
+        val accessedName = name + if (mutable) "_=" else ""
+        val accessor = accessorFor(accessedName)?.let {
+            if (isInitialized(it.of)) it
+            else null
+        }
+        return HIR.Identifier(name, accessor, node.span)
     }
 
     private fun LC.bindExpr(node: RedNode, mutable: Boolean = false): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.span, node.content)
-        ST.Path -> bindIdentifier(node, mutable)
+        ST.PathExpr -> bindPath(node, mutable)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
         ST.LetExpr -> bindLetExpr(node)
@@ -154,7 +172,7 @@ class BentoBinding : Binding {
 
     private fun LC.bindAccessExpr(node: RedNode): HIR.MemberAccessExpr {
         val on = bindExpr(node.firstChild(BaseSets.expressions)!!)
-        val field = node.lastChild(ST.Identifier)?.rawContent ?: ""
+        val field = node.lastChild(ST.NameRef)?.rawContent ?: ""
         return HIR.MemberAccessExpr(node.span, on, field)
     }
 
@@ -197,31 +215,34 @@ class BentoBinding : Binding {
         val paths = block.childSequence()
             .filter { it.type == ST.ImportPath }
             .map {
-                context.bindImportPath(it, importedItems)
+                context.bindImportPath(it).also { path ->
+                    val name = path.lastNameSegment ?: return@also
+                    val accessor = path.binding ?: return@also
+                    importedItems[name] = accessor
+                }
             }
             .toList()
 
         return BoundImportData(importedItems, paths)
     }
 
-    private fun RC.bindImportPath(
-        node: RedNode,
-        importedItems: MutableMap<String, Accessor>,
-    ): BoundImportPath {
-        var lastName = ""
-        var lastItem: Accessor = rootAccessor
-        val segments = node.childSequence()
-            .filter { it.type == ST.Identifier }
-            .map { segment ->
-                lastName = segment.rawContent
-                val lastPack = lastItem.of as? ParentRef ?: return@map BoundImportPathSegment(segment.span, null)
-                lastItem = astInfoOf(lastPack)?.accessors?.get(lastName) ?: return@map BoundImportPathSegment(segment.span, null)
-                BoundImportPathSegment(segment.span, lastItem)
-            }
-            .toList()
+    private fun BC.bindImportPath(node: RedNode): HIR.Path {
+        val pathNode = node.firstChild(BaseSets.paths)!!
+        return when (pathNode.type) {
+            ST.NameRef -> bindImportNameRef(pathNode)
+            ST.Path -> bindImportScopeAccess(pathNode)
+            else -> error("Got invalid path type: ${pathNode.type}")
+        }
+    }
 
-        importedItems[lastName] = lastItem
+    private fun BC.bindImportScopeAccess(node: RedNode): HIR.Path {
+        val parent = bindImportPath(node)
+        return HIR.ScopeAccess(parent, node.span, findAndBindPathSegment(parent, node, false))
+    }
 
-        return BoundImportPath(node.span, segments)
+    private fun BC.bindImportNameRef(node: RedNode): HIR.Path {
+        val name = node.rawContent
+        val accessor = astInfoOf(RootRef)!!.accessors[name]
+        return HIR.Identifier(name, accessor, node.span)
     }
 }

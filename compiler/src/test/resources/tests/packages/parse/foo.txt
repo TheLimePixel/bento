@@ -6,11 +6,13 @@ File
 │   ├─LBrace
 │   ├─Whitespace( )
 │   ├─ImportPath
-│   │ ├─Identifier
-│   │ │ └─StandardIdentifier(packages)
-│   │ ├─ColonColon
-│   │ └─Identifier
-│   │   └─StandardIdentifier(bar)
+│   │ └─Path
+│   │   ├─NameRef
+│   │   │ └─StandardIdentifier(packages)
+│   │   ├─ColonColon
+│   │   └─PathSegment
+│   │     └─NameRef
+│   │       └─StandardIdentifier(bar)
 │   ├─Whitespace( )
 │   └─RBrace
 ├─Newline
@@ -18,7 +20,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(foo)
 │ ├─ParamList
 │ │ ├─LParen
@@ -26,9 +28,8 @@ File
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Path
-│ │   └─Identifier
-│ │     └─StandardIdentifier(String)
+│ │ └─NameRef
+│ │   └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
@@ -38,7 +39,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
@@ -47,18 +48,20 @@ File
 │ ├─Equals
 │ ├─Whitespace( )
 │ └─CallExpr
-│   ├─Path
-│   │ └─Identifier
+│   ├─PathExpr
+│   │ └─NameRef
 │   │   └─StandardIdentifier(println)
 │   └─ArgList
 │     ├─LParen
 │     ├─CallExpr
-│     │ ├─Path
-│     │ │ ├─Identifier
-│     │ │ │ └─StandardIdentifier(bar)
-│     │ │ ├─ColonColon
-│     │ │ └─Identifier
-│     │ │   └─StandardIdentifier(bar)
+│     │ ├─PathExpr
+│     │ │ └─Path
+│     │ │   ├─NameRef
+│     │ │   │ └─StandardIdentifier(bar)
+│     │ │   ├─ColonColon
+│     │ │   └─PathSegment
+│     │ │     └─NameRef
+│     │ │       └─StandardIdentifier(bar)
 │     │ └─ArgList
 │     │   ├─LParen
 │     │   └─RParen

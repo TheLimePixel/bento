@@ -2,14 +2,13 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(hello)
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Path
-│ │   └─Identifier
-│ │     └─StandardIdentifier(String)
+│ │ └─NameRef
+│ │   └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
@@ -19,7 +18,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(hello_=)
 │ ├─ParamList
 │ │ ├─LParen
@@ -29,9 +28,8 @@ File
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
-│ │ │   └─Path
-│ │ │     └─Identifier
-│ │ │       └─StandardIdentifier(String)
+│ │ │   └─NameRef
+│ │ │     └─StandardIdentifier(String)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ ├─Equals
@@ -41,26 +39,26 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
+│   │   ├─PathExpr
+│   │   │ └─NameRef
 │   │   │   └─BacktickedIdentifier(`Hey, World!`)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─AssignmentExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─BacktickedIdentifier(`Hey, World!`)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
-│   │ └─Path
-│   │   └─Identifier
+│   │ └─PathExpr
+│   │   └─NameRef
 │   │     └─StandardIdentifier(new)
 │   ├─Newline
 │   └─RBrace
@@ -71,14 +69,13 @@ File
 │ ├─Whitespace( )
 │ ├─MutKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─BacktickedIdentifier(`Hey, World!`)
 │ ├─TypeAnnotation
 │ │ ├─Colon
 │ │ ├─Whitespace( )
-│ │ └─Path
-│ │   └─Identifier
-│ │     └─StandardIdentifier(String)
+│ │ └─NameRef
+│ │   └─StandardIdentifier(String)
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
@@ -88,7 +85,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
@@ -101,20 +98,20 @@ File
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
+│   │   ├─PathExpr
+│   │   │ └─NameRef
 │   │   │   └─StandardIdentifier(hello)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─AssignmentExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(hello)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
@@ -123,13 +120,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(  )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
+│   │   ├─PathExpr
+│   │   │ └─NameRef
 │   │   │   └─BacktickedIdentifier(`Hey, World!`)
 │   │   └─RParen
 │   ├─Newline

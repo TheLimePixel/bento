@@ -4,7 +4,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
@@ -30,13 +30,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(println)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
+│   │   ├─PathExpr
+│   │   │ └─NameRef
 │   │   │   └─StandardIdentifier(text)
 │   │   └─RParen
 │   ├─Newline
@@ -49,9 +49,8 @@ File
 │   │ ├─TypeAnnotation
 │   │ │ ├─Colon
 │   │ │ ├─Whitespace( )
-│   │ │ └─Path
-│   │ │   └─Identifier
-│   │ │     └─StandardIdentifier(String)
+│   │ │ └─NameRef
+│   │ │   └─StandardIdentifier(String)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )

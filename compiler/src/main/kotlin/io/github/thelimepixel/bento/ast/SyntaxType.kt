@@ -40,14 +40,17 @@ enum class SyntaxType(
 
     ArgList,
 
-    Identifier,
+    NameRef,
+    Name,
+    PathSegment,
+    Path,
 
     LetExpr,
+    PathExpr,
     ScopeExpr,
     CallExpr,
     ParenthesizedExpr,
     AssignmentExpr,
-    Path,
     AccessExpr,
 
     TypeAnnotation,
@@ -64,8 +67,8 @@ enum class SyntaxType(
     MutPattern,
 
     ImportBlock,
-    ImportPath,
     ImportStatement,
+    ImportPath,
 
     File,
 

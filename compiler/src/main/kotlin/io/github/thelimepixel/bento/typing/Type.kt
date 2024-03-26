@@ -49,4 +49,4 @@ fun type(ref: ItemRef, hirMap: Map<ItemRef, HIR.Def?>): Type = when (ref) {
     is PackageRef -> BuiltinTypes.nothing
 }
 
-fun HIR.TypeRef?.toPathType(): PathType? = this?.type?.let { PathType(it.binding.of as TypeRef) }
+fun HIR.TypeRef?.toPathType(): PathType? = (this?.type?.binding?.of as? TypeRef)?.let { PathType(it) }

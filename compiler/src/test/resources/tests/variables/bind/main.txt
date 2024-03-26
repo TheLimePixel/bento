@@ -4,180 +4,194 @@ FunctionDef {
   params: []
   returnType: null
   body: ScopeExpr {
-    span: 26..221
+    span: 13..208
     statements: [
       LetExpr {
-        span: 14..24
+        span: 20..30
         pattern: IdentPattern {
-          span: 8..8
+          span: 24..24
           local: $0
         }
         type: null
         expr: StringExpr {
-          span: 16..18
+          span: 28..30
           content: "a"
         }
       }
       LetExpr {
-        span: 48..60
+        span: 37..49
         pattern: MutablePattern {
-          span: 8..12
+          span: 41..45
           nested: IdentPattern {
-            span: 8..8
+            span: 45..45
             local: $1
           }
         }
         type: null
-        expr: Path {
-          span: 24..24
+        expr: Identifier {
+          lastNameSegment: a
           binding: Accessor {
             of: $0
             type: Get
           }
+          span: 49..49
         }
       }
       CallExpr {
-        span: 86..95
-        on: Path {
-          span: 0..6
+        span: 56..65
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 56..62
         }
         args: [
-          Path {
-            span: 2..2
+          Identifier {
+            lastNameSegment: a
             binding: Accessor {
               of: $0
               type: Get
             }
+            span: 64..64
           }
         ]
       }
       CallExpr {
-        span: 118..127
-        on: Path {
-          span: 0..6
+        span: 72..81
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 72..78
         }
         args: [
-          Path {
-            span: 2..2
+          Identifier {
+            lastNameSegment: b
             binding: Accessor {
               of: $1
               type: Get
             }
+            span: 80..80
           }
         ]
       }
       ScopeExpr {
-        span: 150..235
+        span: 88..173
         statements: [
           LetExpr {
-            span: 22..32
+            span: 99..109
             pattern: IdentPattern {
-              span: 8..8
+              span: 103..103
               local: $2
             }
             type: null
             expr: StringExpr {
-              span: 16..18
+              span: 107..109
               content: "A"
             }
           }
           AssignmentExpr {
-            span: 64..70
-            left: Path {
-              span: 0..0
+            span: 120..126
+            left: Identifier {
+              lastNameSegment: b
               binding: Accessor {
                 of: $1
                 type: Set
               }
+              span: 120..120
             }
             right: StringExpr {
-              span: 8..10
+              span: 124..126
               content: "b"
             }
           }
           CallExpr {
-            span: 98..107
-            on: Path {
-              span: 0..6
+            span: 137..146
+            on: Identifier {
+              lastNameSegment: println
               binding: Accessor {
                 of: bento::io::println
                 type: Get
               }
+              span: 137..143
             }
             args: [
-              Path {
-                span: 2..2
+              Identifier {
+                lastNameSegment: a
                 binding: Accessor {
                   of: $2
                   type: Get
                 }
+                span: 145..145
               }
             ]
           }
           CallExpr {
-            span: 138..147
-            on: Path {
-              span: 0..6
+            span: 157..166
+            on: Identifier {
+              lastNameSegment: println
               binding: Accessor {
                 of: bento::io::println
                 type: Get
               }
+              span: 157..163
             }
             args: [
-              Path {
-                span: 2..2
+              Identifier {
+                lastNameSegment: b
                 binding: Accessor {
                   of: $1
                   type: Get
                 }
+                span: 165..165
               }
             ]
           }
         ]
       }
       CallExpr {
-        span: 334..343
-        on: Path {
-          span: 0..6
+        span: 180..189
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 180..186
         }
         args: [
-          Path {
-            span: 2..2
+          Identifier {
+            lastNameSegment: a
             binding: Accessor {
               of: $0
               type: Get
             }
+            span: 188..188
           }
         ]
       }
       CallExpr {
-        span: 366..375
-        on: Path {
-          span: 0..6
+        span: 196..205
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 196..202
         }
         args: [
-          Path {
-            span: 2..2
+          Identifier {
+            lastNameSegment: b
             binding: Accessor {
               of: $1
               type: Get
             }
+            span: 204..204
           }
         ]
       }

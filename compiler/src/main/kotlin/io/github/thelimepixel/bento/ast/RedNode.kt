@@ -1,7 +1,5 @@
 package io.github.thelimepixel.bento.ast
 
-import io.github.thelimepixel.bento.parsing.ParseErrorKind
-import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
 import io.github.thelimepixel.bento.utils.span
@@ -40,7 +38,7 @@ class RedNode internal constructor(
     fun toRoot() = RedNode(green, 0)
 
     private fun GreenChild.wrap(): RedNode =
-        RedNode(this.node, offset + this.offset)
+        RedNode(this@wrap.node, this@RedNode.offset + this@wrap.offset)
 
     private class ChildIterator(
         private val red: RedNode,

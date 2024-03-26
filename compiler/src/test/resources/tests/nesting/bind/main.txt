@@ -3,68 +3,70 @@ FunctionDef {
   span: 0..45
   params: [
     Param {
-      span: 2..10
+      span: 8..16
       pattern: WildcardPattern {
-        span: 0..0
+        span: 8..8
       }
       type: TypeRef {
-        span: 4..9
-        type: Path {
-          span: 4..9
+        type: Identifier {
+          lastNameSegment: String
           binding: Accessor {
             of: bento::String
             type: Get
           }
+          span: 11..16
         }
       }
     }
   ]
   returnType: TypeRef {
-    span: 4..9
-    type: Path {
-      span: 4..9
+    type: Identifier {
+      lastNameSegment: String
       binding: Accessor {
         of: bento::String
         type: Get
       }
+      span: 20..25
     }
   }
   body: StringExpr {
-    span: 58..74
+    span: 29..45
     content: "Hello from Baz!"
   }
 }
 
 ======= nesting::main::bar =======
 FunctionDef {
-  span: 100..177
+  span: 0..77
   params: []
   returnType: null
   body: ScopeExpr {
-    span: 24..89
+    span: 12..77
     statements: [
       CallExpr {
-        span: 14..37
-        on: Path {
-          span: 0..6
+        span: 19..42
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 19..25
         }
         args: [
           CallExpr {
-            span: 2..16
-            on: Path {
-              span: 0..2
+            span: 27..41
+            on: Identifier {
+              lastNameSegment: baz
               binding: Accessor {
                 of: nesting::main::baz
                 type: Get
               }
+              span: 27..29
             }
             args: [
               StringExpr {
-                span: 2..11
+                span: 31..40
                 content: "Hellope!"
               }
             ]
@@ -72,17 +74,18 @@ FunctionDef {
         ]
       }
       CallExpr {
-        span: 74..99
-        on: Path {
-          span: 0..6
+        span: 49..74
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 49..55
         }
         args: [
           StringExpr {
-            span: 2..18
+            span: 57..73
             content: "Hello from Bar!"
           }
         ]
@@ -93,57 +96,60 @@ FunctionDef {
 
 ======= nesting::main::foo =======
 FunctionDef {
-  span: 264..340
+  span: 0..76
   params: [
     Param {
-      span: 2..13
+      span: 8..19
       pattern: IdentPattern {
-        span: 0..3
+        span: 8..11
         local: $0
       }
       type: TypeRef {
-        span: 4..9
-        type: Path {
-          span: 4..9
+        type: Identifier {
+          lastNameSegment: String
           binding: Accessor {
             of: bento::String
             type: Get
           }
+          span: 14..19
         }
       }
     }
   ]
   returnType: null
   body: CallExpr {
-    span: 58..105
-    on: Path {
-      span: 0..6
+    span: 29..76
+    on: Identifier {
+      lastNameSegment: println
       binding: Accessor {
         of: bento::io::println
         type: Get
       }
+      span: 29..35
     }
     args: [
       ScopeExpr {
-        span: 2..40
+        span: 37..75
         statements: [
           CallExpr {
-            span: 22..26
-            on: Path {
-              span: 0..2
+            span: 48..52
+            on: Identifier {
+              lastNameSegment: bar
               binding: Accessor {
                 of: nesting::main::bar
                 type: Get
               }
+              span: 48..50
             }
             args: []
           }
-          Path {
-            span: 2..5
+          Identifier {
+            lastNameSegment: text
             binding: Accessor {
               of: $0
               type: Get
             }
+            span: 64..67
           }
         ]
       }
@@ -153,40 +159,42 @@ FunctionDef {
 
 ======= nesting::main::main =======
 FunctionDef {
-  span: 426..503
+  span: 0..77
   params: []
   returnType: null
   body: ScopeExpr {
-    span: 26..90
+    span: 13..77
     statements: [
       CallExpr {
-        span: 14..35
-        on: Path {
-          span: 0..2
+        span: 20..41
+        on: Identifier {
+          lastNameSegment: foo
           binding: Accessor {
             of: nesting::main::foo
             type: Get
           }
+          span: 20..22
         }
         args: [
           StringExpr {
-            span: 2..18
+            span: 24..40
             content: "Hello from Foo!"
           }
         ]
       }
       CallExpr {
-        span: 70..96
-        on: Path {
-          span: 0..6
+        span: 48..74
+        on: Identifier {
+          lastNameSegment: println
           binding: Accessor {
             of: bento::io::println
             type: Get
           }
+          span: 48..54
         }
         args: [
           StringExpr {
-            span: 2..19
+            span: 56..73
             content: "Hello from Main!"
           }
         ]

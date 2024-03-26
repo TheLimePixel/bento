@@ -1,20 +1,31 @@
 ======= types::main::foo =======
 FunctionDef {
-  span: 54..102
+  span: 0..48
   params: [
     Param {
-      span: 2..16
+      span: 8..22
       pattern: IdentPattern {
-        span: 0..2
+        span: 8..10
         local: $0
       }
       type: TypeRef {
-        span: 4..13
-        type: Path {
-          span: 4..13
-          binding: Accessor {
-            of: types::types::Foo
-            type: Get
+        type: ScopeAccess {
+          prefix: Identifier {
+            lastNameSegment: types
+            binding: Accessor {
+              of: types::types
+              type: Set
+            }
+            span: 13..17
+          }
+          span: 13..22
+          segment: PathSegment {
+            name: Foo
+            span: 20..22
+            binding: Accessor {
+              of: types::types::Foo
+              type: Get
+            }
           }
         }
       }
@@ -22,17 +33,18 @@ FunctionDef {
   ]
   returnType: null
   body: CallExpr {
-    span: 54..75
-    on: Path {
-      span: 0..6
+    span: 27..48
+    on: Identifier {
+      lastNameSegment: println
       binding: Accessor {
         of: bento::io::println
         type: Get
       }
+      span: 27..33
     }
     args: [
       StringExpr {
-        span: 2..14
+        span: 35..47
         content: "Foooooooooo"
       }
     ]
@@ -41,21 +53,32 @@ FunctionDef {
 
 ======= types::main::printBar =======
 FunctionDef {
-  span: 160..208
+  span: 0..48
   params: [
     Param {
-      span: 2..16
+      span: 13..27
       pattern: IdentPattern {
-        span: 0..2
+        span: 13..15
         local: $0
       }
       type: TypeRef {
-        span: 4..13
-        type: Path {
-          span: 4..13
-          binding: Accessor {
-            of: types::types::Bar
-            type: Get
+        type: ScopeAccess {
+          prefix: Identifier {
+            lastNameSegment: types
+            binding: Accessor {
+              of: types::types
+              type: Set
+            }
+            span: 18..22
+          }
+          span: 18..27
+          segment: PathSegment {
+            name: Bar
+            span: 25..27
+            binding: Accessor {
+              of: types::types::Bar
+              type: Get
+            }
           }
         }
       }
@@ -63,23 +86,25 @@ FunctionDef {
   ]
   returnType: null
   body: CallExpr {
-    span: 64..80
-    on: Path {
-      span: 0..6
+    span: 32..48
+    on: Identifier {
+      lastNameSegment: println
       binding: Accessor {
         of: bento::io::println
         type: Get
       }
+      span: 32..38
     }
     args: [
       MemberAccessExpr {
-        span: 2..9
-        on: Path {
-          span: 0..2
+        span: 40..47
+        on: Identifier {
+          lastNameSegment: bar
           binding: Accessor {
             of: $0
             type: Get
           }
+          span: 40..42
         }
         field: name
       }
@@ -89,108 +114,144 @@ FunctionDef {
 
 ======= types::main::main =======
 FunctionDef {
-  span: 266..401
+  span: 0..135
   params: []
   returnType: null
   body: ScopeExpr {
-    span: 26..148
+    span: 13..135
     statements: [
       CallExpr {
-        span: 14..28
-        on: Path {
-          span: 0..2
+        span: 20..34
+        on: Identifier {
+          lastNameSegment: foo
           binding: Accessor {
             of: types::main::foo
             type: Get
           }
+          span: 20..22
         }
         args: [
-          Path {
-            span: 2..11
-            binding: Accessor {
-              of: types::types::Foo
-              type: Get
+          ScopeAccess {
+            prefix: Identifier {
+              lastNameSegment: types
+              binding: Accessor {
+                of: types::types
+                type: Set
+              }
+              span: 24..28
+            }
+            span: 24..33
+            segment: PathSegment {
+              name: Foo
+              span: 31..33
+              binding: Accessor {
+                of: types::types::Foo
+                type: Get
+              }
             }
           }
         ]
       }
       LetExpr {
-        span: 56..87
+        span: 41..72
         pattern: IdentPattern {
-          span: 8..10
+          span: 45..47
           local: $0
         }
-        type: null
+        type: TypeRef {
+          type: Identifier {
+            lastNameSegment: Bar
+            binding: null
+            span: 50..52
+          }
+        }
         expr: CallExpr {
-          span: 30..46
-          on: Path {
-            span: 0..9
-            binding: Accessor {
-              of: types::types::Bar
-              type: Get
+          span: 56..72
+          on: ScopeAccess {
+            prefix: Identifier {
+              lastNameSegment: types
+              binding: Accessor {
+                of: types::types
+                type: Set
+              }
+              span: 56..60
+            }
+            span: 56..65
+            segment: PathSegment {
+              name: Bar
+              span: 63..65
+              binding: Accessor {
+                of: types::types::Bar
+                type: Get
+              }
             }
           }
           args: [
             StringExpr {
-              span: 2..6
+              span: 67..71
               content: "Bar"
             }
           ]
         }
       }
       CallExpr {
-        span: 132..144
-        on: Path {
-          span: 0..7
+        span: 79..91
+        on: Identifier {
+          lastNameSegment: printBar
           binding: Accessor {
             of: types::main::printBar
             type: Get
           }
+          span: 79..86
         }
         args: [
-          Path {
-            span: 2..4
+          Identifier {
+            lastNameSegment: bar
             binding: Accessor {
               of: $0
               type: Get
             }
+            span: 88..90
           }
         ]
       }
       AssignmentExpr {
-        span: 170..185
+        span: 98..113
         left: MemberAccessExpr {
-          span: 0..7
-          on: Path {
-            span: 0..2
+          span: 98..105
+          on: Identifier {
+            lastNameSegment: bar
             binding: Accessor {
               of: $0
               type: Get
             }
+            span: 98..100
           }
           field: name
         }
         right: StringExpr {
-          span: 22..26
+          span: 109..113
           content: "Baz"
         }
       }
       CallExpr {
-        span: 214..226
-        on: Path {
-          span: 0..7
+        span: 120..132
+        on: Identifier {
+          lastNameSegment: printBar
           binding: Accessor {
             of: types::main::printBar
             type: Get
           }
+          span: 120..127
         }
         args: [
-          Path {
-            span: 2..4
+          Identifier {
+            lastNameSegment: bar
             binding: Accessor {
               of: $0
               type: Get
             }
+            span: 129..131
           }
         ]
       }

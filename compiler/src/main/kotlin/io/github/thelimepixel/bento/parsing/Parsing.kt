@@ -37,7 +37,7 @@ class BentoParsing : Parsing {
 
     private fun P.handleTypeDef(): ParseResult = node(ST.TypeDef) {
         push()      // data keyword
-        expectIdentifier().then { parseConstructor() }
+        expectIdentifier(ST.Name).then { parseConstructor() }
     }
 
     private fun P.parseConstructor(): ParseResult {
@@ -50,8 +50,8 @@ class BentoParsing : Parsing {
     }
 
     private fun P.expectField(): ParseResult = if (consume(ST.MutKeyword)) nestLast(ST.Field) {
-        expectIdentifier().then { expectTypeAnnotation() }
-    } else expectIdentifier().then {
+        expectIdentifier(ST.Name).then { expectTypeAnnotation() }
+    } else expectIdentifier(ST.Name).then {
         nestLast(ST.Field) { expectTypeAnnotation() }
     }
 
@@ -72,23 +72,17 @@ class BentoParsing : Parsing {
     }
 
     private fun P.expectImportPath(): ParseResult =
-        expectIdentifier().then {
-            nestLast(ST.ImportPath) {
-                while (consume(ST.ColonColon)) {
-                    expectIdentifier().ifNotPassing { return@nestLast it }
-                }
-                ParseResult.Success
-            }
+        expectIdentifier(ST.NameRef).then {
+            nestLast(ST.ImportPath) { handlePath() }
         }
 
     private fun P.handleError(type: ParseErrorKind): ParseResult =
         if (current in BaseSets.baseRecoverySet) pushError(type) else errorNode(type)
 
 
-
     private fun P.handleFunctionLike() = node(ST.FunDef) {
         push()  // def keyword
-        expectIdentifier()
+        expectIdentifier(ST.Name)
         parseParamList()
         parseTypeAnnotation()
         expectEqExpression()
@@ -104,8 +98,8 @@ class BentoParsing : Parsing {
         if (parseTypeAnnotation() == ParseResult.Success) ParseResult.Success
         else handleError(ParseErrorKind.ExpectedTypeAnnotation)
 
-    private fun P.expectIdentifier(): ParseResult =
-        if (at(BaseSets.identifiers)) pushWrapped(ST.Identifier)
+    private fun P.expectIdentifier(type: SyntaxType): ParseResult =
+        if (at(BaseSets.identifiers)) pushWrapped(type)
         else handleError(ParseErrorKind.ExpectedIdentifier)
 
     private fun P.parseParamList(): ParseResult =
@@ -152,7 +146,7 @@ class BentoParsing : Parsing {
     private fun P.handleTopLevelLet(): ParseResult = node(ST.LetDef) {
         push()  // let keyword
         consume(ST.MutKeyword)
-        expectIdentifier().then {
+        expectIdentifier(ST.Name).then {
             parseTypeAnnotation()
             expectEqExpression()
         }
@@ -180,8 +174,8 @@ class BentoParsing : Parsing {
 
             ST.LBrace -> handleScopeExpr()
             ST.LParen -> handleParenthesized()
-            in BaseSets.identifiers -> {
-                pushWrapped(ST.Identifier)
+            in BaseSets.identifiers -> node(ST.PathExpr) {
+                pushWrapped(ST.NameRef)
                 handlePath()
             }
 
@@ -189,13 +183,16 @@ class BentoParsing : Parsing {
         }
 
     private fun P.expectPath(): ParseResult =
-        expectIdentifier().then { handlePath() }
+        expectIdentifier(ST.NameRef).then { handlePath() }
 
-    private fun P.handlePath(): ParseResult = nestLast(ST.Path) {
-        while (consume(ST.ColonColon)) {
-            expectIdentifier().ifNotPassing { return@nestLast it }
+    private fun P.handlePath(): ParseResult {
+        while (at(ST.ColonColon)) {
+            nestLast(ST.Path) {
+                push()  // ::
+                expectIdentifier(ST.NameRef).then { nestLast(ST.PathSegment) }
+            }.ifNotPassing { return it }
         }
-        ParseResult.Success
+        return ParseResult.Success
     }
 
     private fun P.handleCall(): ParseResult = nestLast(ST.CallExpr) {
@@ -252,7 +249,7 @@ class BentoParsing : Parsing {
 
     private fun P.handleAccess(): ParseResult = nestLast(ST.AccessExpr) {
         push()      // dot
-        expectIdentifier()
+        expectIdentifier(ST.NameRef)
     }
 
     private tailrec fun P.handlePostfix(): ParseResult {

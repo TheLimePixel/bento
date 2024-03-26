@@ -6,11 +6,13 @@ File
 │   ├─LBrace
 │   ├─Whitespace( )
 │   ├─ImportPath
-│   │ ├─Identifier
-│   │ │ └─StandardIdentifier(types)
-│   │ ├─ColonColon
-│   │ └─Identifier
-│   │   └─StandardIdentifier(types)
+│   │ └─Path
+│   │   ├─NameRef
+│   │   │ └─StandardIdentifier(types)
+│   │   ├─ColonColon
+│   │   └─PathSegment
+│   │     └─NameRef
+│   │       └─StandardIdentifier(types)
 │   ├─Whitespace( )
 │   └─RBrace
 ├─Newline
@@ -18,7 +20,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(foo)
 │ ├─ParamList
 │ │ ├─LParen
@@ -29,18 +31,19 @@ File
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
 │ │ │   └─Path
-│ │ │     ├─Identifier
+│ │ │     ├─NameRef
 │ │ │     │ └─StandardIdentifier(types)
 │ │ │     ├─ColonColon
-│ │ │     └─Identifier
-│ │ │       └─StandardIdentifier(Foo)
+│ │ │     └─PathSegment
+│ │ │       └─NameRef
+│ │ │         └─StandardIdentifier(Foo)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
 │ └─CallExpr
-│   ├─Path
-│   │ └─Identifier
+│   ├─PathExpr
+│   │ └─NameRef
 │   │   └─StandardIdentifier(println)
 │   └─ArgList
 │     ├─LParen
@@ -51,7 +54,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(printBar)
 │ ├─ParamList
 │ │ ├─LParen
@@ -62,27 +65,28 @@ File
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
 │ │ │   └─Path
-│ │ │     ├─Identifier
+│ │ │     ├─NameRef
 │ │ │     │ └─StandardIdentifier(types)
 │ │ │     ├─ColonColon
-│ │ │     └─Identifier
-│ │ │       └─StandardIdentifier(Bar)
+│ │ │     └─PathSegment
+│ │ │       └─NameRef
+│ │ │         └─StandardIdentifier(Bar)
 │ │ └─RParen
 │ ├─Whitespace( )
 │ ├─Equals
 │ ├─Whitespace( )
 │ └─CallExpr
-│   ├─Path
-│   │ └─Identifier
+│   ├─PathExpr
+│   │ └─NameRef
 │   │   └─StandardIdentifier(println)
 │   └─ArgList
 │     ├─LParen
 │     ├─AccessExpr
-│     │ ├─Path
-│     │ │ └─Identifier
+│     │ ├─PathExpr
+│     │ │ └─NameRef
 │     │ │   └─StandardIdentifier(bar)
 │     │ ├─Dot
-│     │ └─Identifier
+│     │ └─NameRef
 │     │   └─StandardIdentifier(name)
 │     └─RParen
 ├─Newline
@@ -90,7 +94,7 @@ File
 ├─FunDef
 │ ├─DefKeyword
 │ ├─Whitespace( )
-│ ├─Identifier
+│ ├─Name
 │ │ └─StandardIdentifier(main)
 │ ├─ParamList
 │ │ ├─LParen
@@ -103,17 +107,19 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(foo)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ ├─Identifier
-│   │   │ │ └─StandardIdentifier(types)
-│   │   │ ├─ColonColon
-│   │   │ └─Identifier
-│   │   │   └─StandardIdentifier(Foo)
+│   │   ├─PathExpr
+│   │   │ └─Path
+│   │   │   ├─NameRef
+│   │   │   │ └─StandardIdentifier(types)
+│   │   │   ├─ColonColon
+│   │   │   └─PathSegment
+│   │   │     └─NameRef
+│   │   │       └─StandardIdentifier(Foo)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
@@ -125,19 +131,20 @@ File
 │   │ ├─TypeAnnotation
 │   │ │ ├─Colon
 │   │ │ ├─Whitespace( )
-│   │ │ └─Path
-│   │ │   └─Identifier
-│   │ │     └─StandardIdentifier(Bar)
+│   │ │ └─NameRef
+│   │ │   └─StandardIdentifier(Bar)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
 │   │ ├─Whitespace( )
 │   │ └─CallExpr
-│   │   ├─Path
-│   │   │ ├─Identifier
-│   │   │ │ └─StandardIdentifier(types)
-│   │   │ ├─ColonColon
-│   │   │ └─Identifier
-│   │   │   └─StandardIdentifier(Bar)
+│   │   ├─PathExpr
+│   │   │ └─Path
+│   │   │   ├─NameRef
+│   │   │   │ └─StandardIdentifier(types)
+│   │   │   ├─ColonColon
+│   │   │   └─PathSegment
+│   │   │     └─NameRef
+│   │   │       └─StandardIdentifier(Bar)
 │   │   └─ArgList
 │   │     ├─LParen
 │   │     ├─StringLiteral("Bar")
@@ -145,24 +152,24 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(printBar)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
+│   │   ├─PathExpr
+│   │   │ └─NameRef
 │   │   │   └─StandardIdentifier(bar)
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─AssignmentExpr
 │   │ ├─AccessExpr
-│   │ │ ├─Path
-│   │ │ │ └─Identifier
+│   │ │ ├─PathExpr
+│   │ │ │ └─NameRef
 │   │ │ │   └─StandardIdentifier(bar)
 │   │ │ ├─Dot
-│   │ │ └─Identifier
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(name)
 │   │ ├─Whitespace( )
 │   │ ├─Equals
@@ -171,13 +178,13 @@ File
 │   ├─Newline
 │   ├─Whitespace(    )
 │   ├─CallExpr
-│   │ ├─Path
-│   │ │ └─Identifier
+│   │ ├─PathExpr
+│   │ │ └─NameRef
 │   │ │   └─StandardIdentifier(printBar)
 │   │ └─ArgList
 │   │   ├─LParen
-│   │   ├─Path
-│   │   │ └─Identifier
+│   │   ├─PathExpr
+│   │   │ └─NameRef
 │   │   │   └─StandardIdentifier(bar)
 │   │   └─RParen
 │   ├─Newline
