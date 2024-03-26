@@ -1,6 +1,7 @@
 package io.github.thelimepixel.bento.binding
 
 import io.github.thelimepixel.bento.ast.RedNode
+import io.github.thelimepixel.bento.utils.Span
 
 sealed interface NamedRef {
     val name: String
@@ -10,9 +11,8 @@ sealed interface ParentRef : NamedRef
 
 sealed interface Ref
 
-@JvmInline
-value class LocalRef(private val index: Int) : Ref {
-    override fun toString(): String = "\$$index"
+data class LocalRef(val span: Span) : Ref {
+    override fun toString(): String = "@$span"
 }
 
 sealed interface ItemRef : Ref {
@@ -118,8 +118,6 @@ data object RootRef : PackageRef {
     override val parent: ParentRef
         get() = error("Tried to access the parent of the root package")
 }
-
-val rootAccessor = Accessor(RootRef, AccessorType.Get)
 
 data class SubpackageRef(override val parent: PackageRef, override val name: String) : PackageRef {
     override fun toString(): String {

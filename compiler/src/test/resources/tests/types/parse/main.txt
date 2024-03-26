@@ -59,8 +59,18 @@ File
 │ ├─ParamList
 │ │ ├─LParen
 │ │ ├─Param
-│ │ │ ├─IdentPattern
-│ │ │ │ └─StandardIdentifier(bar)
+│ │ │ ├─DestructurePattern
+│ │ │ │ ├─Path
+│ │ │ │ │ ├─NameRef
+│ │ │ │ │ │ └─StandardIdentifier(types)
+│ │ │ │ │ ├─ColonColon
+│ │ │ │ │ └─PathSegment
+│ │ │ │ │   └─NameRef
+│ │ │ │ │     └─StandardIdentifier(Bar)
+│ │ │ │ ├─LParen
+│ │ │ │ ├─IdentPattern
+│ │ │ │ │ └─StandardIdentifier(name)
+│ │ │ │ └─RParen
 │ │ │ └─TypeAnnotation
 │ │ │   ├─Colon
 │ │ │   ├─Whitespace( )
@@ -81,11 +91,7 @@ File
 │   │   └─StandardIdentifier(println)
 │   └─ArgList
 │     ├─LParen
-│     ├─AccessExpr
-│     │ ├─PathExpr
-│     │ │ └─NameRef
-│     │ │   └─StandardIdentifier(bar)
-│     │ ├─Dot
+│     ├─PathExpr
 │     │ └─NameRef
 │     │   └─StandardIdentifier(name)
 │     └─RParen
@@ -123,7 +129,7 @@ File
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
-│   ├─LetExpr
+│   ├─LetStatement
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
 │   │ ├─IdentPattern

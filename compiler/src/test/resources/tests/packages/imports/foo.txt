@@ -5,7 +5,7 @@ BoundImportData {
       type: Set
     }
   }
-  binding: [
+  paths: [
     ScopeAccess {
       prefix: Identifier {
         lastNameSegment: packages

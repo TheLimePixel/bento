@@ -1,17 +1,22 @@
 package io.github.thelimepixel.bento
 
-import io.github.thelimepixel.bento.ast.*
+import io.github.thelimepixel.bento.ast.ASTFormatter
+import io.github.thelimepixel.bento.ast.GreenNode
 import io.github.thelimepixel.bento.binding.*
-import io.github.thelimepixel.bento.codegen.*
+import io.github.thelimepixel.bento.codegen.BentoCodegen
+import io.github.thelimepixel.bento.codegen.BytecodeFormatter
+import io.github.thelimepixel.bento.codegen.FileJVMBindingContext
+import io.github.thelimepixel.bento.codegen.TopLevelJVMBindingContext
 import io.github.thelimepixel.bento.driver.CompilationInstance
-import io.github.thelimepixel.bento.errors.ErrorKind
-import io.github.thelimepixel.bento.errors.collectErrors
-import io.github.thelimepixel.bento.parsing.*
-import io.github.thelimepixel.bento.typing.*
+import io.github.thelimepixel.bento.parsing.BentoParsing
+import io.github.thelimepixel.bento.parsing.Parse
+import io.github.thelimepixel.bento.typing.BentoTypechecking
+import io.github.thelimepixel.bento.typing.FileTypingContext
+import io.github.thelimepixel.bento.typing.TopLevelTypingContext
+import io.github.thelimepixel.bento.typing.type
 import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.Formatter
 import io.github.thelimepixel.bento.utils.ObjectFormatter
-import io.github.thelimepixel.bento.utils.Spanned
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -132,19 +137,19 @@ class SourceTests {
 
         sources.forEach { (pack, _) ->
             test(dir, "Typecheck", pack) {
-                formatItemTrees(thirMap.filterKeys { ref -> ref.parent == pack })
+                formatItemTrees(thirMap.filterKeys { ref -> ref.parent == pack }.mapValues { it.value.thir })
             }
         }
 
-        val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext, hirMap)
+        val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext, thirMap)
 
-        val classes = sources.keys.mapNotNull { pack ->
-            val items = astMap[pack]?.items ?: return@mapNotNull null
-            val classes = bentoCodegen.generate(pack, items, jvmBindingContext, hirMap, thirMap)
+        val classes = sources.keys.mapNotNull inner@ { pack ->
+            val items = astMap[pack]?.items ?: return@inner null
+            val classes = bentoCodegen.generate(pack, items, jvmBindingContext)
             test(dir, "Codegen", pack) {
                 classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) }
             }
-            pack to classes.map { (name, clazz) -> classLoader.load(name, clazz) }.last()
+            pack to (classes.map { (name, clazz) -> classLoader.load(name, clazz) }.lastOrNull() ?: return@inner null)
         }.toMap()
 
         classes.forEach { (path, `class`) ->
@@ -161,11 +166,9 @@ class SourceTests {
         return printBuffer.toString().also { printBuffer.clear() }
     }
 
-    private fun <Node, Err> formatItemTrees(hirMap: Map<ItemRef, Node?>)
-            where Err : ErrorKind, Node : Spanned, Node : CodeTree<Node, Err> =
-        hirMap.asSequence().joinToString("\n") { (key, value) ->
-            val errors = collectErrors(value)
-            "$itemPadding $key $itemPadding\n${objFormatter.format(value) + errors.joinToString("\n", "\n")}"
+    private fun <Node> formatItemTrees(nodeMap: Map<ItemRef, Node?>) where Node : CodeTree<Node> =
+        nodeMap.asSequence().joinToString("\n\n") { (key, value) ->
+            "$itemPadding $key $itemPadding\n${objFormatter.format(value)}"
         }
 
     private fun formatAST(parse: Parse?): String {

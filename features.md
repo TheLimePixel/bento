@@ -607,8 +607,6 @@ Product types can have mutable fields. A field can be declared to be mutable usi
 
 ## Destructuring Pattern
 
-TODO
-
 #### Requires
 
 - [Basic Patterns](features.md#basic-patterns)

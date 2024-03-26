@@ -6,11 +6,10 @@ FunctionDef {
   body: ScopeExpr {
     span: 13..208
     statements: [
-      LetExpr {
+      LetStatement {
         span: 20..30
         pattern: IdentPattern {
-          span: 24..24
-          local: $0
+          local: @24..24
         }
         type: null
         expr: StringExpr {
@@ -18,20 +17,19 @@ FunctionDef {
           content: "a"
         }
       }
-      LetExpr {
+      LetStatement {
         span: 37..49
         pattern: MutablePattern {
           span: 41..45
           nested: IdentPattern {
-            span: 45..45
-            local: $1
+            local: @45..45
           }
         }
         type: null
         expr: Identifier {
           lastNameSegment: a
           binding: Accessor {
-            of: $0
+            of: @24..24
             type: Get
           }
           span: 49..49
@@ -51,7 +49,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: a
             binding: Accessor {
-              of: $0
+              of: @24..24
               type: Get
             }
             span: 64..64
@@ -72,7 +70,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: b
             binding: Accessor {
-              of: $1
+              of: @45..45
               type: Get
             }
             span: 80..80
@@ -82,11 +80,10 @@ FunctionDef {
       ScopeExpr {
         span: 88..173
         statements: [
-          LetExpr {
+          LetStatement {
             span: 99..109
             pattern: IdentPattern {
-              span: 103..103
-              local: $2
+              local: @103..103
             }
             type: null
             expr: StringExpr {
@@ -99,7 +96,7 @@ FunctionDef {
             left: Identifier {
               lastNameSegment: b
               binding: Accessor {
-                of: $1
+                of: @45..45
                 type: Set
               }
               span: 120..120
@@ -123,7 +120,7 @@ FunctionDef {
               Identifier {
                 lastNameSegment: a
                 binding: Accessor {
-                  of: $2
+                  of: @103..103
                   type: Get
                 }
                 span: 145..145
@@ -144,7 +141,7 @@ FunctionDef {
               Identifier {
                 lastNameSegment: b
                 binding: Accessor {
-                  of: $1
+                  of: @45..45
                   type: Get
                 }
                 span: 165..165
@@ -167,7 +164,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: a
             binding: Accessor {
-              of: $0
+              of: @24..24
               type: Get
             }
             span: 188..188
@@ -188,7 +185,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: b
             binding: Accessor {
-              of: $1
+              of: @45..45
               type: Get
             }
             span: 204..204

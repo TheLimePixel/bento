@@ -5,16 +5,17 @@ import io.github.thelimepixel.bento.utils.EmptySequence
 import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
 
-sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
+sealed interface HIR : Spanned, CodeTree<HIR> {
     override val span: Span
-    override val error: HIRError?
-        get() = null
+    override fun childSequence(): Sequence<HIR>
 
-    sealed interface Expr : HIR
+    sealed interface Statement : HIR
+    sealed interface Expr : Statement
+
 
     data class ScopeExpr(
         override val span: Span,
-        val statements: List<Expr>,
+        val statements: List<Statement>,
     ) : Expr {
         override fun childSequence(): Sequence<HIR> = statements.asSequence()
     }
@@ -53,25 +54,10 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
     ) : Path {
         override val binding: Accessor?
             get() = segment?.binding
+
         override fun childSequence(): Sequence<HIR> = EmptySequence
         override val lastNameSegment: String?
             get() = segment?.name
-    }
-
-    data class Identifier(
-        override val lastNameSegment: String,
-        override val binding: Accessor?,
-        override val span: Span
-    ) : Path {
-        override fun childSequence(): Sequence<HIR> = EmptySequence
-    }
-
-    sealed interface Pattern : HIR {
-        val local: LocalRef?
-    }
-
-    data class IdentPattern(override val span: Span, override val local: LocalRef) : Pattern {
-        override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
     data class PathSegment(
@@ -82,27 +68,55 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
+    data class Identifier(
+        override val lastNameSegment: String,
+        override val binding: Accessor?,
+        override val span: Span
+    ) : Path {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+    }
+
+    sealed interface Pattern : HIR
+
+    data class IdentPattern(val local: LocalRef) : Pattern {
+        override fun childSequence(): Sequence<HIR> = EmptySequence
+        override val span: Span
+            get() = local.span
+    }
+
     data class MutablePattern(override val span: Span, val nested: Pattern?) : Pattern {
         override fun childSequence(): Sequence<HIR> = sequence {
             nested?.let { yield(it) }
         }
-
-        override val local: LocalRef?
-            get() = nested?.local
     }
 
     data class WildcardPattern(override val span: Span) : Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
-        override val local: LocalRef?
-            get() = null
     }
 
-    data class LetExpr(
+    data class PathPattern(val path: Path) : Pattern {
+        override fun childSequence(): Sequence<HIR> = sequenceOf(path)
+        override val span: Span
+            get() = path.span
+    }
+
+    data class DestructurePattern(
+        override val span: Span,
+        val path: Path,
+        val fields: List<Pattern>,
+    ) : Pattern {
+        override fun childSequence(): Sequence<HIR> = sequence {
+            yield(path)
+            yieldAll(fields)
+        }
+    }
+
+    data class LetStatement(
         override val span: Span,
         val pattern: Pattern?,
         val type: TypeRef?,
         val expr: Expr,
-    ) : Expr {
+    ) : Statement {
         override fun childSequence(): Sequence<HIR> = sequence {
             pattern?.let { yield(it) }
             type?.let { yield(it) }
@@ -110,10 +124,9 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         }
     }
 
-    data class ErrorExpr(
+    data class Error(
         override val span: Span,
-        override val error: HIRError,
-    ) : Expr {
+    ) : Expr, Pattern {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
@@ -138,9 +151,9 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
             get() = type.span
     }
 
-    data class Param(override val span: Span, val pattern: Pattern?, val type: TypeRef?) : HIR {
+    data class Param(override val span: Span, val pattern: Pattern, val type: TypeRef?) : HIR {
         override fun childSequence(): Sequence<HIR> = sequence {
-            pattern?.let { yield(it) }
+            yield(pattern)
             type?.let { yield(it) }
         }
     }
@@ -200,3 +213,5 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = fields.asSequence()
     }
 }
+
+typealias HIRMap = Map<ItemRef, HIR.Def?>

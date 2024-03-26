@@ -5,8 +5,7 @@ FunctionDef {
     Param {
       span: 8..22
       pattern: IdentPattern {
-        span: 8..10
-        local: $0
+        local: @8..10
       }
       type: TypeRef {
         type: ScopeAccess {
@@ -53,13 +52,36 @@ FunctionDef {
 
 ======= types::main::printBar =======
 FunctionDef {
-  span: 0..48
+  span: 0..57
   params: [
     Param {
-      span: 13..27
-      pattern: IdentPattern {
-        span: 13..15
-        local: $0
+      span: 13..40
+      pattern: DestructurePattern {
+        span: 13..28
+        path: ScopeAccess {
+          prefix: Identifier {
+            lastNameSegment: types
+            binding: Accessor {
+              of: types::types
+              type: Set
+            }
+            span: 13..17
+          }
+          span: 13..22
+          segment: PathSegment {
+            name: Bar
+            span: 20..22
+            binding: Accessor {
+              of: types::types::Bar
+              type: Get
+            }
+          }
+        }
+        fields: [
+          IdentPattern {
+            local: @24..27
+          }
+        ]
       }
       type: TypeRef {
         type: ScopeAccess {
@@ -69,12 +91,12 @@ FunctionDef {
               of: types::types
               type: Set
             }
-            span: 18..22
+            span: 31..35
           }
-          span: 18..27
+          span: 31..40
           segment: PathSegment {
             name: Bar
-            span: 25..27
+            span: 38..40
             binding: Accessor {
               of: types::types::Bar
               type: Get
@@ -86,27 +108,23 @@ FunctionDef {
   ]
   returnType: null
   body: CallExpr {
-    span: 32..48
+    span: 45..57
     on: Identifier {
       lastNameSegment: println
       binding: Accessor {
         of: bento::io::println
         type: Get
       }
-      span: 32..38
+      span: 45..51
     }
     args: [
-      MemberAccessExpr {
-        span: 40..47
-        on: Identifier {
-          lastNameSegment: bar
-          binding: Accessor {
-            of: $0
-            type: Get
-          }
-          span: 40..42
+      Identifier {
+        lastNameSegment: name
+        binding: Accessor {
+          of: @24..27
+          type: Get
         }
-        field: name
+        span: 53..56
       }
     ]
   }
@@ -152,11 +170,10 @@ FunctionDef {
           }
         ]
       }
-      LetExpr {
+      LetStatement {
         span: 41..72
         pattern: IdentPattern {
-          span: 45..47
-          local: $0
+          local: @45..47
         }
         type: TypeRef {
           type: Identifier {
@@ -208,7 +225,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: bar
             binding: Accessor {
-              of: $0
+              of: @45..47
               type: Get
             }
             span: 88..90
@@ -222,7 +239,7 @@ FunctionDef {
           on: Identifier {
             lastNameSegment: bar
             binding: Accessor {
-              of: $0
+              of: @45..47
               type: Get
             }
             span: 98..100
@@ -248,7 +265,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: bar
             binding: Accessor {
-              of: $0
+              of: @45..47
               type: Get
             }
             span: 129..131

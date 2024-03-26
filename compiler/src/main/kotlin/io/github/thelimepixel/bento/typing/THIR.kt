@@ -6,37 +6,73 @@ import io.github.thelimepixel.bento.utils.EmptySequence
 import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
 
-sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
-    override val span: Span
-    val type: Type
+sealed interface THIR : CodeTree<THIR> {
+    val span: Span?
 
-    override val error: THIRError?
+    val error: THIRError?
         get() = null
+
+    sealed interface Def : THIR {
+        val body: Expr?
+    }
+
+    data class FunctionDef(val params: List<Param>, override val body: ScopeExpr) : Def {
+        override fun childSequence(): Sequence<THIR> = sequence {
+            yieldAll(params)
+            yield(body)
+        }
+        override val span: Span
+            get() = body.span
+    }
+
+    data class Param(val ref: LocalRef) : THIR {
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+        override val span: Span
+            get() = ref.span
+    }
+
+    data class StoredPropertyDef(override val span: Span, override val body: Expr?) : Def {
+        override fun childSequence(): Sequence<THIR> = sequence {
+            body?.let { yield(it) }
+        }
+    }
+
+    data class GetterDef(override val span: Span, override val body: Expr?) : Def {
+        override fun childSequence(): Sequence<THIR> = sequence {
+            body?.let { yield(it) }
+        }
+    }
+
+    data class SingletonDef(override val span: Span) : Def {
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+        override val body: Expr?
+            get() = null
+    }
+
+    data class ProductTypeDef(override val span: Span, val fields: List<FieldRef>) : Def {
+        override fun childSequence(): Sequence<THIR> = EmptySequence
+        override val body: Expr?
+            get() = null
+    }
+
+    sealed interface Expr : THIR {
+        val type: Type
+    }
 
     data class ScopeExpr(
         override val span: Span,
         override val type: Type,
-        val statements: List<THIR>,
-    ) : THIR {
+        val statements: List<Expr>,
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = statements.asSequence()
-    }
-
-    data class LetExpr(
-        override val span: Span,
-        val local: LocalRef?,
-        val expr: THIR
-    ) : THIR {
-        override fun childSequence(): Sequence<THIR> = sequenceOf(expr)
-        override val type: Type
-            get() = BuiltinTypes.unit
     }
 
     data class CallExpr(
         override val span: Span,
         override val type: Type,
         val fn: FunctionRef,
-        val args: List<THIR>,
-    ) : THIR {
+        val args: List<Expr>,
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
     }
 
@@ -44,7 +80,7 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val span: Span,
         override val type: Type,
         val def: GetterRef,
-    ) : THIR {
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 
@@ -52,25 +88,26 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val span: Span,
         override val type: Type,
         val property: StoredPropertyRef,
-    ) : THIR {
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 
     data class SetStoredExpr(
         override val span: Span,
         val property: StoredPropertyRef,
-        val value: THIR,
-    ) : THIR {
+        val value: Expr,
+    ) : Expr {
         override val type: Type
             get() = BuiltinTypes.unit
+
         override fun childSequence(): Sequence<THIR> = sequenceOf(value)
     }
 
     data class ConstructorCallExpr(
         override val span: Span,
         override val type: PathType,
-        val args: List<THIR>,
-    ) : THIR {
+        val args: List<Expr>,
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = args.asSequence()
     }
 
@@ -79,14 +116,14 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
         override val error: THIRError,
         override val type: Type,
         val children: List<THIR>,
-    ) : THIR {
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = children.asSequence()
     }
 
     data class StringExpr(
         override val span: Span,
         val content: String,
-    ) : THIR {
+    ) : Expr {
         override val type: Type
             get() = BuiltinTypes.string
 
@@ -97,47 +134,49 @@ sealed interface THIR : CodeTree<THIR, THIRError>, Spanned {
     }
 
     data class LocalAccessExpr(
-        override val span: Span,
+        override val span: Span?,
         override val type: Type,
         val binding: LocalRef,
-    ) : THIR {
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 
     data class LocalAssignmentExpr(
-        override val span: Span,
+        override val span: Span?,
         val binding: LocalRef,
-        val value: THIR,
-    ) : THIR {
+        val value: Expr,
+    ) : Expr {
         override val type: Type
             get() = BuiltinTypes.unit
+
         override fun childSequence(): Sequence<THIR> = sequenceOf(value)
     }
 
     data class GetFieldExpr(
-        override val span: Span,
+        override val span: Span?,
         override val type: PathType,
         val field: FieldRef,
-        val on: THIR,
-    ) : THIR {
+        val on: Expr,
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = sequenceOf(on)
     }
 
     data class SetFieldExpr(
         override val span: Span,
         val field: FieldRef,
-        val on: THIR,
-        val value: THIR,
-    ) : THIR {
+        val on: Expr,
+        val value: Expr,
+    ) : Expr {
         override val type: Type
             get() = BuiltinTypes.unit
+
         override fun childSequence(): Sequence<THIR> = sequenceOf(on, value)
     }
 
     data class SingletonAccessExpr(
         override val span: Span,
         override val type: PathType,
-    ): THIR {
+    ) : Expr {
         override fun childSequence(): Sequence<THIR> = EmptySequence
     }
 }

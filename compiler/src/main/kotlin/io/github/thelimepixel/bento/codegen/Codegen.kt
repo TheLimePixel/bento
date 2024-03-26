@@ -10,8 +10,6 @@ interface Codegen {
         file: SubpackageRef,
         items: List<ItemRef>,
         fileContext: JC,
-        hirMap: Map<ItemRef, HIR.Def?>,
-        thirMap: Map<ItemRef, THIR>
     ): List<Pair<String, ByteArray>>
 }
 
@@ -20,8 +18,6 @@ class BentoCodegen : Codegen {
         file: SubpackageRef,
         items: List<ItemRef>,
         fileContext: JC,
-        hirMap: Map<ItemRef, HIR.Def?>,
-        thirMap: Map<ItemRef, THIR>
     ): List<Pair<String, ByteArray>> {
         val classes = mutableListOf<Pair<String, ByteArray>>()
 
@@ -29,13 +25,13 @@ class BentoCodegen : Codegen {
         val storedProperties = mutableListOf<StoredPropertyRef>()
 
         items.forEach { ref ->
-            val def = hirMap[ref] ?: return@forEach
+            val thir = fileContext.thirOf(ref) ?: return@forEach
             when (ref) {
                 is FunctionRef ->
-                    fileContext.genFunctionDef(def as HIR.FunctionDef, thirMap, ref, writer)
+                    fileContext.genFunctionDef(thir as THIR.FunctionDef, ref, writer)
 
                 is GetterRef ->
-                    fileContext.genGetterDef(thirMap, ref, writer)
+                    fileContext.genGetterDef(ref, writer)
 
                 is StoredPropertyRef -> {
                     fileContext.genStoredGetter(ref, writer)
@@ -43,12 +39,12 @@ class BentoCodegen : Codegen {
                     storedProperties.add(ref)
                 }
 
-                is TypeRef -> classes.add(ref.toClassname() to fileContext.genType(ref, def))
+                is TypeRef -> classes.add(ref.toClassname() to fileContext.genType(ref))
                 is FieldRef, is PackageRef -> Unit
             }
         }
 
-        genStaticInitializer(writer, storedProperties, fileContext, thirMap)
+        fileContext.genStaticInitializer(writer, storedProperties, fileContext)
         if (items.any { it !is TypeRef }) classes.add(file.toClassname() + "Bt" to writer.finish())
 
         return classes
@@ -56,18 +52,19 @@ class BentoCodegen : Codegen {
 
     private fun ParentRef.toClassname(): String = this.toJVMPath(".")
 
-    private fun JC.genType(ref: TypeRef, hir: HIR): ByteArray = when (ref) {
+    private fun JC.genType(ref: TypeRef): ByteArray = when (ref) {
         is SingletonTypeRef -> genSingletonType(ref)
-        is ProductTypeRef -> genProductType(hir as HIR.ProductType, ref)
+        is ProductTypeRef -> genProductType(ref)
     }
 
-    private fun JC.genProductType(hir: HIR.ProductType, ref: ProductTypeRef): ByteArray {
+    private fun JC.genProductType(ref: ProductTypeRef): ByteArray {
         val `class` = ref.asJVMClass()
-        val fields = hir.fields.map { it.ref }
+        val thir = thirOf(ref) as THIR.ProductTypeDef
+        val fields = thir.fields
 
         val writer = ClassWriter(`class`)
 
-        val ctorDescriptor = hir.ctorDescriptor
+        val ctorDescriptor = thir.ctorDescriptor
 
         writer.constructor(ctorDescriptor) { ctor ->
             ctor.addVariables(ctorDescriptor.parameters.size)
@@ -98,11 +95,11 @@ class BentoCodegen : Codegen {
     }
 
     context(JC)
-    private val HIR.ProductType.ctorDescriptor get() =
+    private val THIR.ProductTypeDef.ctorDescriptor get() =
         JVMDescriptor(
             this.fields
                 .asSequence()
-                .map { typeOfField(it.ref) }
+                .map { typeOfField(it) }
                 .toList(), JVMType.Void
         )
 
@@ -155,18 +152,17 @@ class BentoCodegen : Codegen {
         return writer.finish()
     }
 
-    private fun genStaticInitializer(
+    private fun JC.genStaticInitializer(
         writer: ClassWriter,
         constants: List<StoredPropertyRef>,
         fileContext: JC,
-        thirMap: Map<ItemRef, THIR>
     ) = if (constants.isEmpty()) Unit else writer.staticConstructor { staticInitWriter ->
         constants.forEach { ref ->
-            val thirType = thirMap[ref]!!.type.accessType
+            val thir = thirOf(ref)?.body!!
+            val thirType = thir.type.accessType
             val type = fileContext.jvmTypeOf(thirType)
             val isVoid = thirType.ref is SingletonTypeRef
             if (!isVoid) writer.staticField(ref.jvmName, type, ref.mutable)
-            val thir = thirMap[ref]!!
             fileContext.genExpr(thir, staticInitWriter, isVoid)
             if (!isVoid) staticInitWriter.setStatic(ref.parent.asJVMClass(), ref.jvmName, type)
         }
@@ -175,33 +171,27 @@ class BentoCodegen : Codegen {
     }
 
     private fun JC.genFunctionDef(
-        def: HIR.FunctionDef,
-        thirMap: Map<ItemRef, THIR>,
+        def: THIR.FunctionDef,
         ref: FunctionRef,
         writer: ClassWriter,
     ) {
         val sig = signatureOf(ref)
         writer.staticMethod(sig.name, sig.descriptor) { methodWriter ->
-            def.params.forEach {
-                it.pattern?.local
-                    ?.let { id -> methodWriter.addVariable(id) }
-                    ?: methodWriter.addVariables(1)
-            }
+            def.params.forEach { methodWriter.addVariable(it.ref) }
             val isVoid = sig.descriptor.returnType == JVMType.Void
-            genExpr(thirMap[ref]!!, methodWriter, isVoid)
+            genExpr(def.body, methodWriter, isVoid)
             if (isVoid) methodWriter.returnVoid() else methodWriter.returnLast()
         }
     }
 
     private fun JC.genGetterDef(
-        thirMap: Map<ItemRef, THIR>,
         ref: GetterRef,
         writer: ClassWriter,
     ) {
         val type = jvmTypeOf(typeOf(ref).accessType)
         writer.staticGetter(ref.jvmName, type) { methodWriter ->
             val isVoid = type == JVMType.Void
-            genExpr(thirMap[ref]!!, methodWriter, isVoid)
+            genExpr(thirOf(ref)?.body!!, methodWriter, isVoid)
             if (isVoid) methodWriter.returnVoid() else methodWriter.returnLast()
         }
     }
@@ -290,7 +280,7 @@ class BentoCodegen : Codegen {
         if (!ignoreOutput) writer.duplicateLast()
         node.args.forEach { genExpr(it, writer, false) }
 
-        val hir = hirOf(node.type.ref) as HIR.ProductType
+        val hir = thirOf(node.type.ref) as THIR.ProductTypeDef
         val ctorDesc = hir.ctorDescriptor
 
         writer.callConstructor(jvmClassOf(node.type), ctorDesc)
@@ -306,16 +296,6 @@ class BentoCodegen : Codegen {
 
         writer.getLocal(node.binding)
         return true
-    }
-
-    private fun JC.genLetExpr(node: THIR.LetExpr, writer: MethodWriter): Boolean {
-        val local = node.local
-        genExpr(node.expr, writer, local == null)
-        if (local != null) {
-            writer.addVariable(local)
-            writer.setLocal(local)
-        }
-        return false
     }
 
     private fun genStringExpr(node: THIR.StringExpr, writer: MethodWriter, ignoreOutput: Boolean): Boolean {
@@ -336,7 +316,7 @@ class BentoCodegen : Codegen {
     }
 
     private fun JC.genExpr(
-        node: THIR,
+        node: THIR.Expr,
         writer: MethodWriter,
         ignoreOutput: Boolean,
     ): Boolean = when (node) {
@@ -354,9 +334,6 @@ class BentoCodegen : Codegen {
 
         is THIR.LocalAccessExpr ->
             genAccessExpr(node, writer, ignoreOutput)
-
-        is THIR.LetExpr ->
-            genLetExpr(node, writer)
 
         is THIR.SingletonAccessExpr -> {
             if (!ignoreOutput) genSingletonAccessExpr(node.type.accessType, writer)

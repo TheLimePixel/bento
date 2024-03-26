@@ -44,7 +44,6 @@ class BentoParsing : Parsing {
         if (!at(ST.LParen)) return ParseResult.Pass
 
         return node(ST.Constructor) {
-            push()      // lParen
             handleParenthesizedList(BaseSets.paramListRecoverySet) { expectField() }
         }
     }
@@ -104,7 +103,6 @@ class BentoParsing : Parsing {
 
     private fun P.parseParamList(): ParseResult =
         if (at(ST.LParen)) node(ST.ParamList) {
-            push()  // (
             handleParenthesizedList(BaseSets.paramListRecoverySet) { expectParam() }
         } else ParseResult.Pass
 
@@ -115,9 +113,29 @@ class BentoParsing : Parsing {
             expectPattern()
         }
 
-        in BaseSets.identifiers -> pushWrapped(ST.IdentPattern)
+        in BaseSets.identifiers -> handleIdentPattern()
         else -> handleError(ParseErrorKind.ExpectedPattern)
     }
+
+    private fun P.handleIdentPattern(): ParseResult {
+        push()      // ident
+        return when (current) {
+            ST.ColonColon -> {
+                nestLast(ST.NameRef)
+                handlePath()
+                if (at(ST.LParen)) nestLast(ST.DestructurePattern) { handleDestructuring() }
+                else nestLast(ST.PathPattern)
+            }
+            ST.LParen -> {
+                nestLast(ST.NameRef)
+                nestLast(ST.DestructurePattern) { handleDestructuring() }
+            }
+            else -> nestLast(ST.IdentPattern)
+        }
+    }
+
+    private fun P.handleDestructuring() =
+        handleParenthesizedList(BaseSets.baseRecoverySet) { expectPattern() }
 
     private fun P.expectParam(): ParseResult =
         expectPattern().then {
@@ -136,7 +154,7 @@ class BentoParsing : Parsing {
         if (consume(ST.Equals)) expectTerm()
         else handleError(ParseErrorKind.ExpectedEquals)
 
-    private fun P.handleLetExpr(): ParseResult = node(ST.LetExpr) {
+    private fun P.handleLetExpr(): ParseResult = node(ST.LetStatement) {
         push()  // let keyword
         expectPattern()
             .then { parseTypeAnnotation() }
@@ -197,7 +215,6 @@ class BentoParsing : Parsing {
 
     private fun P.handleCall(): ParseResult = nestLast(ST.CallExpr) {
         node(ST.ArgList) {
-            push()  // (
             handleParenthesizedList(BaseSets.argListRecoverySet) { expectTerm() }
         }
     }
@@ -230,6 +247,7 @@ class BentoParsing : Parsing {
     }
 
     private inline fun P.handleParenthesizedList(recoverySet: SyntaxSet, expectFn: P.() -> ParseResult): ParseResult {
+        push()      // (
         while (true) {
             handleParenthesizedListEnd(recoverySet).ifNot(ParseResult.Pass) { return it }
             expectFn().ifIs(ParseResult.Recover) { return it }

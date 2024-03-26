@@ -1,98 +1,142 @@
 ======= nesting::main::baz =======
-StringExpr {
-  span: 29..45
-  content: "Hello from Baz!"
+FunctionDef {
+  params: [
+    Param {
+      ref: @8..8
+    }
+  ]
+  body: ScopeExpr {
+    span: 0..45
+    type: bento::String
+    statements: [
+      StringExpr {
+        span: 29..45
+        content: "Hello from Baz!"
+      }
+    ]
+  }
 }
 
 ======= nesting::main::bar =======
-ScopeExpr {
-  span: 12..77
-  type: bento::Unit
-  statements: [
-    CallExpr {
-      span: 19..42
-      type: bento::Unit
-      fn: bento::io::println
-      args: [
-        CallExpr {
-          span: 27..41
-          type: bento::String
-          fn: nesting::main::baz
-          args: [
-            StringExpr {
-              span: 31..40
-              content: "Hellope!"
-            }
-          ]
-        }
-      ]
-    }
-    CallExpr {
-      span: 49..74
-      type: bento::Unit
-      fn: bento::io::println
-      args: [
-        StringExpr {
-          span: 57..73
-          content: "Hello from Bar!"
-        }
-      ]
-    }
-  ]
+FunctionDef {
+  params: []
+  body: ScopeExpr {
+    span: 0..77
+    type: bento::Unit
+    statements: [
+      ScopeExpr {
+        span: 12..77
+        type: bento::Unit
+        statements: [
+          CallExpr {
+            span: 19..42
+            type: bento::Unit
+            fn: bento::io::println
+            args: [
+              CallExpr {
+                span: 27..41
+                type: bento::String
+                fn: nesting::main::baz
+                args: [
+                  StringExpr {
+                    span: 31..40
+                    content: "Hellope!"
+                  }
+                ]
+              }
+            ]
+          }
+          CallExpr {
+            span: 49..74
+            type: bento::Unit
+            fn: bento::io::println
+            args: [
+              StringExpr {
+                span: 57..73
+                content: "Hello from Bar!"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
 
 ======= nesting::main::foo =======
-CallExpr {
-  span: 29..76
-  type: bento::Unit
-  fn: bento::io::println
-  args: [
-    ScopeExpr {
-      span: 37..75
-      type: bento::String
-      statements: [
-        CallExpr {
-          span: 48..52
-          type: bento::Unit
-          fn: nesting::main::bar
-          args: []
-        }
-        LocalAccessExpr {
-          span: 64..67
-          type: bento::String
-          binding: $0
-        }
-      ]
+FunctionDef {
+  params: [
+    Param {
+      ref: @8..11
     }
   ]
+  body: ScopeExpr {
+    span: 0..76
+    type: bento::Unit
+    statements: [
+      CallExpr {
+        span: 29..76
+        type: bento::Unit
+        fn: bento::io::println
+        args: [
+          ScopeExpr {
+            span: 37..75
+            type: bento::String
+            statements: [
+              CallExpr {
+                span: 48..52
+                type: bento::Unit
+                fn: nesting::main::bar
+                args: []
+              }
+              LocalAccessExpr {
+                span: 64..67
+                type: bento::String
+                binding: @8..11
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
 
 ======= nesting::main::main =======
-ScopeExpr {
-  span: 13..77
-  type: bento::Unit
-  statements: [
-    CallExpr {
-      span: 20..41
-      type: bento::Unit
-      fn: nesting::main::foo
-      args: [
-        StringExpr {
-          span: 24..40
-          content: "Hello from Foo!"
-        }
-      ]
-    }
-    CallExpr {
-      span: 48..74
-      type: bento::Unit
-      fn: bento::io::println
-      args: [
-        StringExpr {
-          span: 56..73
-          content: "Hello from Main!"
-        }
-      ]
-    }
-  ]
+FunctionDef {
+  params: []
+  body: ScopeExpr {
+    span: 0..77
+    type: bento::Unit
+    statements: [
+      ScopeExpr {
+        span: 13..77
+        type: bento::Unit
+        statements: [
+          CallExpr {
+            span: 20..41
+            type: bento::Unit
+            fn: nesting::main::foo
+            args: [
+              StringExpr {
+                span: 24..40
+                content: "Hello from Foo!"
+              }
+            ]
+          }
+          CallExpr {
+            span: 48..74
+            type: bento::Unit
+            fn: bento::io::println
+            args: [
+              StringExpr {
+                span: 56..73
+                content: "Hello from Main!"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

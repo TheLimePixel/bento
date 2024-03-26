@@ -1,14 +1,15 @@
 package io.github.thelimepixel.bento.ast
 
+import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.EmptyIterator
 
-sealed interface GreenNode {
+sealed interface GreenNode : CodeTree<GreenChild> {
     val type: SyntaxType
     val length: Int
     val content: String
     fun childIterator(): Iterator<GreenChild>
     fun revChildIterator(): Iterator<GreenChild>
-    fun childSequence(): Sequence<GreenChild> = childIterator().asSequence()
+    override fun childSequence(): Sequence<GreenChild> = childIterator().asSequence()
     fun revChildSequence(): Sequence<GreenChild> = revChildIterator().asSequence()
 
     fun firstChild(type: SyntaxType): GreenChild? =

@@ -15,10 +15,12 @@ public final class types/mainBt {
   public static printBar(Ltypes/types/Bar;)V
     ALOAD 0
     INVOKEVIRTUAL types/types/Bar.getName ()Ljava/lang/String;
+    ASTORE 1
+    ALOAD 1
     INVOKESTATIC io/github/thelimepixel/bento/RunFunctionsKt.fakePrintln (Ljava/lang/String;)V
     RETURN
     MAXSTACK = 1
-    MAXLOCALS = 1
+    MAXLOCALS = 2
 
   // access flags 0x9
   public static main()V

@@ -37,7 +37,7 @@ class BentoBinding : Binding {
         return when (val type = node.type) {
             ST.FunDef -> bindFunctionLike(node)
             ST.TypeDef -> bindTypeDef(ref, node)
-            else -> error("Unexpected definition type: $type")
+            else -> error("Unsupported definition type: $type")
         }
     }
 
@@ -58,31 +58,57 @@ class BentoBinding : Binding {
 
     private fun BC.findAndBindTypeAnnotation(node: RedNode): HIR.TypeRef? = node
         .firstChild(SyntaxType.TypeAnnotation)
-        ?.let { tryBindPath(it) }
-        ?.let { path -> HIR.TypeRef(path) }
+        ?.firstChild(BaseSets.paths)
+        ?.let { path -> HIR.TypeRef(bindPath(path, false)) }
 
-    private fun LC.findAndBindPattern(node: RedNode, mutable: Boolean): HIR.Pattern? =
-        node.firstChild(BaseSets.patterns)?.let {
-            when (it.type) {
-                ST.IdentPattern -> HIR.IdentPattern(it.span, addLocal(it.rawContent, mutable))
-                ST.WildcardPattern -> HIR.WildcardPattern(it.span)
-                ST.MutPattern -> HIR.MutablePattern(it.span, findAndBindPattern(it, true))
-                else -> error("Unsupported pattern type: ${it.type}")
-            }
-        }
+    private fun LC.findAndBindPattern(parent: RedNode, mutable: Boolean): HIR.Pattern? =
+        parent.firstChild(BaseSets.patterns)?.let { node -> bindPattern(node, mutable) }
+
+
+    private fun LC.bindPattern(node: RedNode, mutable: Boolean) = when (node.type) {
+        ST.IdentPattern -> bindIdentPattern(node, mutable)
+        ST.PathPattern -> bindPathPattern(node)
+        ST.DestructurePattern -> bindDestructurePattern(node, mutable)
+        ST.WildcardPattern -> HIR.WildcardPattern(node.span)
+        ST.MutPattern -> HIR.MutablePattern(node.span, findAndBindPattern(node, true))
+        ST.Error -> HIR.Error(node.span)
+        else -> error("Unsupported pattern type: ${node.type}")
+    }
+
+    private fun LC.bindIdentPattern(node: RedNode, mutable: Boolean): HIR.Pattern {
+        val name = node.rawContent
+        val accessor = accessorFor(name)
+        return if (accessor?.of is TypeRef)
+            HIR.PathPattern(HIR.Identifier(name, accessor, node.span))
+        else HIR.IdentPattern(addLocal(node.rawContent, node.span, mutable))
+    }
+
+    private fun LC.bindPathPattern(node: RedNode): HIR.Pattern {
+        val path = findAndBindPath(node, false)
+        return HIR.PathPattern(path)
+    }
+
+    private fun LC.bindDestructurePattern(node: RedNode, mutable: Boolean): HIR.Pattern {
+        val path = findAndBindPath(node, false)
+        val fields = node.childSequence()
+            .filter { it.type in BaseSets.patterns }
+            .map { bindPattern(it, mutable) }
+            .toList()
+        return HIR.DestructurePattern(node.span, path, fields)
+    }
 
     private fun LC.bindParamList(node: RedNode): List<HIR.Param>? = node.firstChild(SyntaxType.ParamList)
         ?.childSequence()
         ?.filter { it.type == SyntaxType.Param }
         ?.map {
-            val name = findAndBindPattern(it, false)
+            val name = findAndBindPattern(it, false)!!
             val type = findAndBindTypeAnnotation(it)
             HIR.Param(it.span, name, type)
         }
         ?.toList()
 
     private fun BC.bindFunctionLike(node: RedNode): HIR.Def {
-        val context = LocalItemBindingContext(this)
+        val context = LocalBindingContext(this)
         val params = context.bindParamList(node)
         val returnType = findAndBindTypeAnnotation(node)
         val body = node.lastChild(BaseSets.expressions)?.let { context.bindResultingExpression(it) }
@@ -94,12 +120,12 @@ class BentoBinding : Binding {
     private fun BC.bindLet(node: RedNode): HIR.LetDef {
         val type = findAndBindTypeAnnotation(node)
         val body = node.lastChild(BaseSets.expressions)?.let { bindResultingExpression(it) }
-            ?: HIRError.Propagation.at(node.span)
+            ?: HIR.Error(node.span)
         return HIR.LetDef(node.span, type, body)
     }
 
     private fun LC.bindCall(node: RedNode): HIR.CallExpr {
-        val on = node.firstChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.span)
+        val on = node.firstChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIR.Error(node.span)
         val args = node
             .lastChild(ST.ArgList)
             ?.childSequence()
@@ -111,26 +137,17 @@ class BentoBinding : Binding {
         return HIR.CallExpr(node.span, on, args)
     }
 
-    private fun BC.tryBindPath(node: RedNode): HIR.Path? {
-        val pathNode = node.firstChild(BaseSets.paths) ?: return null
-        return when (pathNode.type) {
-            ST.NameRef -> bindNameRef(pathNode, false)
-            ST.Path -> bindScopeAccess(pathNode, false)
-            else -> error("Got invalid path type: ${pathNode.type}")
-        }
-    }
+    private fun BC.findAndBindPath(node: RedNode, mutable: Boolean): HIR.Path =
+        bindPath(node.firstChild(BaseSets.paths)!!, mutable)
 
-    private fun BC.bindPath(node: RedNode, mutable: Boolean): HIR.Path {
-        val pathNode = node.firstChild(BaseSets.paths)!!
-        return when (pathNode.type) {
-            ST.NameRef -> bindNameRef(pathNode, mutable)
-            ST.Path -> bindScopeAccess(pathNode, mutable)
-            else -> error("Got invalid path type: ${pathNode.type}")
-        }
+    private fun BC.bindPath(node: RedNode, mutable: Boolean): HIR.Path = when (node.type) {
+        ST.NameRef -> bindNameRef(node, mutable)
+        ST.Path -> bindScopeAccess(node, mutable)
+        else -> error("Unsupported path type: ${node.type}")
     }
 
     private fun BC.bindScopeAccess(node: RedNode, mutable: Boolean): HIR.Path {
-        val parent = bindPath(node, false)
+        val parent = findAndBindPath(node, false)
         return HIR.ScopeAccess(parent, node.span, findAndBindPathSegment(parent, node, mutable))
     }
 
@@ -160,14 +177,19 @@ class BentoBinding : Binding {
 
     private fun LC.bindExpr(node: RedNode, mutable: Boolean = false): HIR.Expr = when (node.type) {
         ST.StringLiteral -> HIR.StringExpr(node.span, node.content)
-        ST.PathExpr -> bindPath(node, mutable)
+        ST.PathExpr -> findAndBindPath(node, mutable)
         ST.CallExpr -> bindCall(node)
         ST.ScopeExpr -> bindScope(node)
-        ST.LetExpr -> bindLetExpr(node)
         ST.ParenthesizedExpr -> bindParenthesizedExpr(node)
         ST.AssignmentExpr -> bindAssignmentExpr(node)
         ST.AccessExpr -> bindAccessExpr(node)
-        else -> HIR.ErrorExpr(node.span, HIRError.Propagation)
+        ST.Error -> HIR.Error(node.span)
+        else -> error("Unsupported expression type: ${node.type}")
+    }
+
+    private fun LC.bindStatement(node: RedNode, mutable: Boolean = false): HIR.Statement = when (node.type) {
+        ST.LetStatement -> bindLetExpr(node)
+        else -> bindExpr(node, mutable)
     }
 
     private fun LC.bindAccessExpr(node: RedNode): HIR.MemberAccessExpr {
@@ -178,32 +200,32 @@ class BentoBinding : Binding {
 
     private fun LC.bindAssignmentExpr(node: RedNode): HIR.Expr {
         val leftRef = bindExpr(node.firstChild(BaseSets.expressions)!!, true)
-        val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIRError.Propagation.at(node.span)
+        val right = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) } ?: HIR.Error(node.span)
         return HIR.AssignmentExpr(node.span, leftRef, right)
     }
 
     private fun LC.bindParenthesizedExpr(node: RedNode): HIR.Expr =
         node.firstChild(BaseSets.expressions)?.let { bindExpr(it) }
-            ?: HIRError.Propagation.at(node.span)
+            ?: HIR.Error(node.span)
 
-    private fun LC.bindLetExpr(node: RedNode): HIR.LetExpr {
+    private fun LC.bindLetExpr(node: RedNode): HIR.LetStatement {
         val pattern = findAndBindPattern(node, false)
         val type = findAndBindTypeAnnotation(node)
         val expr = node.lastChild(BaseSets.expressions)?.let { bindExpr(it) }
-            ?: HIRError.Propagation.at(node.span)
+            ?: HIR.Error(node.span)
 
-        return HIR.LetExpr(node.span, pattern, type, expr)
+        return HIR.LetStatement(node.span, pattern, type, expr)
     }
 
     private fun BC.bindResultingExpression(node: RedNode): HIR.Expr =
-        LocalItemBindingContext(this).bindExpr(node)
+        LocalBindingContext(this).bindExpr(node)
 
     private fun LC.bindScope(node: RedNode): HIR.ScopeExpr {
-        val context = ScopeBindingContext(this)
+        val context = LocalBindingContext(this)
         val statements = node
             .childSequence()
-            .filter { it.type in BaseSets.expressions }
-            .map { context.bindExpr(it) }
+            .filter { it.type in BaseSets.statements }
+            .map { context.bindStatement(it) }
             .toList()
 
         return HIR.ScopeExpr(node.span, statements)
@@ -215,7 +237,7 @@ class BentoBinding : Binding {
         val paths = block.childSequence()
             .filter { it.type == ST.ImportPath }
             .map {
-                context.bindImportPath(it).also { path ->
+                context.findAndBindImportPath(it).also { path ->
                     val name = path.lastNameSegment ?: return@also
                     val accessor = path.binding ?: return@also
                     importedItems[name] = accessor
@@ -226,7 +248,7 @@ class BentoBinding : Binding {
         return BoundImportData(importedItems, paths)
     }
 
-    private fun BC.bindImportPath(node: RedNode): HIR.Path {
+    private fun BC.findAndBindImportPath(node: RedNode): HIR.Path {
         val pathNode = node.firstChild(BaseSets.paths)!!
         return when (pathNode.type) {
             ST.NameRef -> bindImportNameRef(pathNode)
@@ -236,7 +258,7 @@ class BentoBinding : Binding {
     }
 
     private fun BC.bindImportScopeAccess(node: RedNode): HIR.Path {
-        val parent = bindImportPath(node)
+        val parent = findAndBindImportPath(node)
         return HIR.ScopeAccess(parent, node.span, findAndBindPathSegment(parent, node, false))
     }
 

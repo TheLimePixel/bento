@@ -5,7 +5,7 @@ BoundImportData {
       type: Get
     }
   }
-  binding: [
+  paths: [
     ScopeAccess {
       prefix: ScopeAccess {
         prefix: Identifier {

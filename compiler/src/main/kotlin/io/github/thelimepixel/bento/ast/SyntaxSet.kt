@@ -5,6 +5,14 @@ import java.util.*
 @JvmInline
 value class SyntaxSet internal constructor(val set: BitSet) {
     operator fun contains(type: SyntaxType): Boolean = set[type.ordinal]
+
+    fun toArray(): Array<SyntaxType> {
+        val res = mutableListOf<SyntaxType>()
+        0.rangeTo(set.size()).forEach {
+            if (set[it]) res.add(SyntaxType.entries[it])
+        }
+        return res.toTypedArray()
+    }
 }
 
 fun syntaxSetOf(vararg types: SyntaxType): SyntaxSet {
@@ -28,15 +36,20 @@ object BaseSets {
         SyntaxType.ScopeExpr,
         SyntaxType.CallExpr,
         SyntaxType.ScopeExpr,
-        SyntaxType.LetExpr,
+        SyntaxType.LetStatement,
         SyntaxType.ParenthesizedExpr,
         SyntaxType.AssignmentExpr,
         SyntaxType.AccessExpr,
+        SyntaxType.Error,
     )
+    val statements = syntaxSetOf(*expressions.toArray(), SyntaxType.LetStatement)
     val patterns = syntaxSetOf(
         SyntaxType.IdentPattern,
         SyntaxType.WildcardPattern,
         SyntaxType.MutPattern,
+        SyntaxType.PathPattern,
+        SyntaxType.DestructurePattern,
+        SyntaxType.Error,
     )
     val definitions = syntaxSetOf(
         SyntaxType.FunDef,

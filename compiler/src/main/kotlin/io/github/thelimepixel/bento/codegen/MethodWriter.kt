@@ -36,7 +36,10 @@ class MethodWriter @PublishedApi internal constructor(
     }
 
     fun setLocal(ref: LocalRef) {
-        setLocal(localMapping[ref]!!)
+        val local = localMapping.computeIfAbsent(ref) {
+            maxLocals.also { maxLocals += 1 }
+        }
+        setLocal(local)
     }
 
     fun returnLast() {

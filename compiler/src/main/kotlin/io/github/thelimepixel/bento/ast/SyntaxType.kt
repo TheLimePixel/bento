@@ -45,7 +45,7 @@ enum class SyntaxType(
     PathSegment,
     Path,
 
-    LetExpr,
+    LetStatement,
     PathExpr,
     ScopeExpr,
     CallExpr,
@@ -63,6 +63,8 @@ enum class SyntaxType(
     Field,
 
     IdentPattern,
+    PathPattern,
+    DestructurePattern,
     WildcardPattern,
     MutPattern,
 

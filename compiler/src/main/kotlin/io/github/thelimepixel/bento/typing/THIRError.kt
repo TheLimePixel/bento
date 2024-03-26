@@ -1,13 +1,9 @@
 package io.github.thelimepixel.bento.typing
 
-import io.github.thelimepixel.bento.errors.ErrorKind
 import io.github.thelimepixel.bento.utils.Span
 
-enum class THIRError : ErrorKind {
-    Propagation {
-        override val ignore: Boolean
-            get() = true
-    },
+enum class THIRError {
+    Propagation,
     InvalidIdentifierUse,
     CallOnNonFunction,
     UnexpectedArgument,

@@ -2,7 +2,7 @@ import { types::types }
 
 def foo(foo: types::Foo) = println("Foooooooooo")
 
-def printBar(bar: types::Bar) = println(bar.name)
+def printBar(types::Bar(name): types::Bar) = println(name)
 
 def main() = {
     foo(types::Foo)

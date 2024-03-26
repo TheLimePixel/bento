@@ -8,7 +8,7 @@ interface JVMBindingContext {
 
     fun jvmClassOf(ref: PathType): JVMClass
 
-    fun hirOf(ref: ItemRef): HIR.Def
+    fun thirOf(ref: ItemRef): THIR.Def?
 
     fun typeOf(ref: ItemRef): Type
 }
@@ -45,13 +45,13 @@ class TopLevelJVMBindingContext(
 
     override fun typeOf(ref: ItemRef): Type = error("Cannot find type of $ref")
 
-    override fun hirOf(ref: ItemRef): HIR.Def = error("Missing definition")
+    override fun thirOf(ref: ItemRef): THIR.Def? = null
 }
 
 class FileJVMBindingContext(
     private val parent: JVMBindingContext,
     private val typingContext: TypingContext,
-    private val hirMap: Map<ItemRef, HIR.Def?>,
+    private val thirMap: TypingMap,
 ) : JVMBindingContext {
     override fun jvmClassOf(ref: PathType): JVMClass = parent.jvmClassOf(ref)
 
@@ -65,7 +65,7 @@ class FileJVMBindingContext(
 
     override fun typeOf(ref: ItemRef): Type = typingContext.typeOf(ref)
 
-    override fun hirOf(ref: ItemRef): HIR.Def = hirMap[ref] ?: parent.hirOf(ref)
+    override fun thirOf(ref: ItemRef): THIR.Def? = thirMap[ref]?.thir ?: parent.thirOf(ref)
 }
 
 fun JVMBindingContext.jvmTypeOf(type: PathType): JVMType = JVMType.Class(jvmClassOf(type))

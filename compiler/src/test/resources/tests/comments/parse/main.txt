@@ -16,7 +16,7 @@ File
 │   ├─LBrace
 │   ├─Newline
 │   ├─Whitespace(    )
-│   ├─LetExpr
+│   ├─LetStatement
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
 │   │ ├─IdentPattern
@@ -41,7 +41,7 @@ File
 │   │   └─RParen
 │   ├─Newline
 │   ├─Whitespace(    )
-│   ├─LetExpr
+│   ├─LetStatement
 │   │ ├─LetKeyword
 │   │ ├─Whitespace( )
 │   │ ├─WildcardPattern

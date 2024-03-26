@@ -39,12 +39,13 @@ class FileTypingContext(
 
 class LocalTypingContext(
     private val parent: TypingContext,
+    private val locals: MutableMap<LocalRef, Type>
 ) : TypingContext {
-    private val locals = mutableMapOf<Ref, Type>()
+
     override fun typeOf(ref: Ref): Type =
         locals[ref] ?: parent.typeOf(ref)
 
-    operator fun set(ref: Ref, type: Type) {
+    operator fun set(ref: LocalRef, type: Type) {
         locals[ref] = type
     }
 

@@ -1,5 +1,6 @@
 package io.github.thelimepixel.bento.ast
 
+import io.github.thelimepixel.bento.utils.CodeTree
 import io.github.thelimepixel.bento.utils.Span
 import io.github.thelimepixel.bento.utils.Spanned
 import io.github.thelimepixel.bento.utils.span
@@ -7,7 +8,7 @@ import io.github.thelimepixel.bento.utils.span
 class RedNode internal constructor(
     private val green: GreenNode,
     private val offset: Int
-) : Spanned {
+) : Spanned, CodeTree<RedNode> {
     val content: String
         get() = green.content
 
@@ -50,7 +51,7 @@ class RedNode internal constructor(
     }
 
     private fun childIterator(): Iterator<RedNode> = ChildIterator(this, green.childIterator())
-    fun childSequence(): Sequence<RedNode> = childIterator().asSequence()
+    override fun childSequence(): Sequence<RedNode> = childIterator().asSequence()
 }
 
 fun GreenNode.toRedRoot() = RedNode(this, 0)

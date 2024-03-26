@@ -101,8 +101,7 @@ FunctionDef {
     Param {
       span: 8..19
       pattern: IdentPattern {
-        span: 8..11
-        local: $0
+        local: @8..11
       }
       type: TypeRef {
         type: Identifier {
@@ -146,7 +145,7 @@ FunctionDef {
           Identifier {
             lastNameSegment: text
             binding: Accessor {
-              of: $0
+              of: @8..11
               type: Get
             }
             span: 64..67
