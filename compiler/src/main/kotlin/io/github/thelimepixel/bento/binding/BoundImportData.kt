@@ -4,11 +4,10 @@ import io.github.thelimepixel.bento.utils.Span
 
 data class BoundImportData(
     val accessors: Map<String, Accessor>,
-    val packages: Map<String, PackageTreeNode>,
     val binding: List<BoundImportPath>,
 )
 
-val emptyImportData = BoundImportData(emptyMap(), emptyMap(), emptyList())
+val emptyImportData = BoundImportData(emptyMap(), emptyList())
 
 data class BoundImportPath(
     val span: Span,
@@ -17,6 +16,5 @@ data class BoundImportPath(
 
 data class BoundImportPathSegment(
     val span: Span,
-    val node: PackageTreeNode?,
     val item: Accessor?,
 )

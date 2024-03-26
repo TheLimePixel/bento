@@ -45,6 +45,8 @@ fun type(ref: ItemRef, hirMap: Map<ItemRef, HIR.Def?>): Type = when (ref) {
 
     is FieldRef ->
         (hirMap[ref.parent] as HIR.ProductType).fields[ref.index].type.toPathType() ?: BuiltinTypes.nothing
+
+    is PackageRef -> BuiltinTypes.nothing
 }
 
 fun HIR.TypeRef?.toPathType(): PathType? = this?.type?.let { PathType(it.binding.of as TypeRef) }

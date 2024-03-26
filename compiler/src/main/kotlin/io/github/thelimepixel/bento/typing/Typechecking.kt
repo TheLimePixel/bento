@@ -56,7 +56,7 @@ class BentoTypechecking : Typechecking {
             is GetterRef -> THIR.GetComputedExpr(hir.span, typeOf(binding).accessType, binding)
             is StoredPropertyRef -> THIR.GetStoredExpr(hir.span, typeOf(binding).accessType, binding)
             is SingletonTypeRef -> THIR.SingletonAccessExpr(hir.span, PathType(binding))
-            is ProductTypeRef, is FunctionRef, is FieldRef -> THIRError.InvalidIdentifierUse.at(hir.span)
+            is ProductTypeRef, is FunctionRef, is FieldRef, is PackageRef -> THIRError.InvalidIdentifierUse.at(hir.span)
             is LocalRef -> THIR.LocalAccessExpr(hir.span, typeOf(binding), binding)
         }
     }

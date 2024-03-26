@@ -65,6 +65,7 @@ data class FunctionRef(
 ) : NamedItemRef {
     override val mutable: Boolean
         get() = false
+
     override fun toString(): String = "$parent::$name"
 }
 
@@ -76,6 +77,7 @@ data class GetterRef(
 ) : NamedItemRef {
     override val mutable: Boolean
         get() = false
+
     override fun toString(): String = "$parent::$name"
 }
 
@@ -87,6 +89,7 @@ data class FieldRef(
 ) : NamedItemRef {
     override val ast: RedNode?
         get() = null
+
     override fun toString(): String = "$parent.$name"
 }
 
@@ -97,14 +100,28 @@ enum class AccessorType {
 
 data class Accessor(val of: Ref, val type: AccessorType)
 
-sealed interface PackageRef : ParentRef
+sealed interface PackageRef : ParentRef, ItemRef {
+    override val ast: RedNode?
+        get() = null
+
+    override val index: Int
+        get() = 0
+
+    override val mutable: Boolean
+        get() = false
+}
 
 data object RootRef : PackageRef {
     override val name: String
         get() = ""
+
+    override val parent: ParentRef
+        get() = error("Tried to access the parent of the root package")
 }
 
-data class SubpackageRef(val parent: PackageRef, override val name: String) : PackageRef {
+val rootAccessor = Accessor(RootRef, AccessorType.Get)
+
+data class SubpackageRef(override val parent: PackageRef, override val name: String) : PackageRef {
     override fun toString(): String {
         val builder = StringBuilder()
         if (parent != RootRef) builder.append(parent.toString()).append("::")

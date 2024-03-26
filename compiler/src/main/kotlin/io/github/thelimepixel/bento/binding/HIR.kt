@@ -48,6 +48,8 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = EmptySequence
     }
 
+    data class Identifier(val string: String, val span: Span)
+
     sealed interface Pattern : HIR {
         val local: LocalRef?
     }
@@ -106,10 +108,8 @@ sealed interface HIR : CodeTree<HIR, HIRError>, Spanned {
         override fun childSequence(): Sequence<HIR> = sequenceOf(on)
     }
 
-    data class TypeRef(override val span: Span, val type: Path?) : HIR {
-        override fun childSequence(): Sequence<HIR> = sequence {
-            type?.let { yield(it) }
-        }
+    data class TypeRef(override val span: Span, val type: Path) : HIR {
+        override fun childSequence(): Sequence<HIR> = sequenceOf(type)
     }
 
     data class Param(override val span: Span, val pattern: Pattern?, val type: TypeRef?) : HIR {

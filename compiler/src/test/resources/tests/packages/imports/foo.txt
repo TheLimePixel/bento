@@ -1,7 +1,9 @@
 BoundImportData {
-  accessors: {}
-  packages: {
-    bar: packages::bar: {}
+  accessors: {
+    bar: Accessor {
+      of: packages::bar
+      type: Set
+    }
   }
   binding: [
     BoundImportPath {
@@ -9,16 +11,17 @@ BoundImportData {
       segments: [
         BoundImportPathSegment {
           span: 0..7
-          node: packages: {
-            bar: packages::bar: {}
-            foo: packages::foo: {}
+          item: Accessor {
+            of: packages
+            type: Set
           }
-          item: null
         }
         BoundImportPathSegment {
           span: 20..22
-          node: packages::bar: {}
-          item: null
+          item: Accessor {
+            of: packages::bar
+            type: Set
+          }
         }
       ]
     }

@@ -5,27 +5,26 @@ BoundImportData {
       type: Get
     }
   }
-  packages: {}
   binding: [
     BoundImportPath {
       span: 4..21
       segments: [
         BoundImportPathSegment {
           span: 0..7
-          node: packages: {
-            bar: packages::bar: {}
-            foo: packages::foo: {}
+          item: Accessor {
+            of: packages
+            type: Set
           }
-          item: null
         }
         BoundImportPathSegment {
           span: 20..22
-          node: packages::foo: {}
-          item: null
+          item: Accessor {
+            of: packages::foo
+            type: Set
+          }
         }
         BoundImportPathSegment {
           span: 30..32
-          node: null
           item: Accessor {
             of: packages::foo::foo
             type: Get

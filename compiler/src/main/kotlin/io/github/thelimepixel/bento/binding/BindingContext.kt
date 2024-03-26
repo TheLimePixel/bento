@@ -2,18 +2,15 @@ package io.github.thelimepixel.bento.binding
 
 interface BindingContext {
     fun accessorFor(name: String): Accessor?
-    fun packageNodeFor(name: String): PackageTreeNode?
     fun isInitialized(ref: Ref): Boolean
     fun astInfoOf(ref: ParentRef): ASTInfo?
 }
 
 class RootBindingContext(
     val parent: BindingContext,
-    val root: PackageTreeNode,
-    val astInfoMap: InfoMap,
+    private val astInfoMap: InfoMap,
 ) : BindingContext {
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
-    override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
     override fun accessorFor(name: String): Accessor? = parent.accessorFor(name)
     override fun astInfoOf(ref: ParentRef): ASTInfo? = astInfoMap[ref] ?: parent.astInfoOf(ref)
 }
@@ -22,7 +19,6 @@ class ParentBindingContext(
     private val parent: BindingContext?,
     private val current: ParentRef,
     private val accessors: Map<String, Accessor>,
-    private val packages: Map<String, PackageTreeNode>,
     private val initialized: Set<StoredPropertyRef>,
 ) : BindingContext {
     override fun accessorFor(name: String): Accessor? =
@@ -30,9 +26,6 @@ class ParentBindingContext(
 
     override fun isInitialized(ref: Ref): Boolean =
         ref !is StoredPropertyRef || ref in initialized || ref.parent != current
-
-    override fun packageNodeFor(name: String): PackageTreeNode? =
-        packages[name] ?: parent?.packageNodeFor(name)
 
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent?.astInfoOf(ref)
 }
@@ -62,8 +55,6 @@ class LocalItemBindingContext(private val parent: BindingContext) : LocalBinding
 
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
 
-    override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
-
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 }
 
@@ -73,8 +64,6 @@ class ScopeBindingContext(private val parent: LocalBindingContext) : LocalBindin
     override fun astInfoOf(ref: ParentRef): ASTInfo? = parent.astInfoOf(ref)
 
     override fun isInitialized(ref: Ref): Boolean = parent.isInitialized(ref)
-
-    override fun packageNodeFor(name: String): PackageTreeNode? = parent.packageNodeFor(name)
 
     override fun accessorFor(name: String): Accessor? = localsMap[name] ?: parent.accessorFor(name)
 

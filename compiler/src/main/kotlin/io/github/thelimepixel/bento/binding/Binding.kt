@@ -24,7 +24,6 @@ class BentoBinding : Binding {
             parentContext,
             parentRef,
             info.accessors + importData.accessors,
-            importData.packages,
             initialized,
         )
         val (stored, computed) = info.items.partition { it is StoredPropertyRef }
@@ -128,12 +127,13 @@ class BentoBinding : Binding {
             val name = segments[0].rawContent
             if (mutable) accessorFor(name + "_=") else accessorFor(name)
         } else {
-            var packNode = packageNodeFor(segments.first().rawContent) ?: return null
+            var parentRef = accessorFor(segments.first().rawContent)?.of as? ParentRef ?: return null
             segments.subList(1, segments.lastIndex).forEach {
-                packNode = packNode.children[it.rawContent] ?: return null
+                val accessor = astInfoOf(parentRef)?.accessors?.get(it.rawContent)
+                parentRef = accessor?.of as? ParentRef ?: return null
             }
             val lastName = segments.last().rawContent + if (mutable) "_=" else ""
-            astInfoOf(packNode.path)?.accessors?.get(lastName)
+            astInfoOf(parentRef)?.accessors?.get(lastName)
         }
         return if (isInitialized(accessor?.of ?: return null)) {
             HIR.Path(node.span, accessor)
@@ -194,39 +194,33 @@ class BentoBinding : Binding {
     override fun bindImport(node: GreenNode?, context: RC): BoundImportData {
         val block = node?.toRedRoot()?.firstChild(ST.ImportBlock) ?: return emptyImportData
         val importedItems = mutableMapOf<String, Accessor>()
-        val importedPackages = mutableMapOf<String, PackageTreeNode>()
         val paths = block.childSequence()
             .filter { it.type == ST.ImportPath }
             .map {
-                context.bindImportPath(it, importedItems, importedPackages)
+                context.bindImportPath(it, importedItems)
             }
             .toList()
 
-        return BoundImportData(importedItems, importedPackages, paths)
+        return BoundImportData(importedItems, paths)
     }
 
     private fun RC.bindImportPath(
         node: RedNode,
         importedItems: MutableMap<String, Accessor>,
-        importedPackages: MutableMap<String, PackageTreeNode>,
     ): BoundImportPath {
-        var lastPackage: PackageTreeNode? = root
-        var name = ""
+        var lastName = ""
+        var lastItem: Accessor = rootAccessor
         val segments = node.childSequence()
             .filter { it.type == ST.Identifier }
             .map { segment ->
-                name = segment.rawContent
-                val lastPack = lastPackage ?: return@map BoundImportPathSegment(segment.span, null, null)
-                lastPackage = lastPack.children[name]
-                val item = astInfoMap[lastPack.path]?.accessors?.get(name)
-                BoundImportPathSegment(segment.span, lastPackage, item)
+                lastName = segment.rawContent
+                val lastPack = lastItem.of as? ParentRef ?: return@map BoundImportPathSegment(segment.span, null)
+                lastItem = astInfoOf(lastPack)?.accessors?.get(lastName) ?: return@map BoundImportPathSegment(segment.span, null)
+                BoundImportPathSegment(segment.span, lastItem)
             }
             .toList()
 
-        segments.lastOrNull()?.let { lastSeg ->
-            lastSeg.node?.let { importedPackages[name] = it }
-            lastSeg.item?.let { importedItems[name] = it }
-        }
+        importedItems[lastName] = lastItem
 
         return BoundImportPath(node.span, segments)
     }

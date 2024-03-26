@@ -49,7 +49,6 @@ class SourceTests {
                 null,
                 RootRef,
                 BuiltinRefs.map,
-                emptyMap(),
                 emptySet(),
             ),
             topTypingContext = typingContext,
@@ -96,14 +95,16 @@ class SourceTests {
         } ?: return
 
         val astMap: InfoMap = buildMap {
-            sources.forEach { (path, code) ->
-                val parse = parsing.parseFile(code)
-                test(dir, "Parse", path) { formatAST(parse) }
-                collectItems(parse.node, path, this)
+            packageTree.refSequence().forEach { (ref, packageNode) ->
+                val subpackages = packageNode.children.mapValues { ref.subpackage(it.key) }
+
+                val parse = sources[ref]?.let { code -> parsing.parseFile(code) }
+                test(dir, "Parse", ref) { formatAST(parse) }
+                collectItems(parse?.node, ref, subpackages, this)
             }
         }
 
-        val rootContext = RootBindingContext(topBindingContext, packageTree.root, astMap)
+        val rootContext = RootBindingContext(topBindingContext, astMap)
 
         val hirMap = sources.keys.flatMap { pack ->
             val fileInfo = astMap[pack] ?: return@flatMap emptySequence()
@@ -126,7 +127,7 @@ class SourceTests {
         )
 
         val thirMap = hirMap.mapNotNull { (ref, node) ->
-            node?.let { hir -> typing.type(hir, typingContext)}?.let { ref to it }
+            node?.let { hir -> typing.type(hir, typingContext) }?.let { ref to it }
         }.toMap()
 
         sources.forEach { (pack, _) ->
@@ -137,13 +138,14 @@ class SourceTests {
 
         val jvmBindingContext = FileJVMBindingContext(topJVMBindingContext, typingContext, hirMap)
 
-        val classes = sources.keys.associateWith { pack ->
-            val classes = bentoCodegen.generate(pack, astMap[pack]!!.items, jvmBindingContext, hirMap, thirMap)
+        val classes = sources.keys.mapNotNull { pack ->
+            val items = astMap[pack]?.items ?: return@mapNotNull null
+            val classes = bentoCodegen.generate(pack, items, jvmBindingContext, hirMap, thirMap)
             test(dir, "Codegen", pack) {
                 classes.joinToString(separator = "\n") { bytecodeFormatter.format(it.second) }
             }
-            classes.map { (name, clazz) -> classLoader.load(name, clazz) }.last()
-        }
+            pack to classes.map { (name, clazz) -> classLoader.load(name, clazz) }.last()
+        }.toMap()
 
         classes.forEach { (path, `class`) ->
             test(dir, "Output", path) { invokeBytecode(`class`) }
@@ -166,7 +168,8 @@ class SourceTests {
             "$itemPadding $key $itemPadding\n${objFormatter.format(value) + errors.joinToString("\n", "\n")}"
         }
 
-    private fun formatAST(parse: Parse): String {
+    private fun formatAST(parse: Parse?): String {
+        if (parse == null) return "null"
         val ast = nodeFormatter.format(parse.node)
         return ast + parse.errors.joinToString("\n", "\n")
     }
@@ -176,24 +179,27 @@ class SourceTests {
         if (file.canRead()) fn(file.readText().trimIndent().trim())
     }
 
-    private fun itemPathToFilePath(packageRef: PackageRef, builder: StringBuilder) {
-        if (packageRef !is SubpackageRef) return
-        itemPathToFilePath(packageRef.parent, builder)
-        builder.append(packageRef.name).append(File.separatorChar)
+    private fun itemPathToFilePath(packageRef: SubpackageRef, builder: StringBuilder) {
+        val parent = packageRef.parent
+        if (parent is SubpackageRef) {
+            itemPathToFilePath(parent, builder)
+            builder.append(File.separatorChar)
+        }
+        builder.append(packageRef.name)
     }
 
     private val SubpackageRef.toFilePath: String
         get() = StringBuilder()
-            .also { builder -> itemPathToFilePath(this.parent, builder) }
-            .append(this.name)
+            .also { builder -> itemPathToFilePath(this, builder) }
             .toString()
 
     private suspend fun SequenceScope<DynamicTest>.test(
         dir: File,
         type: String,
-        pack: SubpackageRef,
+        pack: PackageRef,
         function: () -> String
     ) {
+        if (pack !is SubpackageRef) return
         val path = type.lowercase() + pack.toFilePath.removePrefix(dir.name) + ".txt"
         withContentOf(dir, path) { expected ->
             yield(dynamicTest("$pack: $type") { assertEquals(expected, function().trimIndent().trim()) })

@@ -10,22 +10,29 @@ data class ASTInfo(
 
 typealias InfoMap = Map<ParentRef, ASTInfo>
 
-fun collectItems(node: GreenNode, parent: PackageRef, collection: MutableMap<ParentRef, ASTInfo>) {
-    val accessors = mutableMapOf<String, Accessor>()
-    val importNode = node.firstChild(ST.ImportStatement)?.node
-    val items = node.toRedRoot().childSequence()
-        .filter { it.type in BaseSets.definitions }
-        .mapIndexed { index, it ->
-            val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
-            val ref = toRef(parent, name, index, it, collection)
-            accessors[name] = Accessor(ref, AccessorType.Get)
-            if (ref.mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
+fun collectItems(
+    node: GreenNode?,
+    pack: PackageRef,
+    subpackages: Map<String, PackageRef>,
+    collection: MutableMap<ParentRef, ASTInfo>
+) {
+    val accessors = subpackages.mapValuesTo(mutableMapOf()) { Accessor(it.value, AccessorType.Set) }
+    val importNode = node?.firstChild(ST.ImportStatement)?.node
+    val items = subpackages.values.toMutableList<ItemRef>()
+    node?.let { _ ->
+        items += node.toRedRoot().childSequence()
+            .filter { it.type in BaseSets.definitions }
+            .mapIndexed { index, it ->
+                val name = it.firstChild(SyntaxType.Identifier)?.rawContent ?: ""
+                val ref = toRef(pack, name, index, it, collection)
+                accessors[name] = Accessor(ref, AccessorType.Get)
+                if (ref.mutable) accessors[name + "_="] = Accessor(ref, AccessorType.Set)
 
-            ref
-        }
-        .toList()
+                ref
+            }
+    }
 
-    collection[parent] = ASTInfo(items, accessors, importNode)
+    collection[pack] = ASTInfo(items, accessors, importNode)
 }
 
 private fun collectFields(node: RedNode, parent: ProductTypeRef): ASTInfo {
@@ -45,7 +52,13 @@ private fun collectFields(node: RedNode, parent: ProductTypeRef): ASTInfo {
     return ASTInfo(fields, accessors, null)
 }
 
-private fun toRef(parent: ParentRef, name: String, index: Int, ast: RedNode, collection: MutableMap<ParentRef, ASTInfo>): ItemRef = when (ast.type) {
+private fun toRef(
+    parent: ParentRef,
+    name: String,
+    index: Int,
+    ast: RedNode,
+    collection: MutableMap<ParentRef, ASTInfo>
+): ItemRef = when (ast.type) {
     SyntaxType.FunDef ->
         if (ast.lastChild(SyntaxType.ParamList) == null) GetterRef(parent, name, index, ast)
         else FunctionRef(parent, name, index, ast)
@@ -54,7 +67,7 @@ private fun toRef(parent: ParentRef, name: String, index: Int, ast: RedNode, col
         StoredPropertyRef(parent, name, index, ast.firstChild(ST.MutKeyword) != null, ast)
 
     SyntaxType.TypeDef -> {
-        val body =  ast.lastChild(BaseSets.typeBodies)
+        val body = ast.lastChild(BaseSets.typeBodies)
         when (val bodyType = body?.type) {
             null -> SingletonTypeRef(parent, name, index, ast)
             ST.Constructor -> {

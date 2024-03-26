@@ -31,5 +31,7 @@ class PackageTree {
         return newNode
     }
 
+    fun refSequence(): Sequence<Map.Entry<PackageRef, PackageTreeNode>> = nodes.asSequence()
+
     fun add(path: SubpackageRef): PackageTreeNode = addAndGet(path)
 }

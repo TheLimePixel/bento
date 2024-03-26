@@ -44,7 +44,7 @@ class BentoCodegen : Codegen {
                 }
 
                 is TypeRef -> classes.add(ref.toClassname() to fileContext.genType(ref, def))
-                is FieldRef -> Unit
+                is FieldRef, is PackageRef -> Unit
             }
         }
 
