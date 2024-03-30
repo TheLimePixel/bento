@@ -645,6 +645,28 @@ data User(id: I32, name: String, surname: String)
 def printFullName(User(name: name, surname: surname): User) = println(name + surname)
 ```
 
+## Ellipsis Pattern
+
+TODO
+
+#### Requires
+
+- [Destructuring Pattern](features.md#destructuring-pattern)
+
+When destructuring, an ellipsis may be used to leave out all the remaining fields instead of having to put down a 
+wildcard for each one. When combined with named destructuring this allows you to destructure only the fields that 
+are accessible to you, leaving out the rest.
+
+For example:
+
+```
+data User(id: Int, name: String, joined: Date, occupation: String)
+
+def process(User(id, name, ...): User) = {
+  ...
+}
+```
+
 ## Sum Types
 
 TODO
@@ -654,29 +676,76 @@ TODO
 - [Basic Patterns](features.md#basic-patterns)
 - [Custom Types](features.md#custom-types)
 
-Sum types define a set of variants that their objects can be of. That is done by putting all the
-variants in curly braces after the type's name. Variants are declared just like data types, except they cannot be 
-used as their own types.
+Sum types define a closed union of types that their values can be of. This is done by listing said types between 
+curly braces. To create an object of a sum the `~` operator can be used on an object of one of the types supported 
+by the union. If the sum type can be inferred, the operator can be used as a prefix operator, otherwise it must be 
+used directly following the sum type.
 
-The check the exact variant of an object and obtain its fields, the `if` operator needs to be used. It
-can be used on an expression either with a dot, or without a dot as an infix operator. The
-keyword is followed by braces where each line contains a colon-separated pair of patterns and their 
-resulting expressions.
+To get an object of one of the sum type's variants from an object of the sum type, the `if`-matching operator must 
+be used either as an infix operator or as a postfix operator preceded by a dot. This operator is used such that 
+between curly braces a list of declarations with corresponding expressions after an arrow (`->`) are placed, such that 
+the first pattern which the object matches gets bound to it and the expression it is paired with gets evaluated. If 
+not all possible types are specified, an `else` branch must be added.
 
 For example:
 
 ```kotlin
+data Red
+data Green
+data Blue
+data Custom(red: U8, green: U8, blue: U8)
+
 data Colour {
   Red
   Green
   Blue
-  Custom(red: U8, green: U8, blue: U8)
+  Custom
 }
 
-def redComponent(color: Colour): U8 = color if {
-  Red: 255
-  Custom(red, _, _): red
-  _: 0
+def toShade(black: Bool): Colour = 
+  if (black) Colour ~ Custom(0, 0, 0) 
+  else ~Custom(255, 255, 255)
+
+def getRedComponent(color: Colour): U8 = color if {
+  let Red -> 255
+  let Custom(red, _, _) -> red
+  else -> 0
+}
+```
+
+## Multiple Patterns Per If-Match Branch
+
+TODO
+
+#### Requires
+
+- [Sum Types](features.md#sum-types)
+
+Multiple patterns may be used in the same if-match branch, such that the expression gets evaluated if any of them 
+match the object. Additionally, all variables declared when doing so must be inside every pattern and have the exact 
+same type.
+
+For example:
+
+```
+IntLiteral(span: Span, value: I32)
+BoolLiteral(span: Span, value: Bool)
+AddExpr(span: Span, left: IntExpr, right: IntExpr)
+
+data IntExpr {
+  IntLiteral
+  AddExpr
+}
+
+data Expr {
+  IntLiteral
+  BoolLiteral
+  AddExpr
+}
+
+def spanOfIntExpr(expr: Expr): Span = expr.if {
+  let IntLiteral(span, _), let AddExpr(span, _, _) -> span
+  else -> emptySpan
 }
 ```
 
@@ -707,10 +776,62 @@ For example:
 
 ```kotlin
 def foo(a: I32) = if {
-  a < 0: println(if (x == 1) "1!" else ":(")
-  a > 0: if (a == 3) println("3!")
-  else: println("0!")
+  a < 0 -> println(if (x == 1) "1!" else ":(")
+  a > 0 -> if (a == 3) println("3!")
+  else -> println("0!")
 }
+```
+
+## Defining Types Within Sum Types
+
+TODO
+
+#### Requires
+
+- [Sum Types](features.md#sum-types)
+
+Oftentimes a type is only meant to be used as a variant of a sum type. As such, to avoid cluttering the whole 
+namespace, types can be declared directly inside the sum-type declaration such that they become a part of the sum 
+type's namespace.
+
+Here's the example from sum types, modified to use this feature:
+
+```kotlin
+data Colour {
+  data Red
+  data Green
+  data Blue
+  data Custom(red: U8, green: U8, blue: U8)
+}
+
+def toShade(black: Bool): Colour = 
+  if (black) ~Colour::Custom(0, 0, 0) 
+  else ~Colour::Custom(255, 255, 255)
+
+def getRedComponent(color: Colour): U8 = color if {
+  let Colour::Red -> 255
+  let Colour::Custom(red, _, _) -> red
+  else -> 0
+}
+```
+
+## Convert Member Operator
+
+TODO
+
+#### Requires
+
+- [Defining Types Within Sum Types](features.md#defining-types-within-sum-types)
+
+Instead of having to use `~` and then additionally accessing sum type member types using the type and scope operator,
+the `~:` operator may be used.
+
+With this, the `toShade` function from the previous example becomes:
+
+```
+def toShade(black: Bool): Colour = 
+  if (black) ~:Custom(0, 0, 0) 
+  else ~:Custom(255, 255, 255)
 ```
 
 ## Impl Blocks
@@ -789,6 +910,33 @@ impl User {
 }
 ```
 
+## Implicit Namespace Access
+
+TODO
+
+#### Requires
+
+- [Type Members](features.md#type-members)
+
+When an object of a particular type is expected for an expression, the same type may be left out when accessing an 
+item from its namespace. 
+
+For example:
+
+```
+data Foo(...)
+
+impl Foo {
+  type def new(a: U16, b: U16): Foo = ...
+
+  type def fromValue(num: U32): Foo = ...
+}
+
+def constructFoo(value: U32, separate: Bool): Foo =
+  if (separate) ::new(value.shr(16), value mod 1.shr(16))
+  else ::fromValue(value)
+```
+
 ## Invocation Operator
 
 TODO
@@ -805,12 +953,12 @@ For example:
 data Expr { ... }
 
 impl Expr {
-  def invoke(params: List<Int>): Int = ...
+  def invoke(params: List<I32>): I32 = ...
 }
 
-def calculate(): Int {
+def calculate(): I32 {
   let expr: Expr = ...
-  let params: List<Int> = ...
+  let params: List<I32> = ...
   
   expr(params)
 }
@@ -1250,7 +1398,7 @@ The operators in the language can be implemented for any type by implementing th
 For example:
 
 ```
-data Vec2(x: Int, y: Int)
+data Vec2(x: I32, y: I32)
 
 impl Add<Vec2, Vec2, Vec2> {
   def add(other: Vec2): Vec2 = Vec2(x + other.x, y + other.y)
@@ -1259,6 +1407,31 @@ impl Add<Vec2, Vec2, Vec2> {
 let a = Vec2(1, 0)
 let b = Vec2(0, 1)
 let c = a + b
+```
+
+## Expressions In If-Matches
+
+TODO
+
+#### Requires
+
+- [If Expressions](features.md#if-expressions)
+- [Operator Traits](features.md#operator-traits)
+
+Other than declarations, `if`-match expressions can contain normal expressions which are checked for equality with
+the object being matched. 
+
+For example:
+
+```
+def matchIdentifier(name: String): Token = name.if {
+  "if" -> ~:IfKeyword
+  "else" -> ~:ElseKeyword
+  "def" -> ~:DefKeyword
+  "import" -> ~:ImportKeyword
+  "data" -> ~:DataKeyword
+  else -> ~:Ident
+}
 ```
 
 ## Escaped Expressions
