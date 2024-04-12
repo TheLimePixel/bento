@@ -676,12 +676,17 @@ TODO
 - [Basic Patterns](features.md#basic-patterns)
 - [Custom Types](features.md#custom-types)
 
-Sum types define a closed union of types that their values can be of. This is done by listing said types between 
-curly braces. To create an object of a sum the `~` operator can be used on an object of one of the types supported 
-by the union. If the sum type can be inferred, the operator can be used as a prefix operator, otherwise it must be 
-used directly following the sum type.
+Sum types define a set of subtypes that their values can be of. The subtypes are defined between curly braces after 
+the type name. The subtypes may be singletons, product types or sum types themselves.
 
-To get an object of one of the sum type's variants from an object of the sum type, the `if`-matching operator must 
+When calling the constructor of a subtype (if it is product type) or referencing it (if it is a singleton type), by 
+default the value is treated as a value of the sum type. If the value is specified or expected to be of a subtype, 
+then it will be treated as a value of the appropriate subtype.
+
+A value of a subtype can be converted to a value of its encapsulating sum type if it is used where a value of the 
+sum type is expected.
+
+To get an object of one of the sum type's subtypes from an object of the sum type, the `if`-matching operator must 
 be used either as an infix operator or as a postfix operator preceded by a dot. This operator is used such that 
 between curly braces a list of declarations with corresponding expressions after an arrow (`->`) are placed, such that 
 the first pattern which the object matches gets bound to it and the expression it is paired with gets evaluated. If 
@@ -690,25 +695,20 @@ not all possible types are specified, an `else` branch must be added.
 For example:
 
 ```kotlin
-data Red
-data Green
-data Blue
-data Custom(red: U8, green: U8, blue: U8)
-
 data Colour {
   Red
   Green
   Blue
-  Custom
+  Custom(red: U8, green: U8, blue: U8)
 }
 
 def toShade(black: Bool): Colour = 
-  if (black) Colour ~ Custom(0, 0, 0) 
-  else ~Custom(255, 255, 255)
+  if (black) Colour::Custom(0, 0, 0) 
+  else Colour::Custom(255, 255, 255)
 
 def getRedComponent(color: Colour): U8 = color if {
-  let Red -> 255
-  let Custom(red, _, _) -> red
+  let Colour::Red -> 255
+  let Colour::Custom(red, _, _) -> red
   else -> 0
 }
 ```
@@ -728,23 +728,16 @@ same type.
 For example:
 
 ```
-IntLiteral(span: Span, value: I32)
-BoolLiteral(span: Span, value: Bool)
-AddExpr(span: Span, left: IntExpr, right: IntExpr)
-
-data IntExpr {
-  IntLiteral
-  AddExpr
-}
-
 data Expr {
-  IntLiteral
-  BoolLiteral
-  AddExpr
+  BoolLiteral(span: Span, value: Bool)
+  IntExpr {
+    IntLiteral(span: Span, value: I32)
+    AddExpr(span: Span, left: IntExpr, right: IntExpr)
+  }
 }
 
 def spanOfIntExpr(expr: Expr): Span = expr.if {
-  let IntLiteral(span, _), let AddExpr(span, _, _) -> span
+  let Expr::IntExpr::IntLiteral(span, _), let Expr::IntExpr::AddExpr(span, _, _) -> span
   else -> emptySpan
 }
 ```
@@ -782,7 +775,7 @@ def foo(a: I32) = if {
 }
 ```
 
-## Defining Types Within Sum Types
+## Conversion Operators
 
 TODO
 
@@ -790,49 +783,13 @@ TODO
 
 - [Sum Types](features.md#sum-types)
 
-Oftentimes a type is only meant to be used as a variant of a sum type. As such, to avoid cluttering the whole 
-namespace, types can be declared directly inside the sum-type declaration such that they become a part of the sum 
-type's namespace.
-
-Here's the example from sum types, modified to use this feature:
-
-```kotlin
-data Colour {
-  data Red
-  data Green
-  data Blue
-  data Custom(red: U8, green: U8, blue: U8)
-}
-
-def toShade(black: Bool): Colour = 
-  if (black) ~Colour::Custom(0, 0, 0) 
-  else ~Colour::Custom(255, 255, 255)
-
-def getRedComponent(color: Colour): U8 = color if {
-  let Colour::Red -> 255
-  let Colour::Custom(red, _, _) -> red
-  else -> 0
-}
-```
-
-## Convert Member Operator
-
-TODO
-
-#### Requires
-
-- [Defining Types Within Sum Types](features.md#defining-types-within-sum-types)
-
-Instead of having to use `~` and then additionally accessing sum type member types using the type and scope operator,
-the `~:` operator may be used.
-
-With this, the `toShade` function from the previous example becomes:
-
-```
-def toShade(black: Bool): Colour = 
-  if (black) ~:Custom(0, 0, 0) 
-  else ~:Custom(255, 255, 255)
-```
+Suppose you have a subtype with the path `A::B::C::D` where `A` is a type and the rest are subtypes. When creating an 
+object of the subtype, if no specific type is expected, the inferred type will be `A`. Rather than having to specify the 
+type to be `A::B` the down-casting unary prefix operator `~` can be used for converting it to a value of type `A::B`. 
+Using the operator twice will result it in being treated as a value of type `A::B::C` and applying it once more will 
+make it a value of type`A::B::C::D`. Conversely, given a value of type `A::B::C::D`, it can be converted to a value of 
+type `A::B::C` using the up-casting unary prefix operator `^`. Applying it twice and trice will result in a value of 
+type `A::B` and `A`, respectively.
 
 ## Impl Blocks
 
@@ -847,6 +804,8 @@ blocks, you are able to define members which have the same implementation betwee
 which or may not use the members that differ. As such, since the data stored within objects is already defined, 
 stored properties are not permitted inside `impl` blocks.`impl` blocks can only be used for types defined in the 
 same module and their visibility merely sets the default and top boundary for all the members defined within.
+
+Note that subtypes may not have members which shadow members of their supertype.
 
 For example:
 
@@ -919,7 +878,7 @@ TODO
 - [Type Members](features.md#type-members)
 
 When an object of a particular type is expected for an expression, the same type may be left out when accessing an 
-item from its namespace. 
+item from its namespace. Similarly, it may be left out when destructuring over subtypes of the given sum type.
 
 For example:
 
@@ -956,7 +915,7 @@ impl Expr {
   def invoke(params: List<I32>): I32 = ...
 }
 
-def calculate(): I32 {
+def calculate(): I32 = {
   let expr: Expr = ...
   let params: List<I32> = ...
   
@@ -1078,7 +1037,7 @@ parameters may also be left out if it can be inferred.
 For example:
 
 ```kotlin
-list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
+list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr| { acc * curr rem 40 }
 ```
 
 ## Partial Application
@@ -1269,7 +1228,8 @@ is a conflict, on the trait.
 
 Traits are created using the `trait` keyword, and they are implemented using regular `impl` blocks. To implement a 
 trait with a set of type arguments the trait or the first parameter must be defined within your module and all the 
-trait's members must be accessible at the implementation site.
+trait's members must be accessible at the implementation site. Additionally, you may not implement a trait for a 
+subtype if it is already implemented for one of its supertypes.
 
 For example:
 
@@ -1425,12 +1385,12 @@ For example:
 
 ```
 def matchIdentifier(name: String): Token = name.if {
-  "if" -> ~:IfKeyword
-  "else" -> ~:ElseKeyword
-  "def" -> ~:DefKeyword
-  "import" -> ~:ImportKeyword
-  "data" -> ~:DataKeyword
-  else -> ~:Ident
+  "if" -> ::IfKeyword
+  "else" -> ::ElseKeyword
+  "def" -> ::DefKeyword
+  "import" -> ::ImportKeyword
+  "data" -> ::DataKeyword
+  else -> ::Ident
 }
 ```
 
