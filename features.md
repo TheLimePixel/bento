@@ -645,6 +645,28 @@ data User(id: I32, name: String, surname: String)
 def printFullName(User(name: name, surname: surname): User) = println(name + surname)
 ```
 
+## Ellipsis Pattern
+
+TODO
+
+#### Requires
+
+- [Destructuring Pattern](features.md#destructuring-pattern)
+
+When destructuring, an ellipsis may be used to leave out all the remaining fields instead of having to put down a 
+wildcard for each one. When combined with named destructuring this allows you to destructure only the fields that 
+are accessible to you, leaving out the rest.
+
+For example:
+
+```
+data User(id: Int, name: String, joined: Date, occupation: String)
+
+def process(User(id, name, ...): User) = {
+  ...
+}
+```
+
 ## Sum Types
 
 TODO
@@ -654,14 +676,21 @@ TODO
 - [Basic Patterns](features.md#basic-patterns)
 - [Custom Types](features.md#custom-types)
 
-Sum types define a set of variants that their objects can be of. That is done by putting all the
-variants in curly braces after the type's name. Variants are declared just like data types, except they cannot be 
-used as their own types.
+Sum types define a set of subtypes that their values can be of. The subtypes are defined between curly braces after 
+the type name. The subtypes may be singletons, product types or sum types themselves.
 
-The check the exact variant of an object and obtain its fields, the `if` operator needs to be used. It
-can be used on an expression either with a dot, or without a dot as an infix operator. The
-keyword is followed by braces where each line contains a colon-separated pair of patterns and their 
-resulting expressions.
+When calling the constructor of a subtype (if it is product type) or referencing it (if it is a singleton type), by 
+default the value is treated as a value of the sum type. If the value is specified or expected to be of a subtype, 
+then it will be treated as a value of the appropriate subtype.
+
+A value of a subtype can be converted to a value of its encapsulating sum type if it is used where a value of the 
+sum type is expected.
+
+To get an object of one of the sum type's subtypes from an object of the sum type, the `if`-matching operator must 
+be used either as an infix operator or as a postfix operator preceded by a dot. This operator is used such that 
+between curly braces a list of declarations with corresponding expressions after an arrow (`->`) are placed, such that 
+the first pattern which the object matches gets bound to it and the expression it is paired with gets evaluated. If 
+not all possible types are specified, an `else` branch must be added.
 
 For example:
 
@@ -673,10 +702,43 @@ data Colour {
   Custom(red: U8, green: U8, blue: U8)
 }
 
-def redComponent(color: Colour): U8 = color if {
-  Red: 255
-  Custom(red, _, _): red
-  _: 0
+def toShade(black: Bool): Colour = 
+  if (black) Colour::Custom(0, 0, 0) 
+  else Colour::Custom(255, 255, 255)
+
+def getRedComponent(color: Colour): U8 = color if {
+  let Colour::Red -> 255
+  let Colour::Custom(red, _, _) -> red
+  else -> 0
+}
+```
+
+## Multiple Patterns Per If-Match Branch
+
+TODO
+
+#### Requires
+
+- [Sum Types](features.md#sum-types)
+
+Multiple patterns may be used in the same if-match branch, such that the expression gets evaluated if any of them 
+match the object. Additionally, all variables declared when doing so must be inside every pattern and have the exact 
+same type.
+
+For example:
+
+```
+data Expr {
+  BoolLiteral(span: Span, value: Bool)
+  IntExpr {
+    IntLiteral(span: Span, value: I32)
+    AddExpr(span: Span, left: IntExpr, right: IntExpr)
+  }
+}
+
+def spanOfIntExpr(expr: Expr): Span = expr.if {
+  let Expr::IntExpr::IntLiteral(span, _), let Expr::IntExpr::AddExpr(span, _, _) -> span
+  else -> emptySpan
 }
 ```
 
@@ -707,11 +769,27 @@ For example:
 
 ```kotlin
 def foo(a: I32) = if {
-  a < 0: println(if (x == 1) "1!" else ":(")
-  a > 0: if (a == 3) println("3!")
-  else: println("0!")
+  a < 0 -> println(if (x == 1) "1!" else ":(")
+  a > 0 -> if (a == 3) println("3!")
+  else -> println("0!")
 }
 ```
+
+## Conversion Operators
+
+TODO
+
+#### Requires
+
+- [Sum Types](features.md#sum-types)
+
+Suppose you have a subtype with the path `A::B::C::D` where `A` is a type and the rest are subtypes. When creating an 
+object of the subtype, if no specific type is expected, the inferred type will be `A`. Rather than having to specify the 
+type to be `A::B` the down-casting unary prefix operator `~` can be used for converting it to a value of type `A::B`. 
+Using the operator twice will result it in being treated as a value of type `A::B::C` and applying it once more will 
+make it a value of type`A::B::C::D`. Conversely, given a value of type `A::B::C::D`, it can be converted to a value of 
+type `A::B::C` using the up-casting unary prefix operator `^`. Applying it twice and trice will result in a value of 
+type `A::B` and `A`, respectively.
 
 ## Impl Blocks
 
@@ -726,6 +804,8 @@ blocks, you are able to define members which have the same implementation betwee
 which or may not use the members that differ. As such, since the data stored within objects is already defined, 
 stored properties are not permitted inside `impl` blocks.`impl` blocks can only be used for types defined in the 
 same module and their visibility merely sets the default and top boundary for all the members defined within.
+
+Note that subtypes may not have members which shadow members of their supertype.
 
 For example:
 
@@ -789,6 +869,33 @@ impl User {
 }
 ```
 
+## Implicit Namespace Access
+
+TODO
+
+#### Requires
+
+- [Type Members](features.md#type-members)
+
+When an object of a particular type is expected for an expression, the same type may be left out when accessing an 
+item from its namespace. Similarly, it may be left out when destructuring over subtypes of the given sum type.
+
+For example:
+
+```
+data Foo(...)
+
+impl Foo {
+  type def new(a: U16, b: U16): Foo = ...
+
+  type def fromValue(num: U32): Foo = ...
+}
+
+def constructFoo(value: U32, separate: Bool): Foo =
+  if (separate) ::new(value.shr(16), value mod 1.shr(16))
+  else ::fromValue(value)
+```
+
 ## Invocation Operator
 
 TODO
@@ -805,12 +912,12 @@ For example:
 data Expr { ... }
 
 impl Expr {
-  def invoke(params: List<Int>): Int = ...
+  def invoke(params: List<I32>): I32 = ...
 }
 
-def calculate(): Int {
+def calculate(): I32 = {
   let expr: Expr = ...
-  let params: List<Int> = ...
+  let params: List<I32> = ...
   
   expr(params)
 }
@@ -930,7 +1037,7 @@ parameters may also be left out if it can be inferred.
 For example:
 
 ```kotlin
-list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr|{ acc * curr rem 40 }
+list.iter().filter(|x| (x < 0)).map|x| { x * 2 }.fold(0)|acc, curr| { acc * curr rem 40 }
 ```
 
 ## Partial Application
@@ -1121,7 +1228,8 @@ is a conflict, on the trait.
 
 Traits are created using the `trait` keyword, and they are implemented using regular `impl` blocks. To implement a 
 trait with a set of type arguments the trait or the first parameter must be defined within your module and all the 
-trait's members must be accessible at the implementation site.
+trait's members must be accessible at the implementation site. Additionally, you may not implement a trait for a 
+subtype if it is already implemented for one of its supertypes.
 
 For example:
 
@@ -1250,7 +1358,7 @@ The operators in the language can be implemented for any type by implementing th
 For example:
 
 ```
-data Vec2(x: Int, y: Int)
+data Vec2(x: I32, y: I32)
 
 impl Add<Vec2, Vec2, Vec2> {
   def add(other: Vec2): Vec2 = Vec2(x + other.x, y + other.y)
@@ -1259,6 +1367,31 @@ impl Add<Vec2, Vec2, Vec2> {
 let a = Vec2(1, 0)
 let b = Vec2(0, 1)
 let c = a + b
+```
+
+## Expressions In If-Matches
+
+TODO
+
+#### Requires
+
+- [If Expressions](features.md#if-expressions)
+- [Operator Traits](features.md#operator-traits)
+
+Other than declarations, `if`-match expressions can contain normal expressions which are checked for equality with
+the object being matched. 
+
+For example:
+
+```
+def matchIdentifier(name: String): Token = name.if {
+  "if" -> ::IfKeyword
+  "else" -> ::ElseKeyword
+  "def" -> ::DefKeyword
+  "import" -> ::ImportKeyword
+  "data" -> ::DataKeyword
+  else -> ::Ident
+}
 ```
 
 ## Escaped Expressions
